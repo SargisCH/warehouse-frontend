@@ -1,51 +1,26 @@
-import {
-  Box,
-  Flex,
-  FormControl,
-  FormLabel,
-  Input,
-  useBreakpointValue,
-} from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
+import { Switch, useRouteMatch } from "react-router-dom";
+import { Route } from "react-router-dom";
+import InventoryList from "./InventoryList";
+import UpsertInventory from "./UpsertInventory";
 
 export default function Inventory() {
-  const layout = useBreakpointValue({
-    base: "mobile",
-    md: "tablet",
-    lg: "desktop",
-  });
-  const direction = ["tablet", "mobile"].includes(layout) ? "column" : "row";
+  const match = useRouteMatch();
 
   return (
     <Box>
       <h1>Inventory</h1>
-      <Flex>
-        <Flex direction={direction} gap="20px">
-          <FormControl>
-            <FormLabel>Name</FormLabel>
-            <Input type="text" placeholder="Name" />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Amount</FormLabel>
-            <Input type="number" placeholder="Amount" />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Amount unit</FormLabel>
-            <Input type="text" placeholder="Amount" />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Amount unit</FormLabel>
-            <Input type="text" placeholder="Amount" />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Amount unit</FormLabel>
-            <Input type="text" placeholder="Amount" />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Amount unit</FormLabel>
-            <Input type="text" placeholder="Amount" />
-          </FormControl>
-        </Flex>
-      </Flex>
+      <Switch>
+        <Route path={`${match.path}`} exact={true}>
+          <InventoryList />
+        </Route>
+        <Route path={`${match.path}/upsert/:inventoryId`}>
+          <UpsertInventory create={false} />
+        </Route>
+        <Route path={`${match.path}/upsert`}>
+          <UpsertInventory create={true} />
+        </Route>
+      </Switch>
     </Box>
   );
 }

@@ -46,11 +46,12 @@
     "strictNullChecks": false,
     "downlevelIteration": true,
     "baseUrl": "src",
+    "jsxImportSource": "@emotion/react",
     "paths": {
       "@assets/*": ["./src/assetsassets/*"]
-    },
+    }
   },
   "include": [
     "./src"
-  ], 
+  ]
 }

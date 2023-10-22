@@ -78,4 +78,9 @@ const routes = [
   },
 ];
 
+export const links = {
+  inventory: "/admin/inventory",
+  inventoryItem: (inventoryId: string | number) =>
+    `/admin/inventory/upsert/${inventoryId}`,
+};
 export default routes;
