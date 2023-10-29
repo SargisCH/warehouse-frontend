@@ -1,11 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { inventoryApi } from "api/inventory";
-
+import { api } from "api/api";
 // Action creators are generated for each case reducer function
 export const store = configureStore({
-  reducer: { [inventoryApi.reducerPath]: inventoryApi.reducer },
+  reducer: {
+    [api.reducerPath]: api.reducer,
+  },
   middleware: (getDefaultMiddleware) => {
-    return getDefaultMiddleware().concat(inventoryApi.middleware);
+    return getDefaultMiddleware().concat(api.middleware);
   },
 });
 

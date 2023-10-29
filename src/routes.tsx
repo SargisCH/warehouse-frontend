@@ -14,6 +14,7 @@ import Profile from "views/admin/profile";
 import DataTables from "views/admin/dataTables";
 import RTL from "views/admin/rtl";
 import Inventory from "components/inventory/Inventory";
+import Product from "components/product/Product";
 
 // Auth Imports
 import SignInCentered from "views/auth/signIn";
@@ -73,8 +74,17 @@ const routes = [
     name: "Humq",
     layout: "/admin",
     path: "/inventory",
+    exact: true,
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: Inventory,
+  },
+  {
+    name: "Products",
+    layout: "/admin",
+    path: "/products",
+    exact: true,
+    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+    component: Product,
   },
 ];
 
@@ -82,5 +92,8 @@ export const links = {
   inventory: "/admin/inventory",
   inventoryItem: (inventoryId: string | number) =>
     `/admin/inventory/upsert/${inventoryId}`,
+  product: "/admin/products",
+  productItem: (productId: string | number) =>
+    `/admin/products/upsert/${productId}`,
 };
 export default routes;

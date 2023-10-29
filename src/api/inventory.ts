@@ -1,5 +1,4 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { API_BASE_URL } from "config";
+import { api } from "./api";
 
 export type InventoryItem = {
   amount: number;
@@ -12,8 +11,7 @@ export type InventoryItem = {
   product_id?: string;
   updated_at: string;
 };
-export const inventoryApi = createApi({
-  baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }), // Your API base URL
+export const inventoryApi = api.injectEndpoints({
   endpoints: (builder) => ({
     createInventory: builder.mutation({
       query: (newInventory) => ({
