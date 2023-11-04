@@ -13,8 +13,9 @@ import NFTMarketplace from "views/admin/marketplace";
 import Profile from "views/admin/profile";
 import DataTables from "views/admin/dataTables";
 import RTL from "views/admin/rtl";
-import Inventory from "components/inventory/Inventory";
-import Product from "components/product/Product";
+import Inventory from "pages/inventory/Inventory";
+import Product from "pages/product/Product";
+import InventorySupplier from "pages/inventorySupplier/InventorySupplier";
 
 // Auth Imports
 import SignInCentered from "views/auth/signIn";
@@ -86,6 +87,14 @@ const routes = [
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: Product,
   },
+  {
+    name: "Inventory Suppliers",
+    layout: "/admin",
+    path: "/suppliers",
+    exact: true,
+    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+    component: InventorySupplier,
+  },
 ];
 
 export const links = {
@@ -95,5 +104,8 @@ export const links = {
   product: "/admin/products",
   productItem: (productId: string | number) =>
     `/admin/products/upsert/${productId}`,
+  suppliers: "/admin/suppliers",
+  supplier: (supplierId: string | number) =>
+    `/admin/suppliers/upsert/${supplierId}`,
 };
 export default routes;
