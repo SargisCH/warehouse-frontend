@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import {
   Box,
-  Button,
   Flex,
   Icon,
   Progress,
@@ -22,13 +21,13 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useGetInventorySupplierQuery } from "api/inventorySupplier";
+import { useGetInventoryQuery } from "api/inventory";
 // Custom components
 import Card from "components/card/Card";
 import Menu from "components/menu/MainMenu";
 import * as React from "react";
 import dayjs from "dayjs";
-import "./inventorySupplier.css";
+import "./inventory.css";
 import { useHistory } from "react-router-dom";
 import { links } from "routes";
 // Assets
@@ -36,6 +35,10 @@ import { links } from "routes";
 type RowObj = {
   id: number | string;
   name: string;
+  amount: string | number;
+  amountUnit: string;
+  price: number;
+  currency: string;
   created_at: string;
   updated_at: string;
 };
@@ -43,12 +46,11 @@ type RowObj = {
 const columnHelper = createColumnHelper<RowObj>();
 
 // const columns = columnsDataCheck;
-function InventorySupplerList() {
-  const { data: inventorySupplierArray = [], refetch } =
-    useGetInventorySupplierQuery();
+function InventoryList() {
+  const { data: inventoryArray = [], refetch } = useGetInventoryQuery();
   useEffect(() => {
     refetch();
-  }, [refetch]);
+  }, []);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
@@ -73,6 +75,65 @@ function InventorySupplerList() {
               {info.getValue()}
             </Text>
           </Flex>
+        );
+      },
+    }),
+    columnHelper.accessor("amount", {
+      id: "amount",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          AMOUNT
+        </Text>
+      ),
+      cell: (info) => (
+        <Flex align="center">
+          <Text color={textColor} fontSize="sm" fontWeight="700">
+            {info.getValue()}
+          </Text>
+        </Flex>
+      ),
+    }),
+    columnHelper.accessor("amountUnit", {
+      id: "amountUnit",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          AMOUNT UNIT
+        </Text>
+      ),
+      cell: (info) => (
+        <Text color={textColor} fontSize="sm" fontWeight="700">
+          {info.getValue()}
+        </Text>
+      ),
+    }),
+    columnHelper.accessor("price", {
+      id: "price",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Price
+        </Text>
+      ),
+      cell: (info) => {
+        console.log(info);
+        return (
+          <Text color={textColor} fontSize="sm" fontWeight="700">
+            {info.getValue() + " " + info.row.original.currency}
+          </Text>
         );
       },
     }),
@@ -112,21 +173,9 @@ function InventorySupplerList() {
         </Text>
       ),
     }),
-    columnHelper.accessor("updated_at", {
-      id: "updated_at",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        ></Text>
-      ),
-      cell: (info) => <Button>Order</Button>,
-    }),
   ];
   const table = useReactTable({
-    data: inventorySupplierArray,
+    data: inventoryArray,
     columns: columns as any,
     state: {
       sorting,
@@ -150,7 +199,7 @@ function InventorySupplerList() {
           fontWeight="700"
           lineHeight="100%"
         >
-          Inventory Supplier List
+          Inventory List
         </Text>
         <Menu />
       </Flex>
@@ -200,7 +249,7 @@ function InventorySupplerList() {
                     key={row.id}
                     cursor="pointer"
                     onClick={() => {
-                      history.push(links.supplier(row.original.id));
+                      history.push(links.inventoryItem(row.original.id));
                     }}
                   >
                     {row.getVisibleCells().map((cell) => {
@@ -228,4 +277,4 @@ function InventorySupplerList() {
   );
 }
 
-export default InventorySupplerList;
+export default InventoryList;

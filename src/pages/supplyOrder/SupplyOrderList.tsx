@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import {
   Box,
-  Button,
   Flex,
   Icon,
   Progress,
@@ -22,13 +21,13 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useGetInventorySupplierQuery } from "api/inventorySupplier";
+import { useGetSupplierOrdersQuery } from "api/inventorySupplier";
 // Custom components
 import Card from "components/card/Card";
 import Menu from "components/menu/MainMenu";
 import * as React from "react";
 import dayjs from "dayjs";
-import "./inventorySupplier.css";
+import "./supplyOrder.css";
 import { useHistory } from "react-router-dom";
 import { links } from "routes";
 // Assets
@@ -36,26 +35,28 @@ import { links } from "routes";
 type RowObj = {
   id: number | string;
   name: string;
+  orderDate: string;
+  status?: string;
   created_at: string;
   updated_at: string;
+  inventorySupplier: Partial<{ id: number; name: string }>;
 };
 
 const columnHelper = createColumnHelper<RowObj>();
 
 // const columns = columnsDataCheck;
-function InventorySupplerList() {
-  const { data: inventorySupplierArray = [], refetch } =
-    useGetInventorySupplierQuery();
+function SupplierOrderList() {
+  const { data: ordersArray = [], refetch } = useGetSupplierOrdersQuery();
   useEffect(() => {
     refetch();
-  }, [refetch]);
+  }, []);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
   const columns = [
-    columnHelper.accessor("name", {
-      id: "name",
+    columnHelper.accessor("inventorySupplier.name", {
+      id: "inventorySupplier",
       header: () => (
         <Text
           justifyContent="space-between"
@@ -63,7 +64,7 @@ function InventorySupplerList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          NAME
+          Inventory Supplier
         </Text>
       ),
       cell: (info: any) => {
@@ -73,6 +74,46 @@ function InventorySupplerList() {
               {info.getValue()}
             </Text>
           </Flex>
+        );
+      },
+    }),
+    columnHelper.accessor("orderDate", {
+      id: "orderDate",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Order Date
+        </Text>
+      ),
+      cell: (info) => {
+        return (
+          <Text color={textColor} fontSize="sm" fontWeight="700">
+            {dayjs(info.getValue()).format("DD/MM/YYYY")}
+          </Text>
+        );
+      },
+    }),
+    columnHelper.accessor("status", {
+      id: "status",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Status
+        </Text>
+      ),
+      cell: (info) => {
+        return (
+          <Text color={textColor} fontSize="sm" fontWeight="700">
+            {info.getValue()}
+          </Text>
         );
       },
     }),
@@ -112,21 +153,9 @@ function InventorySupplerList() {
         </Text>
       ),
     }),
-    columnHelper.accessor("updated_at", {
-      id: "updated_at",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        ></Text>
-      ),
-      cell: (info) => <Button>Order</Button>,
-    }),
   ];
   const table = useReactTable({
-    data: inventorySupplierArray,
+    data: ordersArray,
     columns: columns as any,
     state: {
       sorting,
@@ -150,7 +179,7 @@ function InventorySupplerList() {
           fontWeight="700"
           lineHeight="100%"
         >
-          Inventory Supplier List
+          Inventory Supplier Order List
         </Text>
         <Menu />
       </Flex>
@@ -200,7 +229,12 @@ function InventorySupplerList() {
                     key={row.id}
                     cursor="pointer"
                     onClick={() => {
-                      history.push(links.supplier(row.original.id));
+                      history.push(
+                        links.supplyOrder(
+                          row.original.inventorySupplierId,
+                          row.original.id
+                        )
+                      );
                     }}
                   >
                     {row.getVisibleCells().map((cell) => {
@@ -228,4 +262,4 @@ function InventorySupplerList() {
   );
 }
 
-export default InventorySupplerList;
+export default SupplierOrderList;

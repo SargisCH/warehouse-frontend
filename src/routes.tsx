@@ -16,6 +16,7 @@ import RTL from "views/admin/rtl";
 import Inventory from "pages/inventory/Inventory";
 import Product from "pages/product/Product";
 import InventorySupplier from "pages/inventorySupplier/InventorySupplier";
+import InventorySupplierOrder from "pages/supplyOrder/SupplyOrder";
 
 // Auth Imports
 import SignInCentered from "views/auth/signIn";
@@ -95,6 +96,14 @@ const routes = [
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: InventorySupplier,
   },
+  {
+    name: "Suppy Orders",
+    layout: "/admin",
+    path: "/supply-orders",
+    exact: true,
+    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+    component: InventorySupplierOrder,
+  },
 ];
 
 export const links = {
@@ -107,5 +116,8 @@ export const links = {
   suppliers: "/admin/suppliers",
   supplier: (supplierId: string | number) =>
     `/admin/suppliers/upsert/${supplierId}`,
+  supplyOrders: "/admin/supply-orders",
+  supplyOrder: (inventorySupplierId: string | number, orderId: number) =>
+    `/admin/supply-orders/upsert/${inventorySupplierId}/order/${orderId}`,
 };
 export default routes;
