@@ -12,6 +12,7 @@ import {
   Thead,
   Tr,
   useColorModeValue,
+  Link as ChakraLink,
 } from "@chakra-ui/react";
 import {
   createColumnHelper,
@@ -28,8 +29,9 @@ import Menu from "components/menu/MainMenu";
 import * as React from "react";
 import dayjs from "dayjs";
 import "./product.css";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link as ReactRouterLink } from "react-router-dom";
 import { links } from "routes";
+import { TableAddButton } from "components/tableAddButton/TableAddButton";
 // Assets
 
 type RowObj = {
@@ -220,7 +222,7 @@ function ProductList() {
         >
           Product List
         </Text>
-        <Menu />
+        <TableAddButton link={links.createProduct} label={"Add Product"} />
       </Flex>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">

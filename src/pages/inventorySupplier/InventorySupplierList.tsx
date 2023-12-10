@@ -31,6 +31,7 @@ import dayjs from "dayjs";
 import "./inventorySupplier.css";
 import { useHistory } from "react-router-dom";
 import { links } from "routes";
+import { TableAddButton } from "components/tableAddButton/TableAddButton";
 // Assets
 
 type RowObj = {
@@ -122,7 +123,16 @@ function InventorySupplerList() {
           color="gray.400"
         ></Text>
       ),
-      cell: (info) => <Button>Order</Button>,
+      cell: (info) => (
+        <Button
+          onClick={(e) => {
+            e.stopPropagation();
+            history.push(links.createSupplyOrder(info.row.original.id));
+          }}
+        >
+          Order
+        </Button>
+      ),
     }),
   ];
   const table = useReactTable({
@@ -152,7 +162,7 @@ function InventorySupplerList() {
         >
           Inventory Supplier List
         </Text>
-        <Menu />
+        <TableAddButton label="Add Supplier" link={links.createSupplier} />
       </Flex>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">

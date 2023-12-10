@@ -65,6 +65,7 @@ const UpsertInventorySupplier = (props: { create: boolean }) => {
     } else {
       await createInventorySupplier(data);
     }
+    history.push(links.suppliers);
   };
   if (isLoading) {
     return (

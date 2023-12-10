@@ -20,6 +20,10 @@ export default function SupplyOrder() {
         >
           <UpsertSupplyOrder create={true} />
         </Route>
+        {/* same component with specifying the supplier durin creating */}
+        <Route path={`${match.path}/create-order`} exact={true}>
+          <UpsertSupplyOrder create={true} />
+        </Route>
         <Route
           path={`${match.path}/upsert/:inventorySupplierId/order/:inventorySupplierOrderId`}
           exact={true}

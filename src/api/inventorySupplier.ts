@@ -132,6 +132,7 @@ const inventorySupplierApi = api.injectEndpoints({
 export const {
   useCreateInventorySupplierMutation,
   useGetInventorySupplierQuery,
+  useLazyGetInventorySupplierQuery,
   useGetInventorySupplierByIdQuery,
   useLazyGetInventorySupplierByIdQuery,
   useUpdateInventorySupplierMutation,

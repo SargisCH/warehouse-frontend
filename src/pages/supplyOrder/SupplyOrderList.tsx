@@ -2,8 +2,6 @@ import { useEffect } from "react";
 import {
   Box,
   Flex,
-  Icon,
-  Progress,
   Table,
   Tbody,
   Td,
@@ -30,6 +28,7 @@ import dayjs from "dayjs";
 import "./supplyOrder.css";
 import { useHistory } from "react-router-dom";
 import { links } from "routes";
+import { TableAddButton } from "components/tableAddButton/TableAddButton";
 // Assets
 
 type RowObj = {
@@ -181,7 +180,10 @@ function SupplierOrderList() {
         >
           Inventory Supplier Order List
         </Text>
-        <Menu />
+        <TableAddButton
+          label="Creat Order"
+          link={links.createSupplyOrderNoSupplier}
+        />
       </Flex>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">

@@ -110,14 +110,20 @@ export const links = {
   inventory: "/admin/inventory",
   inventoryItem: (inventoryId: string | number) =>
     `/admin/inventory/upsert/${inventoryId}`,
+  createInventory: "/admin/inventory/upsert/",
   product: "/admin/products",
   productItem: (productId: string | number) =>
     `/admin/products/upsert/${productId}`,
+  createProduct: "/admin/products/upsert/",
   suppliers: "/admin/suppliers",
   supplier: (supplierId: string | number) =>
     `/admin/suppliers/upsert/${supplierId}`,
+  createSupplier: "/admin/suppliers/upsert/",
   supplyOrders: "/admin/supply-orders",
   supplyOrder: (inventorySupplierId: string | number, orderId: number) =>
     `/admin/supply-orders/upsert/${inventorySupplierId}/order/${orderId}`,
+  createSupplyOrder: (inventorySupplierId: string | number) =>
+    `/admin/supply-orders/upsert/${inventorySupplierId}/order`,
+  createSupplyOrderNoSupplier: "/admin/supply-orders/create-order",
 };
 export default routes;

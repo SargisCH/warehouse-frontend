@@ -10,14 +10,14 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useGetInventoryQuery } from "api/inventory";
 import {
-  SupplierOrder,
   useCreateSupplierOrderMutation,
   useDeleteInventorySupplierOrderMutation,
   useLazyGetInventorySupplierOrderByIdQuery,
-  useLazyGetSupplierOrdersQuery,
   useLazyGetLatestOrderDetailsQuery,
   useUpdateInventorySupplierOrderMutation,
   OrderItem,
+  useLazyGetInventorySupplierQuery,
+  useLazyGetInventorySupplierByIdQuery,
 } from "api/inventorySupplier";
 import AlertDialog from "components/alertDialog/AlertDialog";
 import { useEffect, useState } from "react";
@@ -35,6 +35,7 @@ const UpsertSupplierOrder = (props: { create: boolean }) => {
   const [selectedInventory, setSelectedInventory] = useState<Array<OptionType>>(
     []
   );
+  const [selectedSupplier, setSelectedSupplier] = useState<OptionType>();
   const [orderItemLatestDetails, setOrderItemLatestDetails] = useState<{
     [key: number]: OrderItem;
   }>({});
@@ -50,6 +51,7 @@ const UpsertSupplierOrder = (props: { create: boolean }) => {
   const [selectedPriceUnit, setSelectedPriceUnit] = useState<{
     [key: number]: OptionType;
   }>({});
+  const [suppliers, setSuppliers] = useState([]);
   const [orderDate, setOrderDate] = useState(new Date());
   const params = useParams() as any;
   const [createSupplierOrder, { isLoading, isError, error }] =
@@ -62,6 +64,8 @@ const UpsertSupplierOrder = (props: { create: boolean }) => {
     useLazyGetInventorySupplierOrderByIdQuery();
   const [getLatestOrderDetailsQuery] = useLazyGetLatestOrderDetailsQuery();
   const { data: inventoryData = [] } = useGetInventoryQuery();
+  const [getSuppliers] = useLazyGetInventorySupplierQuery();
+  const [getSupplierById] = useLazyGetInventorySupplierByIdQuery();
   useEffect(() => {
     (async () => {
       if (params.inventorySupplierOrderId) {
@@ -164,10 +168,29 @@ const UpsertSupplierOrder = (props: { create: boolean }) => {
     selectedAmountUnit,
     selectedPriceUnit,
   ]);
+  useEffect(() => {
+    // getting the supplier mentioned in params or getting all the suppliers
+    (async () => {
+      if (params.inventorySupplierId) {
+        const supplierData = await getSupplierById({
+          inventorySupplierId: params.inventorySupplierId,
+        });
+        setSelectedSupplier({
+          label: supplierData.data.name,
+          value: supplierData.data.id,
+        });
+        setSuppliers([supplierData.data]);
+      } else {
+        const suppliersRes = await getSuppliers();
+        setSuppliers(suppliersRes.data);
+      }
+    })();
+  }, [params.inventorySupplierId, getSupplierById, getSuppliers]);
 
   const saveInventorySupplierOrder = async () => {
+    if (!selectedSupplier) return;
     const data: any = {
-      id: params.inventorySupplierId,
+      id: selectedSupplier.value,
       orderDate,
       orderItems: [],
     };
@@ -208,6 +231,7 @@ const UpsertSupplierOrder = (props: { create: boolean }) => {
             onChange={(newSelectedInventory) =>
               setSelectedInventory([...newSelectedInventory])
             }
+            isDisabled={!selectedSupplier}
           />
         </FormControl>
         <FormControl>
@@ -215,6 +239,20 @@ const UpsertSupplierOrder = (props: { create: boolean }) => {
           <DatePicker
             selected={orderDate}
             onChange={(date: Date) => setOrderDate(date)}
+          />
+        </FormControl>
+        <FormControl>
+          <FormLabel>Suplier</FormLabel>
+          <Select
+            options={suppliers.map((inv) => ({
+              label: inv.name,
+              value: inv.id,
+            }))}
+            value={selectedSupplier}
+            onChange={(newSelectedSupplier) =>
+              setSelectedSupplier(newSelectedSupplier)
+            }
+            isDisabled={params.inventorySupplierId}
           />
         </FormControl>
       </Flex>

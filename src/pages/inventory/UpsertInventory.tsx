@@ -22,8 +22,8 @@ import { links } from "routes";
 
 const UpsertInventory = (props: { create: boolean }) => {
   const [name, setName] = useState("");
-  const [amount, setAmount] = useState<number>(0);
-  const [price, setPrice] = useState<number>(0);
+  const [amount, setAmount] = useState<number>();
+  const [price, setPrice] = useState<number>();
   const [currency, setCurrency] = useState<string>("");
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<{
@@ -79,6 +79,7 @@ const UpsertInventory = (props: { create: boolean }) => {
     } else {
       await createInventory(data);
     }
+    history.push(links.inventory);
   };
 
   return (

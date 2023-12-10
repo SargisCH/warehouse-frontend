@@ -19,12 +19,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import Select from "react-select";
 import { links } from "routes";
-import IngredientAmountModal from "./IngredientAmountModal";
+import IngredientAmount from "./IngredientAmounts";
 
 const UpsertProduct = (props: { create: boolean }) => {
   const [name, setName] = useState("");
-  const [inStock, setInStock] = useState<number>(0);
-  const [price, setPrice] = useState<number>(0);
+  const [inStock, setInStock] = useState<number>();
+  const [price, setPrice] = useState<number>();
   //const [currency, setCurrency] = useState<string>("");
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<{
@@ -115,18 +115,15 @@ const UpsertProduct = (props: { create: boolean }) => {
       amount: number;
       unit: string;
     }> = [];
-    console.log("selcted inventory", selectedInventory);
     Object.keys(ingredientAmounts).forEach((invId: number | string) => {
       const invIndex = selectedInventory.findIndex((inv) => {
         console.log(inv.value, invId);
         return inv.value === Number(invId);
       });
-      console.log("invIndex", invIndex);
       if (invIndex === -1) {
         return;
       }
       if (!ingredientAmounts?.[invId]) return;
-      console.log("aaaa");
       ingredients.push({
         inventory: Number(invId),
         amount: ingredientAmounts[invId].amount,
@@ -142,7 +139,6 @@ const UpsertProduct = (props: { create: boolean }) => {
       ingredients,
     };
     if (params.productId) {
-      console.log("data", data);
       await updateProduct({
         ...data,
         id: params.productId,
@@ -150,6 +146,7 @@ const UpsertProduct = (props: { create: boolean }) => {
     } else {
       await createProduct(data);
     }
+    history.push(links.product);
   };
   if (isLoading) {
     return (
@@ -250,12 +247,7 @@ const UpsertProduct = (props: { create: boolean }) => {
         {/*/>*/}
         {/*</FormControl>*/}
         {/*</Flex>*/}
-      </Flex>
-      <Box mt={5}>
-        <Button colorScheme="teal" onClick={() => saveProduct()}>
-          Save
-        </Button>
-        <IngredientAmountModal
+        <IngredientAmount
           selectedIngredients={selectedInventory}
           setIngredientsAmount={(amounts: {
             [key: number | string]: {
@@ -267,6 +259,12 @@ const UpsertProduct = (props: { create: boolean }) => {
           }}
           inventoryAmounts={ingredientsDefaultAmount}
         />
+      </Flex>
+      <Box mt={5}>
+        <Button colorScheme="teal" onClick={() => saveProduct()}>
+          Save
+        </Button>
+
         {params.productId ? (
           <Button
             ml={4}
