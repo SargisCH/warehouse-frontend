@@ -1,0 +1,26 @@
+import { Box } from "@chakra-ui/react";
+import { Switch, useRouteMatch } from "react-router-dom";
+import { Route } from "react-router-dom";
+import SaleList from "./SaleList";
+import UpsertSale from "./UpsertSale";
+import SaleInfo from "./SaleInfo";
+
+export default function Sale() {
+  const match = useRouteMatch();
+  return (
+    <Box>
+      <h1>Sale</h1>
+      <Switch>
+        <Route path={`${match.path}`} exact={true}>
+          <SaleList />
+        </Route>
+        <Route path={`${match.path}/create/:clientId`}>
+          <UpsertSale />
+        </Route>
+        <Route path={`${match.path}/info/:saleId`}>
+          <SaleInfo />
+        </Route>
+      </Switch>
+    </Box>
+  );
+}

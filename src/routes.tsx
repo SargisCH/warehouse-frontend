@@ -17,11 +17,16 @@ import Inventory from "pages/inventory/Inventory";
 import Product from "pages/product/Product";
 import InventorySupplier from "pages/inventorySupplier/InventorySupplier";
 import InventorySupplierOrder from "pages/supplyOrder/SupplyOrder";
+import { RouteTypeExtended } from "./types/index";
 
 // Auth Imports
 import SignInCentered from "views/auth/signIn";
+import SignUp from "views/auth/signup";
+import ProductCategory from "pages/productCategory/ProductCategory";
+import Client from "pages/client/Client";
+import Sale from "pages/sale/Sale";
 
-const routes = [
+const routes: RouteTypeExtended[] = [
   {
     name: "Main Dashboard",
     layout: "/admin",
@@ -66,6 +71,13 @@ const routes = [
     component: SignInCentered,
   },
   {
+    name: "Sign Up",
+    layout: "/auth",
+    path: "/sign-up",
+    icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
+    component: SignUp,
+  },
+  {
     name: "RTL Admin",
     layout: "/rtl",
     path: "/rtl-default",
@@ -73,20 +85,68 @@ const routes = [
     component: RTL,
   },
   {
-    name: "Humq",
-    layout: "/admin",
-    path: "/inventory",
+    name: "",
+    layout: "",
+    path: "",
     exact: true,
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
-    component: Inventory,
+    component: () => <></>,
+    group: true,
+    groupName: "Pahest",
+    nestedRoutes: [
+      {
+        name: "Humq",
+        layout: "/admin",
+        path: "/inventory",
+        exact: true,
+        icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+        component: Inventory,
+      },
+      {
+        name: "Products",
+        layout: "/admin",
+        path: "/products",
+        exact: true,
+        icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+        component: Product,
+      },
+      {
+        name: "Categories",
+        layout: "/admin",
+        path: "/productCategory",
+        exact: true,
+        icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+        component: ProductCategory,
+      },
+    ],
   },
   {
-    name: "Products",
-    layout: "/admin",
-    path: "/products",
+    name: "",
+    layout: "",
+    path: "",
     exact: true,
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
-    component: Product,
+    component: () => <></>,
+    group: true,
+    groupName: "Vacharq",
+    nestedRoutes: [
+      {
+        name: "vacharqneri patmutyun",
+        layout: "/admin",
+        path: "/sale",
+        exact: true,
+        icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+        component: Sale,
+      },
+      {
+        name: "vacharaketer",
+        layout: "/admin",
+        path: "/client",
+        exact: true,
+        icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+        component: Client,
+      },
+    ],
   },
   {
     name: "Inventory Suppliers",
@@ -125,5 +185,15 @@ export const links = {
   createSupplyOrder: (inventorySupplierId: string | number) =>
     `/admin/supply-orders/upsert/${inventorySupplierId}/order`,
   createSupplyOrderNoSupplier: "/admin/supply-orders/create-order",
+  productCategories: "/admin/productCategory",
+  productCategory: (productCategoryId: string | number) =>
+    `/admin/productCategory/upsert/${productCategoryId}`,
+  createProductCategory: "/admin/productCategory/upsert/",
+  clients: "/admin/client",
+  client: (clientId: string | number) => `/admin/client/upsert/${clientId}`,
+  createClient: "/admin/client/upsert/",
+  sale: "/admin/sale",
+  saleCreate: (clientId: string | number) => `/admin/sale/create/${clientId}`,
+  saleInfo: (saleId: number) => `/admin/sale/info/${saleId}`,
 };
 export default routes;

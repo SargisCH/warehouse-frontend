@@ -8,6 +8,7 @@ import { SidebarContext } from "contexts/SidebarContext";
 import { useState } from "react";
 import { Redirect, Route, Switch } from "react-router-dom";
 import routes from "routes";
+import { RouteTypeExtended } from "types";
 
 // Custom Chakra theme
 export default function Dashboard(props: { [x: string]: any }) {
@@ -52,8 +53,23 @@ export default function Dashboard(props: { [x: string]: any }) {
     }
     return activeNavbar;
   };
-  const getRoutes = (routes: RoutesType[]): any => {
-    return routes.map((route: RoutesType, key: any) => {
+  const getRoutes = (routes: RouteTypeExtended[]): any => {
+    return routes.map((route: RouteTypeExtended, key: any) => {
+      if (route.nestedRoutes) {
+        return route.nestedRoutes.map((nestedRoute: RouteTypeExtended) => {
+          if (nestedRoute.layout === "/admin") {
+            return (
+              <Route
+                path={nestedRoute.layout + nestedRoute.path}
+                component={nestedRoute.component}
+                key={key}
+              />
+            );
+          } else {
+            return null;
+          }
+        });
+      }
       if (route.layout === "/admin") {
         return (
           <Route
