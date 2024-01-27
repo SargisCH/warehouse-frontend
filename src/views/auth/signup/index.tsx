@@ -23,7 +23,7 @@
   
 */
 
-import React from "react";
+import React, { useEffect } from "react";
 // Chakra imports
 import {
   Box,
@@ -46,13 +46,12 @@ import DefaultAuth from "layouts/auth/Default";
 import illustration from "assets/img/auth/auth.png";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { RiEyeCloseLine } from "react-icons/ri";
+import { useSignUpMutation } from "api/auth";
+import { useHistory } from "react-router-dom";
 function validateEmail(value: string) {
-  console.log("valkue", value);
   let error;
   if (!value) {
-    error = "Name is required";
-  } else if (value.toLowerCase() !== "naruto") {
-    error = "Jeez! You're not a fan 😱";
+    error = "Email is required";
   }
   return error;
 }
@@ -63,6 +62,13 @@ function validatePassword(value: string) {
   }
   return error;
 }
+function validateCompanyName(value: string) {
+  let error;
+  if (!value) {
+    error = "Comapny name is required";
+  }
+  return error;
+}
 export default function SignUp() {
   // Chakra color mode
   const textColor = useColorModeValue("navy.700", "white");
@@ -70,15 +76,24 @@ export default function SignUp() {
   const brandStars = useColorModeValue("brand.500", "brand.400");
   const [show, setShow] = React.useState(false);
   const handleClick = () => setShow(!show);
+  const [signUp, signUpResult] = useSignUpMutation();
+  const history = useHistory();
+  console.log("result", signUpResult);
+  useEffect(() => {
+    if (signUpResult.isSuccess) {
+      history.push(`/auth/verify-email/${signUpResult.data.email}`);
+    }
+  }, [signUpResult.isSuccess]);
 
   return (
     <DefaultAuth illustrationBackground={illustration} image={illustration}>
       <Formik
-        initialValues={{ name: "Sasuke" }}
+        initialValues={{ email: "", companyName: "", password: "" }}
         onSubmit={(values, actions) => {
           setTimeout(() => {
             alert(JSON.stringify(values, null, 2));
             actions.setSubmitting(false);
+            signUp({ ...values });
           }, 1000);
         }}
       >
@@ -148,6 +163,39 @@ export default function SignUp() {
                         size="lg"
                       />
                       <FormErrorMessage>{form.errors.email}</FormErrorMessage>
+                    </FormControl>
+                  )}
+                </Field>
+                <Field name="companyName" validate={validateCompanyName}>
+                  {({ field, form }: { field: any; form: any }) => (
+                    <FormControl
+                      isInvalid={
+                        form.errors.companyName && form.touched.companyName
+                      }
+                    >
+                      <FormLabel
+                        display="flex"
+                        ms="4px"
+                        fontSize="sm"
+                        fontWeight="500"
+                        color={textColor}
+                        mb="8px"
+                      >
+                        Company Name<Text color={brandStars}>*</Text>
+                      </FormLabel>
+                      <Input
+                        {...field}
+                        isRequired={true}
+                        fontSize="sm"
+                        ms={{ base: "0px", md: "0px" }}
+                        type="text"
+                        placeholder="Company Name"
+                        fontWeight="500"
+                        size="lg"
+                      />
+                      <FormErrorMessage>
+                        {form.errors.companyName}
+                      </FormErrorMessage>
                     </FormControl>
                   )}
                 </Field>

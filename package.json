@@ -26,6 +26,7 @@
 		"@types/react": "^18.0.15",
 		"@types/react-dom": "^18.0.6",
 		"apexcharts": "^3.35.2",
+		"aws-amplify": "^6.0.13",
 		"dayjs": "^1.11.10",
 		"formik": "^2.4.5",
 		"framer-motion": "^4.1.17",

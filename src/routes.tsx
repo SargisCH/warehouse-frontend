@@ -25,6 +25,7 @@ import SignUp from "views/auth/signup";
 import ProductCategory from "pages/productCategory/ProductCategory";
 import Client from "pages/client/Client";
 import Sale from "pages/sale/Sale";
+import VerifyEmail from "views/auth/verifyEmail";
 
 const routes: RouteTypeExtended[] = [
   {
@@ -76,6 +77,13 @@ const routes: RouteTypeExtended[] = [
     path: "/sign-up",
     icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
     component: SignUp,
+  },
+  {
+    name: "Verify Email",
+    layout: "/auth",
+    path: "/verify-email/:email",
+    icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
+    component: VerifyEmail,
   },
   {
     name: "RTL Admin",
