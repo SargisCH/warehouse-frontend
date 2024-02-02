@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { api } from "api/api";
+import userSlice from "./slices/userSlice";
 // Action creators are generated for each case reducer function
 export const store = configureStore({
   reducer: {
     [api.reducerPath]: api.reducer,
+    user: userSlice,
   },
   middleware: (getDefaultMiddleware) => {
     return getDefaultMiddleware().concat(api.middleware);
