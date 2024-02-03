@@ -7,7 +7,6 @@ import { Box, useColorModeValue } from "@chakra-ui/react";
 
 // Layout components
 import { SidebarContext } from "contexts/SidebarContext";
-import { createUserDataSelector } from "api/auth";
 import { useSelector } from "react-redux";
 import { RootState } from "store/store";
 
@@ -17,8 +16,6 @@ export default function Auth() {
   const [toggleSidebar, setToggleSidebar] = useState(false);
   const user = useSelector((state: RootState) => state?.user);
   console.log("user", user.email);
-  const getData = createUserDataSelector(user.email);
-  console.log("asdas", getData());
   const getRoute = () => {
     return window.location.pathname !== "/auth/full-screen-maps";
   };

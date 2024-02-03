@@ -35,16 +35,5 @@ export const authApi = api.injectEndpoints({
   }),
 });
 
-export const createUserDataSelector = (email: string) => {
-  console.log("email", email);
-  if (!email) {
-    console.log("empty");
-    return () => ({});
-  } else {
-    console.log("aaaaaa", email);
-    return authApi.endpoints.getUser.select(email);
-  }
-};
-
 export const { useSignUpMutation, useVerifyEmailMutation, useGetUserMutation } =
   authApi;

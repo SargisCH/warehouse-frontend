@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { ReactPortal, useEffect } from "react";
 import ReactDOM from "react-dom";
 import "./assets/css/App.css";
 import {
@@ -21,6 +21,11 @@ import { useGetUserMutation } from "api/auth";
 import { links } from "routes";
 import { setUserData } from "store/slices/userSlice";
 
+interface Props {
+  userEmail: string;
+  children: React.ReactNode;
+}
+
 Amplify.configure({
   Auth: {
     Cognito: {
@@ -30,10 +35,25 @@ Amplify.configure({
   },
 });
 
+const ProtectedRoute: React.FC<Props> = (props) => {
+  console.log("sadsadsa", props);
+  if (!props.userEmail) {
+    return <Redirect to={"/auth/sign-in"} />;
+  }
+  return <>{props.children}</>;
+};
+
+const AuthRoute: React.FC<Props> = (props) => {
+  if (props.userEmail) {
+    return <Redirect from="/" to="/admin/default" />;
+  }
+  return <>{props.children}</>;
+};
+
 function App() {
   const [getUser, { data, status: resStatus }] = useGetUserMutation();
-  const history = useHistory();
   const dispatch = useDispatch();
+  console.log("aaaaa", data);
   useEffect(() => {
     (async () => {
       try {
@@ -51,12 +71,17 @@ function App() {
     if (data && data.email && resStatus === "fulfilled") {
       dispatch(setUserData(data));
     }
-  }, [resStatus, data, history, dispatch]);
+  }, [resStatus, data, dispatch]);
   return (
     <HashRouter>
       <Switch>
-        <Route path={`/auth`} component={AuthLayout} />
-        <Route path={`/admin`} component={AdminLayout} />
+        <AuthRoute userEmail={data?.email || ""}>
+          <Route path={`/auth`} component={AuthLayout} />
+        </AuthRoute>
+        <ProtectedRoute userEmail={data?.email || ""}>
+          <Route path={`/admin`} component={AdminLayout} />
+        </ProtectedRoute>
+
         <Route path={`/rtl`} component={RTLLayout} />
         <Redirect from="/" to="/admin" />
       </Switch>
