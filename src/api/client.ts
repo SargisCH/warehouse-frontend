@@ -30,6 +30,7 @@ export interface SaleType {
   id?: number;
   clientId: number;
   client?: ClientType;
+  partialCreditAmount?: number;
   saleItems: Array<{
     productId: number;
     product?: ProductItem;

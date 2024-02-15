@@ -6,17 +6,30 @@ import Navbar from "components/navbar/NavbarAdmin";
 import Sidebar from "components/sidebar/Sidebar";
 import { SidebarContext } from "contexts/SidebarContext";
 import { useState } from "react";
-import { Redirect, Route, Switch } from "react-router-dom";
+import {
+  Redirect,
+  Route,
+  Switch,
+  useHistory,
+  useLocation,
+} from "react-router-dom";
 import routes from "routes";
 import { RouteTypeExtended } from "types";
 
 // Custom Chakra theme
 export default function Dashboard(props: { [x: string]: any }) {
   const { ...rest } = props;
+  console.log("admin opened1");
   // states and functions
   const [fixed] = useState(false);
   const [toggleSidebar, setToggleSidebar] = useState(false);
   // functions for changing the states from components
+  const history = useHistory();
+  const location = useLocation();
+  console.log("auth ptops", props);
+  if (!props.userEmail) {
+    history.push(`/auth/sign-in?next=${location.pathname}`);
+  }
   const getRoute = () => {
     return window.location.pathname !== "/admin/full-screen-maps";
   };
@@ -128,7 +141,7 @@ export default function Dashboard(props: { [x: string]: any }) {
             >
               <Switch>
                 {getRoutes(routes)}
-                <Redirect from="/" to="/admin/default" />
+                <Redirect from="/admin" to="/admin/default" />
               </Switch>
             </Box>
           ) : null}

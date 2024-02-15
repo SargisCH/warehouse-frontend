@@ -1,5 +1,11 @@
-import { useState } from "react";
-import { Redirect, Route, Switch } from "react-router-dom";
+import { useMemo, useState } from "react";
+import {
+  Redirect,
+  Route,
+  Switch,
+  useHistory,
+  useLocation,
+} from "react-router-dom";
 import routes from "routes";
 
 // Chakra imports
@@ -10,12 +16,24 @@ import { SidebarContext } from "contexts/SidebarContext";
 import { useSelector } from "react-redux";
 import { RootState } from "store/store";
 
+function useQuery() {
+  const { search } = useLocation();
+
+  return useMemo(() => new URLSearchParams(search), [search]);
+}
+
 // Custom Chakra theme
-export default function Auth() {
+export default function Auth({ userEmail }: { userEmail: string }) {
   // states and functions
   const [toggleSidebar, setToggleSidebar] = useState(false);
   const user = useSelector((state: RootState) => state?.user);
   console.log("user", user.email);
+  const history = useHistory();
+  const searchParams = useQuery();
+  if (userEmail) {
+    const nextUrl = searchParams.get("next");
+    history.push(nextUrl ?? "/admin/default");
+  }
   const getRoute = () => {
     return window.location.pathname !== "/auth/full-screen-maps";
   };

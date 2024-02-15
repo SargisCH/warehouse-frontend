@@ -57,6 +57,8 @@ const SaleReducer: Reducer<SaleStateType, SaleAction> = (
       return { ...state, clientId: action.payload };
     case "SET_PAYMENT_TYPE":
       return { ...state, paymentType: action.payload };
+    case "SET_PARTIAL_CREDIT_AMOUNT":
+      return { ...state, partialCreditAmount: action.payload };
     case "ADD_PRODUCT": {
       return {
         ...state,
@@ -210,6 +212,7 @@ const UpsertSale = () => {
     const data: SaleType = {
       clientId: saleState.clientId,
       paymentType: saleState.paymentType.value as PaymentType,
+      partialCreditAmount: saleState.partialCreditAmount,
       saleItems: saleState.saleItems.map((si) => ({
         productId: Number(si.product.value),
         price: si.price,

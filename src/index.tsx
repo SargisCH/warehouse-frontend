@@ -7,6 +7,7 @@ import {
   Switch,
   Redirect,
   useHistory,
+  BrowserRouter,
 } from "react-router-dom";
 import AuthLayout from "./layouts/auth";
 import AdminLayout from "./layouts/admin";
@@ -35,21 +36,6 @@ Amplify.configure({
   },
 });
 
-const ProtectedRoute: React.FC<Props> = (props) => {
-  console.log("sadsadsa", props);
-  if (!props.userEmail) {
-    return <Redirect to={"/auth/sign-in"} />;
-  }
-  return <>{props.children}</>;
-};
-
-const AuthRoute: React.FC<Props> = (props) => {
-  if (props.userEmail) {
-    return <Redirect from="/" to="/admin/default" />;
-  }
-  return <>{props.children}</>;
-};
-
 function App() {
   const [getUser, { data, status: resStatus }] = useGetUserMutation();
   const dispatch = useDispatch();
@@ -73,19 +59,21 @@ function App() {
     }
   }, [resStatus, data, dispatch]);
   return (
-    <HashRouter>
+    <BrowserRouter>
       <Switch>
-        <AuthRoute userEmail={data?.email || ""}>
-          <Route path={`/auth`} component={AuthLayout} />
-        </AuthRoute>
-        <ProtectedRoute userEmail={data?.email || ""}>
-          <Route path={`/admin`} component={AdminLayout} />
-        </ProtectedRoute>
+        <Route
+          path={`/auth`}
+          component={() => <AuthLayout userEmail={data?.email || ""} />}
+        />
+        <Route
+          path={`/admin`}
+          component={() => <AdminLayout userEmail={data?.email || ""} />}
+        />
 
         <Route path={`/rtl`} component={RTLLayout} />
         <Redirect from="/" to="/admin" />
       </Switch>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
 

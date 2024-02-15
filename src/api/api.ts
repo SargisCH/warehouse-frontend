@@ -1,10 +1,29 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { API_BASE_URL } from "config";
+import { fetchAuthSession } from "aws-amplify/auth";
+import type {
+  BaseQueryFn,
+  FetchArgs,
+  FetchBaseQueryError,
+} from "@reduxjs/toolkit/query";
+const baseQueryAuthorized: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  const authRes = await fetchAuthSession();
+
+  const res = await fetchBaseQuery({
+    baseUrl: API_BASE_URL,
+    headers: {
+      Authorization: "Bearer " + authRes.tokens.accessToken.toString(),
+    },
+  })(args, api, extraOptions);
+  return res;
+};
 
 // initialize an empty api service that we'll inject endpoints into later as needed
 export const api = createApi({
-  baseQuery: fetchBaseQuery({
-    baseUrl: API_BASE_URL,
-  }),
+  baseQuery: baseQueryAuthorized,
   endpoints: () => ({}),
 });

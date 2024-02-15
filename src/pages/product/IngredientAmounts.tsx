@@ -45,15 +45,16 @@ export default function IngredientAmounts({
     } = amounts,
     unitsArg: {
       [key: string]: OptionType;
-    } = units
+    } = units || {},
   ) => {
+    console.log("ing amount change", amountsArg, unitsArg, amounts, units);
     const ingredientsAMount: {
       [key: string]: { amount: number; unit: string };
     } = {};
     Object.keys(amounts).forEach((key) => {
       ingredientsAMount[key] = {
         amount: amountsArg[key],
-        unit: unitsArg[key].value,
+        unit: unitsArg[key] && unitsArg[key].value,
       };
     });
     setIngredientsAmount(ingredientsAMount);
@@ -65,7 +66,7 @@ export default function IngredientAmounts({
           return (
             <Flex key={ing.value}>
               <FormControl>
-                <FormLabel colorScheme="black">{ing.label}</FormLabel>
+                <FormLabel colorScheme="black">{ing.label} amount</FormLabel>
                 <Input
                   type="number"
                   placeholder={ing.label}
