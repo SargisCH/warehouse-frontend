@@ -37,48 +37,29 @@ import TotalSpent from 'views/admin/default/components/TotalSpent';
 import WeeklyRevenue from 'views/admin/default/components/WeeklyRevenue';
 import tableDataCheck from 'views/admin/default/variables/tableDataCheck';
 import tableDataComplex from 'views/admin/default/variables/tableDataComplex';
-import { useGetUserMutation } from 'api/auth';
-import { useDispatch } from 'react-redux';
-import { useEffect, useState } from 'react';
-import { fetchAuthSession } from 'aws-amplify/auth';
-import { setUserData } from 'store/slices/userSlice';
+//import { useGetUserMutation } from 'api/auth';
+import { useSelector } from 'react-redux';
+import { useState } from 'react';
+// import { fetchAuthSession } from 'aws-amplify/auth';
+// import { setUserData } from 'store/slices/userSlice';
+// import { RootState } from 'store/store';
 
 
-export default function UserReports() {
-
-	const [balance, setBalance] = useState<number | null>(null);
-	const [getUser, { data, status: resStatus }] = useGetUserMutation();
-	const dispatch = useDispatch();
   
-	useEffect(() => {
-		let isMounted = true;	  
-		(async () => {
-		  try {
-			const res = await fetchAuthSession({ forceRefresh: true });
-			const email = res?.tokens?.idToken?.payload?.email || "";
-			if (email && isMounted) {
-			  getUser(email as string);
-			}
-		  } catch (e: any) {
-			// console.log("ee", e);
-		  }
-		})();
-	  
-		return () => {
-		  isMounted = false;
+export default function UserReports() {
+	
+	interface RootState {
+		user: {
+		  tenant: {
+			balance: string; 
+		  };
 		};
-	  }, [getUser]);
-	  
-	useEffect(() => {
-	  if (data && data.email && resStatus === "fulfilled") {
-		dispatch(setUserData(data));
-		if (data.tenant && data.tenant.balance) {
-		  setBalance(data.tenant.balance);
-		}
 	  }
-	}, [resStatus, data, dispatch]);
 	
 
+  const tenantBalance = useSelector((state: RootState) => state.user?.tenant?.balance ||'');
+  const [balance] = useState(tenantBalance)
+  
   const brandColor = useColorModeValue('brand.500', 'white');
   const boxBg = useColorModeValue('secondaryGray.300', 'whiteAlpha.100');
 

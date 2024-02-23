@@ -45,39 +45,7 @@ import tableDataCheck from 'views/admin/rtl/variables/tableDataCheck';
 import tableDataComplex from 'views/admin/rtl/variables/tableDataComplex';
 
 export default function Payment() {
-	const [balance, setBalance] = useState<number | null>(null);
-	const [getUser, { data, status: resStatus }] = useGetUserMutation();
-	const dispatch = useDispatch();
-  
-	useEffect(() => {
-		let isMounted = true;	  
-		(async () => {
-		  try {
-			const res = await fetchAuthSession({ forceRefresh: true });
-			const email = res?.tokens?.idToken?.payload?.email || "";
-			if (email && isMounted) {
-			  getUser(email as string);
-			}
-		  } catch (e: any) {
-			// console.log("ee", e);
-		  }
-		})();
-	  
-		return () => {
-		  isMounted = false;
-		};
-	  }, [getUser]);
-	  
-	useEffect(() => {
-	  if (data && data.email && resStatus === "fulfilled") {
-		dispatch(setUserData(data));
-		if (data.tenant && data.tenant.balance) {
-		  setBalance(data.tenant.balance);
-		}
-	  }
-	}, [resStatus, data, dispatch])
-
-
+	
 	const brandColor = useColorModeValue('brand.500', 'white');
 	const boxBg = useColorModeValue('secondaryGray.300', 'whiteAlpha.100');
 
@@ -98,30 +66,6 @@ export default function Payment() {
 					value='$350.4'
 				/>
 				
-				<MiniStatistics
-					startContent={
-						<IconBox
-							w='56px'
-							h='56px'
-							bg={boxBg}
-							icon={<Icon w='32px' h='32px' as={MdAttachMoney} color={brandColor} />}
-						/>
-					}
-					name='Spend this month'
-					value='$642.39'
-				/>
-				 <MiniStatistics
-					startContent={
-						<IconBox
-							w='56px'
-							h='56px'
-							bg={boxBg}
-							icon={<Icon w='32px' h='32px' as={MdBarChart} color={brandColor} />}
-						/>
-					}
-					name='My Balance'
-					value={balance}
-				/> 
 				<MiniStatistics growth='+23%' name='Sales' value='$574.34' />
 				<MiniStatistics
 					endContent={

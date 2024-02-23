@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { api } from "api/api";
 import userSlice from "./slices/userSlice";
+
 // Action creators are generated for each case reducer function
 export const store = configureStore({
   reducer: {
