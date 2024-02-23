@@ -50,6 +50,7 @@ export default function AlertDialog({
             <Button colorScheme="red" onClick={handleConfirm} ml={3}>
               {confirmText}
             </Button>
+          
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialogChakra>
