@@ -21,10 +21,9 @@
 */
 
 // Chakra imports
-import { Avatar, Box, Flex, FormLabel, Icon, Select, SimpleGrid, useColorModeValue } from '@chakra-ui/react';
-// Assets
+
+import { Avatar, Box, Flex, FormLabel, Icon, Select, SimpleGrid,useColorModeValue } from '@chakra-ui/react';
 import Usa from 'assets/img/dashboards/usa.png';
-// Custom components
 import MiniCalendar from 'components/calendar/MiniCalendar';
 import MiniStatistics from 'components/card/MiniStatistics';
 import IconBox from 'components/icons/IconBox';
@@ -38,11 +37,32 @@ import TotalSpent from 'views/admin/default/components/TotalSpent';
 import WeeklyRevenue from 'views/admin/default/components/WeeklyRevenue';
 import tableDataCheck from 'views/admin/default/variables/tableDataCheck';
 import tableDataComplex from 'views/admin/default/variables/tableDataComplex';
+//import { useGetUserMutation } from 'api/auth';
+import { useSelector } from 'react-redux';
+import { useState } from 'react';
+// import { fetchAuthSession } from 'aws-amplify/auth';
+// import { setUserData } from 'store/slices/userSlice';
+// import { RootState } from 'store/store';
 
+
+  
 export default function UserReports() {
-	// Chakra Color Mode
-	const brandColor = useColorModeValue('brand.500', 'white');
-	const boxBg = useColorModeValue('secondaryGray.300', 'whiteAlpha.100');
+	
+	interface RootState {
+		user: {
+		  tenant: {
+			balance: string; 
+		  };
+		};
+	  }
+	
+
+  const tenantBalance = useSelector((state: RootState) => state.user?.tenant?.balance ||'');
+  const [balance] = useState(tenantBalance)
+  
+  const brandColor = useColorModeValue('brand.500', 'white');
+  const boxBg = useColorModeValue('secondaryGray.300', 'whiteAlpha.100');
+
 	return (
 		<Box pt={{ base: '130px', md: '80px', xl: '80px' }}>
 			<SimpleGrid columns={{ base: 1, md: 2, lg: 3, '2xl': 6 }} gap='20px' mb='20px'>
@@ -57,7 +77,7 @@ export default function UserReports() {
 					}
 					name='Earnings'
 					value='$350.4'
-				/>
+				/>			
 				<MiniStatistics
 					startContent={
 						<IconBox
@@ -70,7 +90,20 @@ export default function UserReports() {
 					name='Spend this month'
 					value='$642.39'
 				/>
+				
 				<MiniStatistics growth='+23%' name='Sales' value='$574.34' />
+				 <MiniStatistics
+					startContent={
+						<IconBox
+							w='56px'
+							h='56px'
+							bg={boxBg}
+							icon={<Icon w='32px' h='32px' as={MdBarChart} color={brandColor} />}
+						/>
+					}
+					name='My Balance'
+					value={balance}
+				/> 
 				<MiniStatistics
 					endContent={
 						<Flex me='-16px' mt='10px'>
@@ -112,7 +145,6 @@ export default function UserReports() {
 					value='2935'
 				/>
 			</SimpleGrid>
-
 			<SimpleGrid columns={{ base: 1, md: 2, xl: 2 }} gap='20px' mb='20px'>
 				<TotalSpent />
 				<WeeklyRevenue />
@@ -131,6 +163,7 @@ export default function UserReports() {
 					<MiniCalendar h='100%' minW='100%' selectRange={false} />
 				</SimpleGrid>
 			</SimpleGrid>
+			
 		</Box>
 	);
 }

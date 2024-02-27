@@ -39,7 +39,7 @@ export default function SidebarDocs() {
 					textAlign='center'
 					px='10px'
 					mb='14px'>
-					Upgrade to PRO
+					Upgrade to PRO 
 				</Text>
 				<Text fontSize='14px' color={'white'} px='10px' mb='14px' textAlign='center'>
 					Improve your development process and start doing more with Horizon UI PRO!

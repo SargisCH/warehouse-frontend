@@ -39,7 +39,7 @@ Amplify.configure({
 function App() {
   const [getUser, { data, status: resStatus }] = useGetUserMutation();
   const dispatch = useDispatch();
-  console.log("aaaaa", data);
+  console.log("aaaaa", getUser);
   useEffect(() => {
     (async () => {
       try {

@@ -1,2 +1,4 @@
 {
+    "typescript.validate.enable": false,
+    "typescript.workspaceSymbols.scope": "currentProject"
 }

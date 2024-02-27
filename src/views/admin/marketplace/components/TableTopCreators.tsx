@@ -7,7 +7,7 @@ import {
 	SortingState,
 	useReactTable
 } from '@tanstack/react-table';
-// Custom components  
+// Custom componentsexport type UserReports 
 import * as React from 'react';
 // Assets 
 

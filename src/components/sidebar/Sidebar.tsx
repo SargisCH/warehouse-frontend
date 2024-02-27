@@ -38,7 +38,8 @@ function Sidebar(props: { routes: RoutesType[]; [x: string]: any }) {
 
   // SIDEBAR
   return (
-    <Box display={{ sm: "none", xl: "block" }} position="fixed" minH="100%">
+    <Box   position="fixed" minH="100%">
+         
       <Box
         bg={sidebarBg}
         transition={variantChange}
@@ -46,17 +47,20 @@ function Sidebar(props: { routes: RoutesType[]; [x: string]: any }) {
         h="100vh"
         m={sidebarMargins}
         minH="100%"
-        overflowX="hidden"
-        boxShadow={shadow}
+        overflowX="hidden"     
+        // overflowY="scroll"
+        // overflowY="auto"
+        // boxShadow={shadow}
       >
-        <Scrollbars
+          <Scrollbars
+          style={{maxHeight:"100%",overflowY:"auto"}}
           autoHide
           renderTrackVertical={renderTrack}
           renderThumbVertical={renderThumb}
-          renderView={renderView}
-        >
+           renderView={renderView}
+        > 
           <Content routes={routes} />
-        </Scrollbars>
+       </Scrollbars>  
       </Box>
     </Box>
   );
@@ -71,7 +75,7 @@ export function SidebarResponsive(props: { routes: RoutesType[] }) {
   const btnRef = React.useRef();
 
   const { routes } = props;
-  // let isWindows = navigator.platform.startsWith("Win");
+   //let isWindows = navigator.platform.startsWith("Win");
   //  BRAND
 
   return (
@@ -90,7 +94,7 @@ export function SidebarResponsive(props: { routes: RoutesType[] }) {
       <Drawer
         isOpen={isOpen}
         onClose={onClose}
-        placement={document.documentElement.dir === "rtl" ? "right" : "left"}
+       placement={document.documentElement.dir === "rtl" ? "left" : "left"}
         finalFocusRef={btnRef}
       >
         <DrawerOverlay />
