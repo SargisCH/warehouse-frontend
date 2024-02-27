@@ -45,8 +45,11 @@ const Pagination: React.FC<PaginationProps> = ({
   const handlePageChange = (page: number) => {
     // Update URL query parameter
     if (setQueryParams) {
-      const newUrl = `${location.pathname}?page=${page}`;
-      history.push(newUrl);
+      const url = new URL(
+        `${window.location.origin.toString()}/${location.pathname}${location.search}`,
+      );
+      url.searchParams.set("page", String(page));
+      history.push(`${location.pathname}${url.search}`);
     }
     onPageChange(page);
   };

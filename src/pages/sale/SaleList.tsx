@@ -29,8 +29,8 @@ import "./sale.css";
 import { useHistory, useLocation } from "react-router-dom";
 import { links } from "routes";
 import Select from "react-select";
-
 import Pagination from "../../components/pagination/Pagination";
+import { setQuery } from "helpers/queryParams";
 type Option = { label: string; value: number };
 
 type RowObj = {
@@ -44,25 +44,6 @@ type RowObj = {
 
 const columnHelper = createColumnHelper<RowObj>();
 
-function setQuery(location: any, history: any, params: any) {
-  if ("URLSearchParams" in window) {
-    const searchParams = new URLSearchParams(location.search);
-    if (searchParams.has(params.name)) {
-      searchParams.delete(params.name);
-    }
-    if (Array.isArray(params.value)) {
-      params.value.forEach((param: string) => {
-        searchParams.append(params.name, param);
-      });
-    } else {
-      searchParams.set(params.name, params.value);
-    }
-    history.push({
-      path: location.pathname,
-      search: searchParams.toString(),
-    });
-  }
-}
 // const columns = columnsDataCheck;
 function SaleList() {
   const location = useLocation();
@@ -80,6 +61,12 @@ function SaleList() {
     [],
   );
   const [currentPage, setCurrentPage] = React.useState(1);
+  const handlePageChange = (page: number) => {
+    setTimeout(() => {
+      setQuery(location, history, { name: "page", value: 1 });
+    }, 5000);
+    setCurrentPage(page);
+  };
   const saleArray: RowObj[] = data.saleList.map(
     ({ id, client, saleItems, created_at, updated_at }) => {
       return {
@@ -233,6 +220,7 @@ function SaleList() {
               name: "client",
               value: newValue.map((op: Option) => op.value),
             });
+            handlePageChange(1);
             setSelectedClients(newValue as Option[]);
           }}
           placeholder="Select a client"

@@ -1,4 +1,12 @@
-import { Box, Flex, FormControl, FormLabel, Input } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  FormControl,
+  FormLabel,
+  Input,
+  NumberInput,
+  NumberInputField,
+} from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import Select from "react-select";
 
@@ -18,7 +26,7 @@ export default function IngredientAmounts({
   };
 }) {
   const [amounts, setAmounts] = useState<{
-    [key: string]: number;
+    [key: string]: number | string;
   }>(() => {
     const defaultData: { [key: string]: number } = {};
     selectedIngredients.forEach((ing) => {
@@ -41,19 +49,18 @@ export default function IngredientAmounts({
 
   const handleIngredientAmountsUpdate = (
     amountsArg: {
-      [key: string]: number;
+      [key: string]: number | string;
     } = amounts,
     unitsArg: {
       [key: string]: OptionType;
     } = units || {},
   ) => {
-    console.log("ing amount change", amountsArg, unitsArg, amounts, units);
     const ingredientsAMount: {
       [key: string]: { amount: number; unit: string };
     } = {};
     Object.keys(amounts).forEach((key) => {
       ingredientsAMount[key] = {
-        amount: amountsArg[key],
+        amount: Number(amountsArg[key]),
         unit: unitsArg[key] && unitsArg[key].value,
       };
     });
@@ -67,21 +74,21 @@ export default function IngredientAmounts({
             <Flex key={ing.value}>
               <FormControl>
                 <FormLabel colorScheme="black">{ing.label} amount</FormLabel>
-                <Input
-                  type="number"
-                  placeholder={ing.label}
+                <NumberInput
                   value={amounts[ing.value]}
-                  onChange={(e) => {
+                  onChange={(value) => {
                     setAmounts({
                       ...amounts,
-                      [ing.value]: Number(e.target.value),
+                      [ing.value]: value,
                     });
                     handleIngredientAmountsUpdate({
                       ...amounts,
-                      [ing.value]: Number(e.target.value),
+                      [ing.value]: value,
                     });
                   }}
-                />
+                >
+                  <NumberInputField placeholder={ing.label} />
+                </NumberInput>
               </FormControl>
               <FormControl>
                 <FormLabel>In Stock Unit</FormLabel>
