@@ -6,6 +6,8 @@ import {
   Input,
   Box,
   Spinner,
+  NumberInput,
+  NumberInputField,
 } from "@chakra-ui/react";
 import {
   useAddSaleMutation,
@@ -32,10 +34,10 @@ type SaleAction =
   | { type: "SET_PAYMENT_TYPE"; payload: OptionType }
   | { type: "SET_CLIENT_ID"; payload: number }
   | { type: "SET_PARTIAL_CREDIT_AMOUNT"; payload: number }
-  | { type: "SET_PRICE"; payload: { index: number; data: number } }
+  | { type: "SET_PRICE"; payload: { index: number; data: number | string } }
   | { type: "SET_PRICE_UNIT"; payload: { index: number; data: OptionType } }
   | { type: "SET_AMOUNT_UNIT"; payload: { index: number; data: OptionType } }
-  | { type: "SET_AMOUNT"; payload: { index: number; data: number } }
+  | { type: "SET_AMOUNT"; payload: { index: number; data: number | string } }
   | { type: "SET_PRODUCT"; payload: { index: number; data: OptionType } }
   | { type: "ADD_PRODUCT" }
   | { type: "DELETE_PRODUCT"; payload: { index: number } }
@@ -66,8 +68,8 @@ const SaleReducer: Reducer<SaleStateType, SaleAction> = (
           ...state.saleItems,
           {
             product: null,
-            price: null,
-            amount: null,
+            price: 0,
+            amount: 0,
             priceUnit: {
               label: "KG",
               value: "KG",
@@ -169,9 +171,9 @@ type SaleStateType = {
   paymentType: OptionType;
   partialCreditAmount?: number;
   saleItems: Array<{
-    amount: number;
+    amount: number | string;
     amountUnit: OptionType;
-    price: number;
+    price: number | string;
     priceUnit: OptionType;
     product: OptionType;
   }>;
@@ -215,9 +217,9 @@ const UpsertSale = () => {
       partialCreditAmount: saleState.partialCreditAmount,
       saleItems: saleState.saleItems.map((si) => ({
         productId: Number(si.product.value),
-        price: si.price,
+        price: Number(si.price),
         priceUnit: si.priceUnit.value.toString(),
-        amount: si.amount,
+        amount: Number(si.amount),
         amountUnit: si.amountUnit.value.toString(),
       })),
     };
@@ -351,20 +353,20 @@ const UpsertSale = () => {
                   </FormControl>
                   <FormControl>
                     <FormLabel>Price</FormLabel>
-                    <Input
-                      placeholder="Price for one unit"
-                      type="number"
+                    <NumberInput
                       value={si.price}
-                      onChange={(e) =>
+                      onChange={(value) =>
                         dispatch({
                           type: "SET_PRICE",
                           payload: {
                             index: siIndex,
-                            data: Number(e.target.value),
+                            data: value,
                           },
                         })
                       }
-                    />
+                    >
+                      <NumberInputField placeholder="Price for one unit" />
+                    </NumberInput>
                   </FormControl>
                   <FormControl>
                     <FormLabel>Price unit</FormLabel>
@@ -377,20 +379,20 @@ const UpsertSale = () => {
                   </FormControl>
                   <FormControl>
                     <FormLabel>Amount</FormLabel>
-                    <Input
-                      placeholder="Amount for one unit"
-                      type="number"
+                    <NumberInput
                       value={si.amount}
-                      onChange={(e) =>
+                      onChange={(value) =>
                         dispatch({
                           type: "SET_AMOUNT",
                           payload: {
                             index: siIndex,
-                            data: Number(e.target.value),
+                            data: value,
                           },
                         })
                       }
-                    />
+                    >
+                      <NumberInputField placeholder="Amount for one unit" />
+                    </NumberInput>
                   </FormControl>
 
                   <FormControl>

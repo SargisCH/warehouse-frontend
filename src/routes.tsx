@@ -25,7 +25,9 @@ import SignUp from "views/auth/signup";
 import ProductCategory from "pages/productCategory/ProductCategory";
 import Client from "pages/client/Client";
 import Sale from "pages/sale/Sale";
+import Credit from "pages/credit/Credit";
 import VerifyEmail from "views/auth/verifyEmail";
+import TransactionHistory from "pages/transactionHistory/TransactionHistory";
 
 const routes: RouteTypeExtended[] = [
   {
@@ -172,6 +174,22 @@ const routes: RouteTypeExtended[] = [
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: InventorySupplierOrder,
   },
+  {
+    name: "Credit List",
+    layout: "/admin",
+    path: "/credit",
+    exact: true,
+    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+    component: Credit,
+  },
+  {
+    name: "Transaction History List",
+    layout: "/admin",
+    path: "/transactionHistory",
+    exact: true,
+    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+    component: TransactionHistory,
+  },
 ];
 
 export const links = {
@@ -203,5 +221,7 @@ export const links = {
   sale: "/admin/sale",
   saleCreate: (clientId: string | number) => `/admin/sale/create/${clientId}`,
   saleInfo: (saleId: number) => `/admin/sale/info/${saleId}`,
+  credit: () => `/admin/credit`,
+  transactionHistory: () => `/admin/transactionHistory`,
 };
 export default routes;

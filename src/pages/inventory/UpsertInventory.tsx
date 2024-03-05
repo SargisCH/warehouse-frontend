@@ -5,6 +5,8 @@ import {
   FormLabel,
   Input,
   Box,
+  NumberInput,
+  NumberInputField,
 } from "@chakra-ui/react";
 import {
   InventoryItem,
@@ -22,8 +24,8 @@ import { links } from "routes";
 
 const UpsertInventory = (props: { create: boolean }) => {
   const [name, setName] = useState("");
-  const [amount, setAmount] = useState<number>();
-  const [price, setPrice] = useState<number>();
+  const [amount, setAmount] = useState<number | string>();
+  const [price, setPrice] = useState<number | string>();
   const [currency, setCurrency] = useState<string>("");
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<{
@@ -97,12 +99,9 @@ const UpsertInventory = (props: { create: boolean }) => {
           </FormControl>
           <FormControl>
             <FormLabel>Amount</FormLabel>
-            <Input
-              type="number"
-              placeholder="Amount"
-              value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
-            />
+            <NumberInput value={amount} onChange={setAmount}>
+              <NumberInputField placeholder="Amount" />
+            </NumberInput>
           </FormControl>
         </Flex>
         <Flex gap="20px" direction={"column"}>
@@ -121,12 +120,10 @@ const UpsertInventory = (props: { create: boolean }) => {
           </FormControl>
           <FormControl>
             <FormLabel>Price</FormLabel>
-            <Input
-              type="number"
-              placeholder="Price"
-              value={price}
-              onChange={(e) => setPrice(Number(e.target.value))}
-            />
+            <NumberInput value={price} onChange={setPrice}>
+              <NumberInputField placeholder="Price" />
+            </NumberInput>
+            <Input type="number" />
           </FormControl>
         </Flex>
         <Flex gap="20px">

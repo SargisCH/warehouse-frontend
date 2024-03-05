@@ -100,9 +100,12 @@ const clientApi = api.injectEndpoints({
         method: "GET",
       }),
     }),
-    getSale: builder.query<SaleReturnType[], void>({
-      query: () => ({
-        url: `sale/`,
+    getSale: builder.query<
+      { saleList: SaleReturnType[]; totalPages: number }[],
+      { query: string }
+    >({
+      query: ({ query }: { query: string }) => ({
+        url: `sale/${query}`,
         method: "GET",
       }),
     }),
