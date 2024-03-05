@@ -18,7 +18,7 @@ import {
 import { useGetInventoryQuery } from "api/inventory";
 import AlertDialog from "components/alertDialog/AlertDialog";
 import { useEffect, useMemo, useState } from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory, useParams, useLocation } from "react-router-dom";
 import Select from "react-select";
 import { links } from "routes";
 import IngredientAmount from "./IngredientAmounts";
@@ -52,6 +52,11 @@ const UpsertProduct = (props: { create: boolean }) => {
   const [updateProduct] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
   const history = useHistory();
+  const { search } = useLocation();
+  const searchParams = useMemo(() => new URLSearchParams(search), [search]);
+  const isProductMigration = searchParams.get("isProductMigration") === "true";
+  console.log("isProductMigration", isProductMigration);
+
   // Use the mutation hook
   //const layout = useBreakpointValue({
   //base: "mobile",
@@ -133,10 +138,10 @@ const UpsertProduct = (props: { create: boolean }) => {
     });
     const data = {
       name,
-      inStock,
+      inStock: Number(inStock),
       inStockUnit: selectedInStockUnit.value,
       priceUnit: selectedUnit.value,
-      price,
+      price: Number(price),
       ingredients,
     };
     if (params.productId) {
@@ -145,7 +150,7 @@ const UpsertProduct = (props: { create: boolean }) => {
         id: params.productId,
       });
     } else {
-      await createProduct(data);
+      await createProduct({ ...data, isProductMigration });
     }
     history.push(links.product);
   };

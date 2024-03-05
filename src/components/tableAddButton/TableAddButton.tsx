@@ -22,7 +22,6 @@ export const TableAddButton = ({
       >
         {label}
       </ChakraLink>
-      <Menu />
     </Box>
   );
 };

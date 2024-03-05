@@ -66,17 +66,17 @@ const UpsertInventory = (props: { create: boolean }) => {
   const saveInventory = async () => {
     const data = {
       name,
-      amount,
+      amount: Number(amount),
       amountUnit: selectedUnit.value,
-      price,
+      price: Number(price),
     };
     if (params.inventoryId) {
       await updateInventory({
         name,
-        amount,
+        amount: Number(amount),
         amountUnit: selectedUnit.value,
         id: params.inventoryId,
-        price,
+        price: Number(price),
       });
     } else {
       await createInventory(data);
