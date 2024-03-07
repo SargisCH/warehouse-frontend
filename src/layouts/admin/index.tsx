@@ -19,14 +19,12 @@ import { RouteTypeExtended } from "types";
 // Custom Chakra theme
 export default function Dashboard(props: { [x: string]: any }) {
   const { ...rest } = props;
-  console.log("admin opened1");
   // states and functions
   const [fixed] = useState(false);
   const [toggleSidebar, setToggleSidebar] = useState(false);
   // functions for changing the states from components
   const history = useHistory();
   const location = useLocation();
-  console.log("auth ptops", props);
   if (!props.userEmail) {
     history.push(`/auth/sign-in?next=${location.pathname}`);
   }

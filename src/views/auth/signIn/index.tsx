@@ -21,8 +21,8 @@
 
 */
 
-import React from "react";
-import { NavLink } from "react-router-dom";
+import React, { useEffect } from "react";
+import { NavLink, useHistory } from "react-router-dom";
 // Chakra imports
 import {
   Box,
@@ -51,6 +51,9 @@ import { FcGoogle } from "react-icons/fc";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { RiEyeCloseLine } from "react-icons/ri";
 import { Field, Form, Formik } from "formik";
+import { useGetUserMutation } from "api/auth";
+import { useDispatch } from "react-redux";
+import { setUserData } from "store/slices/userSlice";
 
 function SignIn() {
   // Chakra color mode
@@ -71,6 +74,15 @@ function SignIn() {
   );
   const [show, setShow] = React.useState(false);
   const handleClick = () => setShow(!show);
+  const dispatch = useDispatch();
+  const [getUser, { data, status: resStatus }] = useGetUserMutation();
+  const history = useHistory();
+  useEffect(() => {
+    if (data && data.email && resStatus === "fulfilled") {
+      dispatch(setUserData(data));
+      history.push("/admin/default");
+    }
+  }, [resStatus, data, dispatch]);
   return (
     <DefaultAuth illustrationBackground={illustration} image={illustration}>
       <Flex
@@ -143,11 +155,13 @@ function SignIn() {
                 alert(JSON.stringify(values, null, 2));
                 actions.setSubmitting(false);
                 try {
-                  const out = await amplifySignIn({
+                  const ampData = await amplifySignIn({
                     username: values.email,
                     password: values.password,
                   });
-                  console.log("oooooooout", out);
+                  if (ampData.isSignedIn) {
+                    getUser(values.email);
+                  }
                 } catch (e) {
                   console.log("eeeeeeeeeee", e);
                 }
