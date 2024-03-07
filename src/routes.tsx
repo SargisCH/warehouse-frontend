@@ -28,6 +28,7 @@ import Sale from "pages/sale/Sale";
 import Credit from "pages/credit/Credit";
 import VerifyEmail from "views/auth/verifyEmail";
 import TransactionHistory from "pages/transactionHistory/TransactionHistory";
+import StockProductList from "pages/product/StockProductList";
 
 const routes: RouteTypeExtended[] = [
   {
@@ -121,6 +122,14 @@ const routes: RouteTypeExtended[] = [
         component: Product,
       },
       {
+        name: "Stock Products",
+        layout: "/admin",
+        path: "/products/stockProducts",
+        exact: true,
+        icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+        component: StockProductList,
+      },
+      {
         name: "Categories",
         layout: "/admin",
         path: "/productCategory",
@@ -201,6 +210,7 @@ export const links = {
   productItem: (productId: string | number) =>
     `/admin/products/upsert/${productId}`,
   createProduct: "/admin/products/upsert/",
+  addInStock: "/admin/products/addInStock/",
   suppliers: "/admin/suppliers",
   supplier: (supplierId: string | number) =>
     `/admin/suppliers/upsert/${supplierId}`,

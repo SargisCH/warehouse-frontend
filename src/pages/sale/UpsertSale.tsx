@@ -45,7 +45,6 @@ type SaleAction =
       type: "SET_PRODUCT_UNITS";
       payload: {
         productId: number;
-        inStockUnit: OptionType;
         priceUnit: OptionType;
       };
     };
@@ -102,7 +101,7 @@ const SaleReducer: Reducer<SaleStateType, SaleAction> = (
       };
     }
     case "SET_PRODUCT_UNITS": {
-      const { productId, inStockUnit, priceUnit } = action.payload;
+      const { productId, priceUnit } = action.payload;
       const saleItems = [...state.saleItems];
       const itemIndex = saleItems.findIndex(
         (si) => si.product.value === productId,
@@ -110,7 +109,6 @@ const SaleReducer: Reducer<SaleStateType, SaleAction> = (
       saleItems[itemIndex] = {
         ...saleItems[itemIndex],
         priceUnit,
-        amountUnit: inStockUnit,
       };
       return {
         ...state,
@@ -341,10 +339,6 @@ const UpsertSale = () => {
                             priceUnit: {
                               label: productFound.priceUnit,
                               value: productFound.priceUnit,
-                            },
-                            inStockUnit: {
-                              label: productFound.inStockUnit,
-                              value: productFound.inStockUnit,
                             },
                           },
                         });

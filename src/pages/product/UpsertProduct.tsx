@@ -25,15 +25,10 @@ import IngredientAmount from "./IngredientAmounts";
 
 const UpsertProduct = (props: { create: boolean }) => {
   const [name, setName] = useState("");
-  const [inStock, setInStock] = useState<number | string>(0);
   const [price, setPrice] = useState<number | string>(0);
   //const [currency, setCurrency] = useState<string>("");
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<{
-    label: string;
-    value: string;
-  }>();
-  const [selectedInStockUnit, setSelectedInStockUnit] = useState<{
     label: string;
     value: string;
   }>();
@@ -52,10 +47,6 @@ const UpsertProduct = (props: { create: boolean }) => {
   const [updateProduct] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
   const history = useHistory();
-  const { search } = useLocation();
-  const searchParams = useMemo(() => new URLSearchParams(search), [search]);
-  const isProductMigration = searchParams.get("isProductMigration") === "true";
-  console.log("isProductMigration", isProductMigration);
 
   // Use the mutation hook
   //const layout = useBreakpointValue({
@@ -73,15 +64,10 @@ const UpsertProduct = (props: { create: boolean }) => {
           productId: params.productId,
         });
         setName(productItemRes.data.name);
-        setInStock(productItemRes.data.inStock);
         setPrice(productItemRes.data.price);
         setSelectedUnit({
           label: productItemRes.data.priceUnit,
           value: productItemRes.data.priceUnit,
-        });
-        setSelectedInStockUnit({
-          label: productItemRes.data.inStockUnit,
-          value: productItemRes.data.inStockUnit,
         });
         const inventoryArray: Array<{ label: string; value: number }> = [];
         const ingredientsAmountDefault: {
@@ -138,8 +124,6 @@ const UpsertProduct = (props: { create: boolean }) => {
     });
     const data = {
       name,
-      inStock: Number(inStock),
-      inStockUnit: selectedInStockUnit.value,
       priceUnit: selectedUnit.value,
       price: Number(price),
       ingredients,
@@ -150,7 +134,7 @@ const UpsertProduct = (props: { create: boolean }) => {
         id: params.productId,
       });
     } else {
-      await createProduct({ ...data, isProductMigration });
+      await createProduct({ ...data });
     }
     history.push(links.product);
   };
@@ -179,12 +163,6 @@ const UpsertProduct = (props: { create: boolean }) => {
             />
           </FormControl>
           <FormControl>
-            <FormLabel>In Stock</FormLabel>
-            <NumberInput value={inStock} onChange={setInStock}>
-              <NumberInputField placeholder="In Stock" />
-            </NumberInput>
-          </FormControl>
-          <FormControl>
             <FormLabel>Ingredients</FormLabel>
             <Select
               isMulti
@@ -205,19 +183,6 @@ const UpsertProduct = (props: { create: boolean }) => {
             <NumberInput value={price} onChange={setPrice}>
               <NumberInputField defaultValue={price} placeholder="Price" />
             </NumberInput>
-          </FormControl>
-          <FormControl>
-            <FormLabel>In Stock Unit</FormLabel>
-            <Select
-              value={selectedInStockUnit}
-              onChange={(valueSelected) => {
-                setSelectedInStockUnit(valueSelected);
-              }}
-              options={[
-                { label: "KG", value: "kg" },
-                { label: "GRAM", value: "g" },
-              ]}
-            />
           </FormControl>
         </Flex>
         <Flex>

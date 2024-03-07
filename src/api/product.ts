@@ -6,14 +6,19 @@ export type ProductItem = {
   created_at: string;
   id: number;
   name: string;
-  inStock: number;
   ingredients?: Array<{
     inventoryId: number;
     amount: number;
     amountUnit: string;
   }>;
-  inStockUnit?: string;
   updated_at: string;
+};
+
+export type StockProductItem = {
+  product?: Partial<{ name: string; id: number }>;
+  productId: number;
+  inStock: number;
+  inStockUnit?: string;
 };
 
 const productApi = api.injectEndpoints({
@@ -23,6 +28,13 @@ const productApi = api.injectEndpoints({
         url: "product/create",
         method: "POST",
         body: newProduct,
+      }),
+    }),
+    addInStock: builder.mutation({
+      query: (newStockProduct) => ({
+        url: "product/addInStock",
+        method: "POST",
+        body: newStockProduct,
       }),
     }),
     deleteProduct: builder.mutation({
@@ -49,6 +61,12 @@ const productApi = api.injectEndpoints({
         method: "GET",
       }),
     }),
+    getStockProduct: builder.query<StockProductItem[], void>({
+      query: () => ({
+        url: "product/stockProduct",
+        method: "GET",
+      }),
+    }),
     getProductById: builder.query<ProductItem, { productId: string | number }>({
       query: (arg: { productId: string | number }) => ({
         url: `product/${arg.productId}`,
@@ -60,9 +78,11 @@ const productApi = api.injectEndpoints({
 
 export const {
   useCreateProductMutation,
+  useGetStockProductQuery,
   useGetProductQuery,
   useGetProductByIdQuery,
   useLazyGetProductByIdQuery,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useAddInStockMutation,
 } = productApi;

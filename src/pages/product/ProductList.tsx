@@ -225,7 +225,7 @@ function ProductList() {
         <Flex>
           <TableAddButton link={links.createProduct} label={"Add Product"} />
           <TableAddButton
-            link={`${links.createProduct}?isProductMigration=true`}
+            link={`${links.addInStock}`}
             label={"Integrade product"}
           />
           <Menu />
