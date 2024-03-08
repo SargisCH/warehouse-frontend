@@ -17,18 +17,24 @@ import routes from "routes";
 import { RouteTypeExtended } from "types";
 
 // Custom Chakra theme
-export default function Dashboard(props: { [x: string]: any }) {
+export default function Dashboard(props:{[x: string]: any }) {
   const { ...rest } = props;
-  console.log("admin opened1");
   // states and functions
   const [fixed] = useState(false);
   const [toggleSidebar, setToggleSidebar] = useState(false);
   // functions for changing the states from components
+
   const history = useHistory();
   const location = useLocation();
-  console.log("auth ptops", props);
+
+  const { onOpen } = useDisclosure();
+
+
+
   if (!props.userEmail) {
+    
     history.push(`/auth/sign-in?next=${location.pathname}`);
+   
   }
   const getRoute = () => {
     return window.location.pathname !== "/admin/full-screen-maps";
@@ -97,7 +103,7 @@ export default function Dashboard(props: { [x: string]: any }) {
     });
   };
   document.documentElement.dir = "ltr";
-  const { onOpen } = useDisclosure();
+ 
   return (
     <Box>
       <SidebarContext.Provider

@@ -14,13 +14,15 @@ import AdminLayout from "./layouts/admin";
 import RTLLayout from "./layouts/rtl";
 import { ChakraProvider } from "@chakra-ui/react";
 import theme from "./theme/theme";
-import { Provider, useDispatch } from "react-redux";
+import { Provider, useDispatch ,useSelector} from "react-redux";
 import { store } from "./store/store";
 import { Amplify } from "aws-amplify";
 import { fetchAuthSession } from "aws-amplify/auth";
 import { useGetUserMutation } from "api/auth";
 import { links } from "routes";
 import { setUserData } from "store/slices/userSlice";
+import { RootState } from "store/store";
+
 
 interface Props {
   userEmail: string;
@@ -39,9 +41,13 @@ Amplify.configure({
 function App() {
   const [getUser, { data, status: resStatus }] = useGetUserMutation();
   const dispatch = useDispatch();
-  console.log("aaaaa", getUser);
+
+
+  const userEmail = useSelector((state: RootState) => state.user.email);
   useEffect(() => {
     (async () => {
+        //if user data already persist exit out of the function
+        if (userEmail) return;
       try {
         const res = await fetchAuthSession({ forceRefresh: true });
         const email = res?.tokens?.idToken?.payload?.email || "";
@@ -52,10 +58,12 @@ function App() {
         console.log("eeeee", e);
       }
     })();
-  }, [getUser]);
+  }, [getUser,userEmail]);
+  
   useEffect(() => {
     if (data && data.email && resStatus === "fulfilled") {
       dispatch(setUserData(data));
+      console.log(data,"lop")
     }
   }, [resStatus, data, dispatch]);
   return (
@@ -67,7 +75,9 @@ function App() {
         />
         <Route
           path={`/admin`}
-          component={() => <AdminLayout userEmail={data?.email || ""} />}
+          component={() => (
+            <AdminLayout userEmail={data?.email || userEmail || ""} />
+          )}
         />
 
         <Route path={`/rtl`} component={RTLLayout} />

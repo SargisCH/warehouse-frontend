@@ -12,6 +12,9 @@ const baseQueryAuthorized: BaseQueryFn<
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   const authRes = await fetchAuthSession();
+  
+  console.log('authRes:', authRes);
+
 
   const res = await fetchBaseQuery({
     baseUrl: API_BASE_URL,

@@ -78,12 +78,17 @@ export default function SignUp() {
   const handleClick = () => setShow(!show);
   const [signUp, signUpResult] = useSignUpMutation();
   const history = useHistory();
+
   console.log("result", signUpResult);
+
   useEffect(() => {
     if (signUpResult.isSuccess) {
       history.push(`/auth/verify-email/${signUpResult.data.email}`);
+
     }
   }, [signUpResult.isSuccess]);
+
+
 
   return (
     <DefaultAuth illustrationBackground={illustration} image={illustration}>
@@ -92,7 +97,7 @@ export default function SignUp() {
         onSubmit={(values, actions) => {
           setTimeout(() => {
             alert(JSON.stringify(values, null, 2));
-            actions.setSubmitting(false);
+            actions.setSubmitting(true);
             signUp({ ...values });
           }, 1000);
         }}

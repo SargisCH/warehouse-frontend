@@ -78,13 +78,13 @@ const routes: RouteTypeExtended[] = [
     icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
     component: SignUp,
   },
-  // {
-  //   name: "Verify Email",
-  //   layout: "/auth",
-  //   path: "/verify-email/:email",
-  //   icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
-  //   component: VerifyEmail,
-  // },
+  {
+    name: "Verify Email",
+    layout: "/auth",
+    path: "/verify-email/:email",
+    icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
+    component: VerifyEmail,
+  },
   // {
   //   name: "RTL Admin",
   //   layout: "/rtl",

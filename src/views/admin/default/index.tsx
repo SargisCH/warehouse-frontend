@@ -37,13 +37,8 @@ import TotalSpent from 'views/admin/default/components/TotalSpent';
 import WeeklyRevenue from 'views/admin/default/components/WeeklyRevenue';
 import tableDataCheck from 'views/admin/default/variables/tableDataCheck';
 import tableDataComplex from 'views/admin/default/variables/tableDataComplex';
-//import { useGetUserMutation } from 'api/auth';
 import { useSelector } from 'react-redux';
 import { useState } from 'react';
-// import { fetchAuthSession } from 'aws-amplify/auth';
-// import { setUserData } from 'store/slices/userSlice';
-// import { RootState } from 'store/store';
-
 
   
 export default function UserReports() {
@@ -52,16 +47,21 @@ export default function UserReports() {
 		user: {
 		  tenant: {
 			balance: string; 
+			currency:string;
 		  };
 		};
 	  }
 	
 
   const tenantBalance = useSelector((state: RootState) => state.user?.tenant?.balance ||'');
-  const [balance] = useState(tenantBalance)
+  const currencyType = useSelector((state:RootState)=>state.user?.tenant?.currency||'')
+  const [balance] = useState(tenantBalance||0)
+  const [currency] =useState(currencyType)
   
   const brandColor = useColorModeValue('brand.500', 'white');
   const boxBg = useColorModeValue('secondaryGray.300', 'whiteAlpha.100');
+ 
+  
 
 	return (
 		<Box pt={{ base: '130px', md: '80px', xl: '80px' }}>
@@ -102,7 +102,7 @@ export default function UserReports() {
 						/>
 					}
 					name='My Balance'
-					value={balance}
+					value={`${balance} ${currency}`}
 				/> 
 				<MiniStatistics
 					endContent={
