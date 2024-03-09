@@ -11,6 +11,7 @@ export type CreditItem = {
   };
   clientId?: number;
   amount: number;
+  date?: Date;
   updated_at: string;
   created_at: string;
 };
@@ -29,6 +30,31 @@ const creditApi = api.injectEndpoints({
         method: "GET",
       }),
     }),
+    createCredit: builder.mutation({
+      query: (newCredit: CreditItem) => ({
+        url: "credit/create",
+        method: "POST",
+        body: newCredit,
+      }),
+    }),
+    deleteCredit: builder.mutation({
+      query: (id) => ({
+        url: `credit/${id}`,
+        method: "DELETE",
+      }),
+    }),
+    updateCredit: builder.mutation({
+      query: (newCredit) => {
+        const id = newCredit.id;
+        const updatedCredit = { ...newCredit };
+        delete updatedCredit.id;
+        return {
+          url: `credit/${id}`,
+          method: "PUT",
+          body: updatedCredit,
+        };
+      },
+    }),
   }),
 });
 
@@ -37,4 +63,6 @@ export const {
   useGetCreditByIdQuery,
   useLazyGetCreditQuery,
   useLazyGetCreditByIdQuery,
+  useCreateCreditMutation,
+  useUpdateCreditMutation,
 } = creditApi;

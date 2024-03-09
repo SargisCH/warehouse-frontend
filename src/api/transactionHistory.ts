@@ -2,22 +2,26 @@ import { api } from "./api";
 import { SaleType } from "./client";
 
 export enum TransactionType {
-  IN,
-  OUT,
+  IN = "IN",
+  OUT = "OUT",
 }
 
 export type TransactionHistoryItem = {
   id?: number;
   sale?: SaleType;
   saleId?: number;
-  client: {
+  client?: {
     id: number;
     name: string;
   };
+  clientId?: number;
+  inventorySupplier?: { id: number; name: string };
+  inventorySupplierId?: number;
   amount: number;
   transactionType: TransactionType;
-  updated_at: string;
-  created_at: string;
+  date?: Date;
+  updated_at?: string;
+  created_at?: string;
 };
 
 const transactionHistoryApi = api.injectEndpoints({
@@ -28,10 +32,41 @@ const transactionHistoryApi = api.injectEndpoints({
         method: "GET",
       }),
     }),
+    getTransactionHistoryById: builder.query<
+      TransactionHistoryItem,
+      { transactionHistoryId: string | number }
+    >({
+      query: (arg: { transactionHistoryId: string | number }) => ({
+        url: `transactionHistory/${arg.transactionHistoryId}`,
+        method: "GET",
+      }),
+    }),
+    createTransactionHistory: builder.mutation({
+      query: (newTransactionHistory: TransactionHistoryItem) => ({
+        url: "transactionHistory/create",
+        method: "POST",
+        body: newTransactionHistory,
+      }),
+    }),
+    updateTransactionHistory: builder.mutation({
+      query: (newTransactionHistory: TransactionHistoryItem) => {
+        const id = newTransactionHistory.id;
+        const updatedTransactionHistory = { ...newTransactionHistory };
+        delete updatedTransactionHistory.id;
+        return {
+          url: `transactionHistory/${id}`,
+          method: "PUT",
+          body: updatedTransactionHistory,
+        };
+      },
+    }),
   }),
 });
 
 export const {
   useGetTransactionHistoryQuery,
   useLazyGetTransactionHistoryQuery,
+  useLazyGetTransactionHistoryByIdQuery,
+  useCreateTransactionHistoryMutation,
+  useUpdateTransactionHistoryMutation,
 } = transactionHistoryApi;

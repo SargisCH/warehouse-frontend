@@ -1,23 +1,24 @@
 import { Box } from "@chakra-ui/react";
 import { Switch, useRouteMatch } from "react-router-dom";
 import { Route } from "react-router-dom";
-import CreditForm from "./CreditForm";
-import CreditList from "./CreditList";
+import ManagerList from "./ManagerList";
+import UpsertManager from "./UpsertManager";
 
-export default function ProductCategory() {
+export default function Manager() {
   const match = useRouteMatch();
+
   return (
     <Box>
-      <h1>Credit </h1>
+      <h1>Manager</h1>
       <Switch>
         <Route path={`${match.path}`} exact={true}>
-          <CreditList />
+          <ManagerList />
         </Route>
-        <Route path={`${match.path}/upsert/:creditId`}>
-          <CreditForm />
+        <Route path={`${match.path}/upsert/:managerId`}>
+          <UpsertManager />
         </Route>
         <Route path={`${match.path}/upsert`}>
-          <CreditForm />
+          <UpsertManager />
         </Route>
       </Switch>
     </Box>

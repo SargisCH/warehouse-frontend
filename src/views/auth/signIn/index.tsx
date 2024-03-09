@@ -41,7 +41,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { Amplify } from "aws-amplify";
-import { signIn as amplifySignIn } from "aws-amplify/auth";
+import { confirmSignIn, signIn as amplifySignIn } from "aws-amplify/auth";
 // Custom components
 import { HSeparator } from "components/separator/Separator";
 import DefaultAuth from "layouts/auth/Default";
@@ -159,7 +159,12 @@ function SignIn() {
                     username: values.email,
                     password: values.password,
                   });
-                  if (ampData.isSignedIn) {
+                  if (
+                    ampData.nextStep.signInStep ===
+                    "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED"
+                  ) {
+                    history.push(`/auth/change-password/${values.email}`);
+                  } else if (ampData.isSignedIn) {
                     getUser(values.email);
                   }
                 } catch (e) {

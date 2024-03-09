@@ -73,7 +73,7 @@ function TransactionHistoryList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Client Name
+          <>Client Name</>
         </Text>
       ),
       cell: (info: any) => {
@@ -109,17 +109,24 @@ function TransactionHistoryList() {
               display={"inline-flex"}
               flexGrow={1}
             >
-              <Link
-                as={ReactLink}
-                flexGrow={1}
-                _hover={{ textDecoration: "underline", color: "purple" }}
-                to={links.saleInfo(value)}
-                display="flex"
-                justifyContent={"space-between"}
-              >
-                {value}
-                <FontAwesomeIcon icon={faArrowRight} />
-              </Link>
+              {value ? (
+                <Link
+                  as={ReactLink}
+                  flexGrow={1}
+                  _hover={{ textDecoration: "underline", color: "purple" }}
+                  to={links.saleInfo(value)}
+                  display="flex"
+                  justifyContent={"space-between"}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                >
+                  {value}
+                  <FontAwesomeIcon icon={faArrowRight} />
+                </Link>
+              ) : (
+                "N/A"
+              )}
             </Text>
           </Flex>
         );
@@ -233,6 +240,11 @@ function TransactionHistoryList() {
         >
           Transaction History List
         </Text>
+
+        <TableAddButton
+          label="Add Transaction History"
+          link={links.createTransactionHistory}
+        />
       </Flex>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -276,7 +288,13 @@ function TransactionHistoryList() {
               .rows.slice(0, 11)
               .map((row) => {
                 return (
-                  <Tr key={row.id} cursor="pointer">
+                  <Tr
+                    key={row.id}
+                    cursor="pointer"
+                    onClick={() => {
+                      history.push(links.transactionHistory(row.original.id));
+                    }}
+                  >
                     {row.getVisibleCells().map((cell) => {
                       return (
                         <Td

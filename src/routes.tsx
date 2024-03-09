@@ -29,6 +29,8 @@ import Credit from "pages/credit/Credit";
 import VerifyEmail from "views/auth/verifyEmail";
 import TransactionHistory from "pages/transactionHistory/TransactionHistory";
 import StockProductList from "pages/product/StockProductList";
+import Manager from "pages/manager/Manager";
+import ChangePassword from "views/auth/changePassword";
 
 const routes: RouteTypeExtended[] = [
   {
@@ -87,6 +89,13 @@ const routes: RouteTypeExtended[] = [
     path: "/verify-email/:email",
     icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
     component: VerifyEmail,
+  },
+  {
+    name: "Change password",
+    layout: "/auth",
+    path: "/change-password/:email",
+    icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
+    component: ChangePassword,
   },
   {
     name: "RTL Admin",
@@ -199,6 +208,14 @@ const routes: RouteTypeExtended[] = [
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: TransactionHistory,
   },
+  {
+    name: "Managers",
+    layout: "/admin",
+    path: "/manager",
+    exact: true,
+    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+    component: Manager,
+  },
 ];
 
 export const links = {
@@ -231,7 +248,15 @@ export const links = {
   sale: "/admin/sale",
   saleCreate: (clientId: string | number) => `/admin/sale/create/${clientId}`,
   saleInfo: (saleId: number) => `/admin/sale/info/${saleId}`,
-  credit: () => `/admin/credit`,
-  transactionHistory: () => `/admin/transactionHistory`,
+  credits: "/admin/credit",
+  createCredit: "/admin/credit/upsert/",
+  credit: (creditId: string | number) => `/admin/credit/upsert/${creditId}`,
+  managers: "/admin/manager",
+  createManager: "/admin/manager/upsert/",
+  manager: (managerId: string | number) => `/admin/manager/upsert/${managerId}`,
+  transactionHistories: "/admin/transactionHistory",
+  createTransactionHistory: "/admin/transactionHistory/upsert/",
+  transactionHistory: (transactionHistoryId: string | number) =>
+    `/admin/transactionHistory/upsert/${transactionHistoryId}`,
 };
 export default routes;

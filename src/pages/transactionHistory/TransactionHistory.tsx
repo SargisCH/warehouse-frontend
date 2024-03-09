@@ -1,6 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import { Switch, useRouteMatch } from "react-router-dom";
 import { Route } from "react-router-dom";
+import TransactionHistoryForm from "./TransactionHistoryForm";
 import TransactionHistoryList from "./TransactionHistoryList";
 
 export default function TransactionHistory() {
@@ -11,6 +12,12 @@ export default function TransactionHistory() {
       <Switch>
         <Route path={`${match.path}`} exact={true}>
           <TransactionHistoryList />
+        </Route>
+        <Route path={`${match.path}/upsert/:transactionHistoryId`}>
+          <TransactionHistoryForm />
+        </Route>
+        <Route path={`${match.path}/upsert`}>
+          <TransactionHistoryForm />
         </Route>
       </Switch>
     </Box>

@@ -9,7 +9,6 @@ import {
   Th,
   Thead,
   Tr,
-  Link,
   useColorModeValue,
 } from "@chakra-ui/react";
 import {
@@ -20,38 +19,24 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useGetCreditQuery } from "api/credit";
+import { ManagerType, useGetManagerQuery } from "api/manager";
 // Custom components
 import Card from "components/card/Card";
 import * as React from "react";
-import dayjs from "dayjs";
-import "./credit.css";
-import { useHistory, Link as ReactLink } from "react-router-dom";
+import "./manager.css";
+import { useHistory } from "react-router-dom";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import dayjs from "dayjs";
 // Assets
 
-type RowObj = {
-  id: number | string;
-  name: string;
-  client: {
-    name: string;
-  };
-  sale: {
-    id?: number;
-  };
-  amount: number;
-  created_at: string;
-  updated_at: string;
-};
+type RowObj = ManagerType;
 
 const columnHelper = createColumnHelper<RowObj>();
 
 // const columns = columnsDataCheck;
-function CreditList() {
-  const { data: creditArray = [], refetch } = useGetCreditQuery();
+function ManagerList() {
+  const { data: managerArray = [], refetch } = useGetManagerQuery();
   useEffect(() => {
     refetch();
   }, [refetch]);
@@ -60,8 +45,8 @@ function CreditList() {
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
   const columns = [
-    columnHelper.accessor("client.name", {
-      id: "client_name",
+    columnHelper.accessor("name", {
+      id: "name",
       header: () => (
         <Text
           justifyContent="space-between"
@@ -69,7 +54,7 @@ function CreditList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Client Name
+          NAME
         </Text>
       ),
       cell: (info: any) => {
@@ -82,8 +67,8 @@ function CreditList() {
         );
       },
     }),
-    columnHelper.accessor("sale.id", {
-      id: "sale_id",
+    columnHelper.accessor("email", {
+      id: "email",
       header: () => (
         <Text
           justifyContent="space-between"
@@ -91,42 +76,21 @@ function CreditList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Sale Id
+          Email
         </Text>
       ),
       cell: (info: any) => {
-        const value = info.getValue();
         return (
           <Flex align="center">
-            <Text
-              color={textColor}
-              fontSize="sm"
-              fontWeight="700"
-              display={"inline-flex"}
-              flexGrow={1}
-            >
-              {value ? (
-                <Link
-                  as={ReactLink}
-                  flexGrow={1}
-                  _hover={{ textDecoration: "underline", color: "purple" }}
-                  to={links.saleInfo(value)}
-                  display="flex"
-                  justifyContent={"space-between"}
-                >
-                  {value}
-                  <FontAwesomeIcon icon={faArrowRight} />
-                </Link>
-              ) : (
-                "N/A"
-              )}
+            <Text color={textColor} fontSize="sm" fontWeight="700">
+              {info.getValue()}
             </Text>
           </Flex>
         );
       },
     }),
-    columnHelper.accessor("amount", {
-      id: "amount",
+    columnHelper.accessor("phoneNumber", {
+      id: "phoneNumber",
       header: () => (
         <Text
           justifyContent="space-between"
@@ -134,7 +98,7 @@ function CreditList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Amount
+          Phone number
         </Text>
       ),
       cell: (info: any) => {
@@ -185,7 +149,7 @@ function CreditList() {
     }),
   ];
   const table = useReactTable({
-    data: creditArray,
+    data: managerArray,
     columns: columns as any,
     state: {
       sorting,
@@ -209,10 +173,9 @@ function CreditList() {
           fontWeight="700"
           lineHeight="100%"
         >
-          Credit List
+          Manager List
         </Text>
-
-        <TableAddButton label="Add Credit" link={links.createCredit} />
+        <TableAddButton label="Add Manager" link={links.createManager} />
       </Flex>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -260,7 +223,7 @@ function CreditList() {
                     key={row.id}
                     cursor="pointer"
                     onClick={() => {
-                      history.push(links.credit(row.original.id));
+                      history.push(links.client(row.original.id));
                     }}
                   >
                     {row.getVisibleCells().map((cell) => {
@@ -288,4 +251,4 @@ function CreditList() {
   );
 }
 
-export default CreditList;
+export default ManagerList;
