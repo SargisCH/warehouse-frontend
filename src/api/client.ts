@@ -1,3 +1,4 @@
+import { Weekday } from "types";
 import { api } from "./api";
 import { ProductItem } from "./product";
 
@@ -23,6 +24,9 @@ export type ClientType = {
   otherPhoneNumber: string;
   email: string;
   contactPerson: string;
+  managerId?: number;
+  manager?: Partial<{ name: string; id: number }>;
+  dayPlan?: Weekday[];
   updated_at?: string;
   created_at?: string;
 };

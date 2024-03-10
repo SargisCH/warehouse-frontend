@@ -15,10 +15,10 @@ export default function Inventory() {
           <ClientList />
         </Route>
         <Route path={`${match.path}/upsert/:clientId`}>
-          <UpsertClient create={false} />
+          <UpsertClient />
         </Route>
         <Route path={`${match.path}/upsert`}>
-          <UpsertClient create={true} />
+          <UpsertClient />
         </Route>
       </Switch>
     </Box>

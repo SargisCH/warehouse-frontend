@@ -4,3 +4,13 @@ export interface RouteTypeExtended extends RoutesType {
   groupName?: string;
   nestedRoutes?: Array<RouteTypeExtended>;
 }
+
+export enum Weekday {
+  MONDAY = "MONDAY",
+  TUESDAY = "TUESDAY",
+  WEDNESDAY = "WEDNESDAY",
+  THURSDAY = "THURSDAY",
+  FRIDAY = "FRIDAY",
+  SATURDAY = "SATURDAY",
+  SUNDAY = "SUNDAY",
+}

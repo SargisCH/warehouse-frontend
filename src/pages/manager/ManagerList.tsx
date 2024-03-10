@@ -223,7 +223,7 @@ function ManagerList() {
                     key={row.id}
                     cursor="pointer"
                     onClick={() => {
-                      history.push(links.client(row.original.id));
+                      history.push(links.manager(row.original.id));
                     }}
                   >
                     {row.getVisibleCells().map((cell) => {

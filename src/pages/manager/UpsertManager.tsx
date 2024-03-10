@@ -12,6 +12,7 @@ import {
   useUpdateManagerMutation,
   ManagerType,
   useLazyGetManagerByIdQuery,
+  Schedule,
 } from "api/manager";
 import { useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
@@ -21,6 +22,7 @@ const UpsertManager = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [schedule, setSchedule] = useState<Schedule[]>();
   const [isLoading, setIsLoading] = useState<boolean>();
   const params = useParams() as any;
 
@@ -38,6 +40,9 @@ const UpsertManager = () => {
         setName(res.data.name);
         setEmail(res.data.email);
         setPhoneNumber(res.data.phoneNumber);
+        if (res.data.schedule) {
+          setSchedule(res.data.schedule);
+        }
         setTimeout(() => {
           setIsLoading(false);
         }, 100);
@@ -76,8 +81,8 @@ const UpsertManager = () => {
   }
   return (
     <Flex direction="column">
-      <Flex gap="20px">
-        <Flex direction={"column"} gap="20px">
+      <Flex direction={"column"} gap="20px">
+        <Flex gap="20px">
           <FormControl>
             <FormLabel>Name</FormLabel>
             <Input
@@ -87,8 +92,6 @@ const UpsertManager = () => {
               onChange={(e) => setName(e.target.value)}
             />
           </FormControl>
-        </Flex>
-        <Flex direction={"column"} gap="20px">
           <FormControl>
             <FormLabel>Email</FormLabel>
             <Input
@@ -98,8 +101,6 @@ const UpsertManager = () => {
               onChange={(e) => setEmail(e.target.value)}
             />
           </FormControl>
-        </Flex>
-        <Flex direction={"column"} gap="20px">
           <FormControl>
             <FormLabel>Phone Number</FormLabel>
             <Input
@@ -109,6 +110,28 @@ const UpsertManager = () => {
               onChange={(e) => setPhoneNumber(e.target.value)}
             />
           </FormControl>
+        </Flex>
+        <Flex>
+          {schedule?.length ? (
+            <table>
+              <thead>
+                <tr>
+                  <th>Client Name</th>
+                  <th>Day Plan</th>
+                </tr>
+              </thead>
+              <tbody>
+                {schedule.map((s) => {
+                  return (
+                    <tr>
+                      <td>{s.client.name}</td>
+                      <td>{s.dayPlan.join(",")}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          ) : null}
         </Flex>
       </Flex>
       <Box mt={5}>

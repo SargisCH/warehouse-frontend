@@ -1,12 +1,20 @@
+import { Weekday } from "types";
 import { api } from "./api";
 import { ClientType } from "./client";
+
+export type Schedule = {
+  mangerId: number;
+  clientId: number;
+  client?: ClientType;
+  dayPlan: Weekday[];
+};
 
 export type ManagerType = {
   id?: number;
   name: string;
   phoneNumber: string;
   email: string;
-  clients?: ClientType[];
+  schedule?: Schedule[];
   updated_at?: string;
   created_at?: string;
 };
@@ -50,6 +58,18 @@ const ManagerApi = api.injectEndpoints({
         method: "GET",
       }),
     }),
+    getClientSchedule: builder.query<
+      Schedule,
+      { managerId: string | number; clientId: string | number }
+    >({
+      query: (arg: {
+        managerId: string | number;
+        clientId: string | number;
+      }) => ({
+        url: `manager/${arg.managerId}/schedule/${arg.clientId}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -61,4 +81,6 @@ export const {
   useUpdateManagerMutation,
   useCreateManagerMutation,
   useDeleteMangerMutation,
+  useGetClientScheduleQuery,
+  useLazyGetClientScheduleQuery,
 } = ManagerApi;
