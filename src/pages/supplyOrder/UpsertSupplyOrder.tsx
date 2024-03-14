@@ -33,7 +33,7 @@ type OptionType = {
 const UpsertSupplierOrder = (props: { create: boolean }) => {
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
   const [selectedInventory, setSelectedInventory] = useState<Array<OptionType>>(
-    []
+    [],
   );
   const [selectedSupplier, setSelectedSupplier] = useState<OptionType>();
   const [orderItemLatestDetails, setOrderItemLatestDetails] = useState<{
@@ -63,7 +63,8 @@ const UpsertSupplierOrder = (props: { create: boolean }) => {
   const [getInventorySupplierOrderById] =
     useLazyGetInventorySupplierOrderByIdQuery();
   const [getLatestOrderDetailsQuery] = useLazyGetLatestOrderDetailsQuery();
-  const { data: inventoryData = [] } = useGetInventoryQuery();
+  const { data } = useGetInventoryQuery();
+  const inventoryData = data?.inventories || [];
   const [getSuppliers] = useLazyGetInventorySupplierQuery();
   const [getSupplierById] = useLazyGetInventorySupplierByIdQuery();
   useEffect(() => {
@@ -93,7 +94,7 @@ const UpsertSupplierOrder = (props: { create: boolean }) => {
             value: order.priceUnit,
           };
           const inventoryMatch = inventoryData.find(
-            (inv) => inv.id === order.inventory.id
+            (inv) => inv.id === order.inventory.id,
           );
           if (!inventoryMatch) return;
           orderInventory.push({

@@ -1,28 +1,17 @@
-import {
-  Table,
-  TableCaption,
-  Tbody,
-  Td,
-  Tfoot,
-  Th,
-  Thead,
-  Tr,
-} from "@chakra-ui/react";
+import { Table, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
 import { SaleType, useGetSaleByIdQuery } from "api/client";
 import { useParams } from "react-router-dom";
 
 export default function SaleInfo() {
- 
   const params: any = useParams();
   const { data: saleData = {} as SaleType } = useGetSaleByIdQuery({
     id: params.saleId,
   });
-  
-  const itemTotals = saleData.saleItems?.map((item) => item.price * item.amount) || [];
+
+  const itemTotals =
+    saleData.saleItems?.map((item) => item.price * item.amount) || [];
   const total = itemTotals.reduce((acc, itemTotal) => acc + itemTotal, 0);
 
-  
-  
   return (
     <>
       <Table variant="simple">
@@ -53,23 +42,19 @@ export default function SaleInfo() {
           </Tr>
         </Thead>
         <Tbody>
-          
           {saleData.saleItems?.map((item, index) => {
-            return(
-              
-            <Tr key={index}>
-              <Td>{item.product?.name}</Td>
-              <Td>{item.price}</Td>
-              <Td>{item.priceUnit}</Td>
-              <Td>{item.amount}</Td>
-              <Td>{item.amountUnit}</Td>
-              <Td>{item.price*item.amount}</Td>        
-          </Tr>
-
-            )
-            })}
-          
-        </Tbody>      
+            return (
+              <Tr key={index}>
+                <Td>{item.stockProduct?.product.name}</Td>
+                <Td>{item.price}</Td>
+                <Td>{item.priceUnit}</Td>
+                <Td>{item.amount}</Td>
+                <Td>{item.amountUnit}</Td>
+                <Td>{item.price * item.amount}</Td>
+              </Tr>
+            );
+          })}
+        </Tbody>
       </Table>
     </>
   );

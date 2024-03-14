@@ -38,7 +38,10 @@ export const inventoryApi = api.injectEndpoints({
         };
       },
     }),
-    getInventory: builder.query<InventoryItem[], void>({
+    getInventory: builder.query<
+      { inventories: InventoryItem[]; totalWorth: number },
+      void
+    >({
       query: () => ({
         url: "inventory",
         method: "GET",

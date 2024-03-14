@@ -15,7 +15,8 @@ export type ProductItem = {
 };
 
 export type StockProductItem = {
-  product?: Partial<{ name: string; id: number }>;
+  id: number;
+  product?: Partial<{ name: string; id: number; priceUnit: string }>;
   productId: number;
   inStock: number;
   inStockUnit?: string;
@@ -61,7 +62,10 @@ const productApi = api.injectEndpoints({
         method: "GET",
       }),
     }),
-    getStockProduct: builder.query<StockProductItem[], void>({
+    getStockProduct: builder.query<
+      { stockProducts: StockProductItem[]; totalWorth: number },
+      void
+    >({
       query: () => ({
         url: "product/stockProduct",
         method: "GET",

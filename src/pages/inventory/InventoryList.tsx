@@ -50,7 +50,9 @@ const columnHelper = createColumnHelper<RowObj>();
 
 // const columns = columnsDataCheck;
 function InventoryList() {
-  const { data: inventoryArray = [], refetch } = useGetInventoryQuery();
+  const { data, refetch } = useGetInventoryQuery();
+  const inventoryArray = data?.inventories || [];
+  const totalWorth = data?.totalWorth;
   useEffect(() => {
     refetch();
   }, []);
@@ -229,7 +231,7 @@ function InventoryList() {
                       >
                         {flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                         {{
                           asc: "",
@@ -265,7 +267,7 @@ function InventoryList() {
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </Td>
                       );
@@ -275,6 +277,9 @@ function InventoryList() {
               })}
           </Tbody>
         </Table>
+        <Text align={"right"} paddingRight="20">
+          Total Worth: {totalWorth}
+        </Text>
       </Box>
     </Card>
   );

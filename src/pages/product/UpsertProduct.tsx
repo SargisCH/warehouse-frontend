@@ -41,7 +41,8 @@ const UpsertProduct = (props: { create: boolean }) => {
   }>({});
   const [isLoading, setIsLoading] = useState(false);
   const params = useParams() as any;
-  const { data: inventoryData = [] } = useGetInventoryQuery();
+  const { data } = useGetInventoryQuery();
+  const inventoryData = data?.inventories || [];
 
   const [createProduct, { isError, error }] = useCreateProductMutation();
   const [updateProduct] = useUpdateProductMutation();

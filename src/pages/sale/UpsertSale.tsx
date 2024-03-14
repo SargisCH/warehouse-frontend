@@ -11,20 +11,19 @@ import {
 } from "@chakra-ui/react";
 import {
   useAddSaleMutation,
-  useGetClientByIdQuery,
   SaleType,
   PaymentType,
   useLazyGetClientByIdQuery,
   ClientType,
   useLazyGetClientQuery,
 } from "api/client";
-import { useGetProductQuery } from "api/product";
 import { Reducer, useEffect, useReducer, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
 import { links } from "routes";
+import { useGetStockProductQuery } from "api/product";
 type OptionType = {
   label: string | number;
   value: string | number;
@@ -44,7 +43,7 @@ type SaleAction =
   | {
       type: "SET_PRODUCT_UNITS";
       payload: {
-        productId: number;
+        stockProductId: number;
         priceUnit: OptionType;
       };
     };
@@ -66,7 +65,7 @@ const SaleReducer: Reducer<SaleStateType, SaleAction> = (
         saleItems: [
           ...state.saleItems,
           {
-            product: null,
+            stockProduct: null,
             price: 0,
             amount: 0,
             priceUnit: {
@@ -93,7 +92,7 @@ const SaleReducer: Reducer<SaleStateType, SaleAction> = (
       const saleItems = [...state.saleItems];
       saleItems[action.payload.index] = {
         ...saleItems[action.payload.index],
-        product: action.payload.data,
+        stockProduct: action.payload.data,
       };
       return {
         ...state,
@@ -101,10 +100,10 @@ const SaleReducer: Reducer<SaleStateType, SaleAction> = (
       };
     }
     case "SET_PRODUCT_UNITS": {
-      const { productId, priceUnit } = action.payload;
+      const { stockProductId, priceUnit } = action.payload;
       const saleItems = [...state.saleItems];
       const itemIndex = saleItems.findIndex(
-        (si) => si.product.value === productId,
+        (si) => si.stockProduct.value === stockProductId,
       );
       saleItems[itemIndex] = {
         ...saleItems[itemIndex],
@@ -173,7 +172,7 @@ type SaleStateType = {
     amountUnit: OptionType;
     price: number | string;
     priceUnit: OptionType;
-    product: OptionType;
+    stockProduct: OptionType;
   }>;
 };
 
@@ -192,7 +191,8 @@ const UpsertSale = () => {
   const history = useHistory();
   const [getClientById] = useLazyGetClientByIdQuery();
   const [getClients] = useLazyGetClientQuery();
-  const { data: products = [] } = useGetProductQuery();
+  const { data } = useGetStockProductQuery();
+  const stockProducts = data?.stockProducts || [];
   useEffect(() => {
     (async () => {
       if (params.clientId) {
@@ -213,13 +213,15 @@ const UpsertSale = () => {
       clientId: saleState.clientId,
       paymentType: saleState.paymentType.value as PaymentType,
       partialCreditAmount: saleState.partialCreditAmount,
-      saleItems: saleState.saleItems.map((si) => ({
-        productId: Number(si.product.value),
-        price: Number(si.price),
-        priceUnit: si.priceUnit.value.toString(),
-        amount: Number(si.amount),
-        amountUnit: si.amountUnit.value.toString(),
-      })),
+      saleItems: saleState.saleItems.map((si) => {
+        return {
+          stockProductId: Number(si.stockProduct.value),
+          price: Number(si.price),
+          priceUnit: si.priceUnit.value.toString(),
+          amount: Number(si.amount),
+          amountUnit: si.amountUnit.value.toString(),
+        };
+      }),
     };
     await addSale(data);
     history.push(links.sale);
@@ -319,26 +321,26 @@ const UpsertSale = () => {
                   <FormControl>
                     <FormLabel>Product</FormLabel>
                     <Select
-                      options={products.map((pd) => ({
-                        label: pd.name,
+                      options={stockProducts.map((pd) => ({
+                        label: pd.product.name,
                         value: pd.id,
                       }))}
-                      value={si.product}
+                      value={si.stockProduct}
                       onChange={(op) => {
                         dispatch({
                           type: "SET_PRODUCT",
                           payload: { index: siIndex, data: op },
                         });
-                        const productFound = products.find(
+                        const stockProductFound = stockProducts.find(
                           (pr) => pr.id === op.value,
                         );
                         dispatch({
                           type: "SET_PRODUCT_UNITS",
                           payload: {
-                            productId: Number(op.value),
+                            stockProductId: Number(op.value),
                             priceUnit: {
-                              label: productFound.priceUnit,
-                              value: productFound.priceUnit,
+                              label: stockProductFound.product.priceUnit,
+                              value: stockProductFound.product.priceUnit,
                             },
                           },
                         });

@@ -29,15 +29,32 @@ import "./client.css";
 import { useHistory } from "react-router-dom";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
+import ReactSelect from "react-select";
+import { Weekday } from "types";
 // Assets
 
 type RowObj = ClientType;
+
+type DayOptionType = { label: Weekday; value: Weekday };
+
+const weekDayOptions: DayOptionType[] = [
+  Weekday.MONDAY,
+  Weekday.TUESDAY,
+  Weekday.WEDNESDAY,
+  Weekday.THURSDAY,
+  Weekday.FRIDAY,
+  Weekday.SATURDAY,
+  Weekday.SUNDAY,
+].map((d) => ({ label: d, value: d }));
 
 const columnHelper = createColumnHelper<RowObj>();
 
 // const columns = columnsDataCheck;
 function ClientList() {
-  const { data: clientArray = [], refetch } = useGetClientQuery();
+  const [selectedDay, setSelectedDay] = React.useState<DayOptionType>();
+  const { data: clientArray = [], refetch } = useGetClientQuery({
+    weekDay: selectedDay?.value as string,
+  });
   useEffect(() => {
     refetch();
   }, [refetch]);
@@ -211,6 +228,7 @@ function ClientList() {
       w="100%"
       px="0px"
       overflowX={{ sm: "scroll", lg: "hidden" }}
+      minHeight="500px"
     >
       <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
         <Text
@@ -221,7 +239,17 @@ function ClientList() {
         >
           Client List
         </Text>
-        <TableAddButton label="Add Client" link={links.createClient} />
+        <Flex>
+          <Box marginRight={10} width={"200px"}>
+            <ReactSelect
+              placeholder="Day plan"
+              options={weekDayOptions}
+              value={selectedDay}
+              onChange={setSelectedDay}
+            />
+          </Box>
+          <TableAddButton label="Add Client" link={links.createClient} />
+        </Flex>
       </Flex>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">

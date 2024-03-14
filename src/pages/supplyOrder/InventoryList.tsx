@@ -47,7 +47,8 @@ const columnHelper = createColumnHelper<RowObj>();
 
 // const columns = columnsDataCheck;
 function InventoryList() {
-  const { data: inventoryArray = [], refetch } = useGetInventoryQuery();
+  const { data, refetch } = useGetInventoryQuery();
+  const inventoryArray = data?.inventories || [];
   useEffect(() => {
     refetch();
   }, []);
@@ -226,7 +227,7 @@ function InventoryList() {
                       >
                         {flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                         {{
                           asc: "",
@@ -262,7 +263,7 @@ function InventoryList() {
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </Td>
                       );

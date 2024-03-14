@@ -41,6 +41,9 @@ type RowObj = {
   client: {
     name: string;
   };
+  inventorySupplier: {
+    name: string;
+  };
   sale: {
     id?: number;
   };
@@ -80,7 +83,29 @@ function TransactionHistoryList() {
         return (
           <Flex align="center">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              {info.getValue()}
+              {info.getValue() || "N/A"}
+            </Text>
+          </Flex>
+        );
+      },
+    }),
+    columnHelper.accessor("inventorySupplier.name", {
+      id: "inventorySupplier_name",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Supplier name
+        </Text>
+      ),
+      cell: (info: any) => {
+        return (
+          <Flex align="center">
+            <Text color={textColor} fontSize="sm" fontWeight="700">
+              {info.getValue() || "N/A"}
             </Text>
           </Flex>
         );

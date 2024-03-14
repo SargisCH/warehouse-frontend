@@ -1,6 +1,7 @@
 /* eslint-disable */
 
 // chakra imports
+import { useSelector } from "react-redux";
 import { RouteTypeExtended } from "types";
 import SidebarLink from "./SidebarLink";
 
@@ -10,7 +11,6 @@ export function SidebarLinks(props: {
   //   Chakra color mode
 
   const { routes } = props;
-
   // verifies if routeName is the one active (in browser input)
 
   // this function creates the links from the secondary accordions (for example auth -> sign-in -> default)

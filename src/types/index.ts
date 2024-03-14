@@ -14,3 +14,9 @@ export enum Weekday {
   SATURDAY = "SATURDAY",
   SUNDAY = "SUNDAY",
 }
+
+export enum Role {
+  ADMIN = "ADMIN",
+  MANAGER = "MANAGER",
+  USER = "USER",
+}

@@ -31,6 +31,9 @@ import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import ReactSelect from "react-select";
+import { Weekday } from "types";
+import { useGetClientQuery } from "api/client";
 // Assets
 
 type RowObj = {
@@ -47,11 +50,29 @@ type RowObj = {
   updated_at: string;
 };
 
+type OptionType = { label: string; value: string | number };
+type DayOptionType = { label: Weekday; value: Weekday };
+const weekDayOptions: DayOptionType[] = [
+  Weekday.MONDAY,
+  Weekday.TUESDAY,
+  Weekday.WEDNESDAY,
+  Weekday.THURSDAY,
+  Weekday.FRIDAY,
+  Weekday.SATURDAY,
+  Weekday.SUNDAY,
+].map((d) => ({ label: d, value: d }));
+
 const columnHelper = createColumnHelper<RowObj>();
 
 // const columns = columnsDataCheck;
 function CreditList() {
-  const { data: creditArray = [], refetch } = useGetCreditQuery();
+  const [selectedDay, setSelectedDay] = React.useState<DayOptionType>();
+  const [selectedClient, setSelectedClient] = React.useState<OptionType>();
+  const { data: creditArray = [], refetch } = useGetCreditQuery({
+    weekDay: selectedDay?.value as string,
+    clientId: selectedClient?.value,
+  });
+  const { data: clients } = useGetClientQuery();
   useEffect(() => {
     refetch();
   }, [refetch]);
@@ -201,6 +222,7 @@ function CreditList() {
       w="100%"
       px="0px"
       overflowX={{ sm: "scroll", lg: "hidden" }}
+      minHeight="500px"
     >
       <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
         <Text
@@ -211,7 +233,22 @@ function CreditList() {
         >
           Credit List
         </Text>
-
+        <Box marginRight={10} width={"200px"}>
+          <ReactSelect
+            placeholder="Day plan"
+            options={weekDayOptions}
+            value={selectedDay}
+            onChange={setSelectedDay}
+          />
+        </Box>
+        <Box marginRight={10} width={"200px"}>
+          <ReactSelect
+            placeholder="choose a clients"
+            options={clients?.map((cl) => ({ label: cl.name, value: cl.id }))}
+            value={selectedClient}
+            onChange={setSelectedClient}
+          />
+        </Box>
         <TableAddButton label="Add Credit" link={links.createCredit} />
       </Flex>
       <Box>

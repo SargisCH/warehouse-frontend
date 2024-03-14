@@ -32,7 +32,7 @@ import { TableAddButton } from "components/tableAddButton/TableAddButton";
 
 type RowObj = {
   id: number | string;
-  product: Partial<{ name: string; id: number }>;
+  product: Partial<{ name: string; id: number; price: number }>;
   inStock: number;
   inStockUnit: string;
   created_at: string;
@@ -43,7 +43,9 @@ const columnHelper = createColumnHelper<RowObj>();
 
 // const columns = columnsDataCheck;
 function StockProductList() {
-  const { data: stockProductArray = [], refetch } = useGetStockProductQuery();
+  const { data, refetch } = useGetStockProductQuery();
+  const stockProductArray = data?.stockProducts || [];
+  const totalWorth = data?.totalWorth;
   useEffect(() => {
     refetch();
   }, [refetch]);
@@ -73,6 +75,26 @@ function StockProductList() {
           </Flex>
         );
       },
+    }),
+    columnHelper.accessor("product.price", {
+      id: "productPrice",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Price
+        </Text>
+      ),
+      cell: (info) => (
+        <Flex align="center">
+          <Text color={textColor} fontSize="sm" fontWeight="700">
+            {info.getValue()}
+          </Text>
+        </Flex>
+      ),
     }),
     columnHelper.accessor("inStock", {
       id: "inStock",
@@ -210,6 +232,9 @@ function StockProductList() {
               })}
           </Tbody>
         </Table>
+        <Text align={"right"} paddingRight="20">
+          Total worth: {totalWorth}
+        </Text>
       </Box>
     </Card>
   );

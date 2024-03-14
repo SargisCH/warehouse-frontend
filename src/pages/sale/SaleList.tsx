@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import {
   Box,
-  Button,
   Flex,
   Table,
   Tbody,
@@ -73,7 +72,9 @@ function SaleList() {
         id,
         clientName: client.name,
         clientCode: client.companyCode,
-        products: saleItems.map(({ product }) => product.name),
+        products: saleItems.map(
+          ({ stockProduct }) => stockProduct?.product.name,
+        ),
         created_at,
         updated_at,
       };

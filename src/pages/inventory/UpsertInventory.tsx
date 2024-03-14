@@ -17,6 +17,7 @@ import {
   useUpdateInventoryMutation,
 } from "api/inventory";
 import AlertDialog from "components/alertDialog/AlertDialog";
+import withAdminRoute from "hocs/withAdminRoute";
 import { useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import Select from "react-select";
@@ -168,4 +169,4 @@ const UpsertInventory = (props: { create: boolean }) => {
   );
 };
 
-export default UpsertInventory;
+export default withAdminRoute(UpsertInventory);

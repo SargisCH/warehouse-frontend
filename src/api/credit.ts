@@ -18,11 +18,28 @@ export type CreditItem = {
 
 const creditApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    getCredit: builder.query<CreditItem[], void>({
-      query: () => ({
-        url: "credit",
-        method: "GET",
-      }),
+    getCredit: builder.query<
+      CreditItem[],
+      { clientId: number | string; weekDay: string } | void
+    >({
+      query: (
+        arg: { weekDay: string; clientId: number | string } = {
+          weekDay: "",
+          clientId: "",
+        },
+      ) => {
+        let queryString = "?";
+        if (arg.weekDay) {
+          queryString += `weekDay=${arg.weekDay}&`;
+        }
+        if (arg.clientId) {
+          queryString += `clientId=${arg.clientId}&`;
+        }
+        return {
+          url: `credit${queryString}`,
+          method: "GET",
+        };
+      },
     }),
     getCreditById: builder.query<CreditItem, { creditId: string | number }>({
       query: (arg: { creditId: string | number }) => ({
