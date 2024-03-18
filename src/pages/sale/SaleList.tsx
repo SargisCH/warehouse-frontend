@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import {
   Box,
-  Button,
   Flex,
   Table,
   Tbody,
@@ -20,16 +19,18 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useGetSaleQuery } from "api/client";
+import { useGetClientQuery, useGetSaleQuery, SaleType } from "api/client";
 // Custom components
 import Card from "components/card/Card";
 import * as React from "react";
 import dayjs from "dayjs";
 import "./sale.css";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { links } from "routes";
-import { TableAddButton } from "components/tableAddButton/TableAddButton";
-// Assets
+import Select from "react-select";
+import Pagination from "../../components/pagination/Pagination";
+import { setQuery } from "helpers/queryParams";
+type Option = { label: string; value: number };
 
 type RowObj = {
   id: number;
@@ -44,14 +45,36 @@ const columnHelper = createColumnHelper<RowObj>();
 
 // const columns = columnsDataCheck;
 function SaleList() {
-  const { data = [], refetch } = useGetSaleQuery();
-  const saleArray: RowObj[] = data.map(
+  const location = useLocation();
+  const history = useHistory();
+  const { data = { saleList: [], totalPages: 1 }, refetch } = useGetSaleQuery<{
+    data: {
+      saleList: SaleType[];
+      totalPages: number;
+    };
+  }>({
+    query: location.search,
+  });
+  const { data: clientData = [] } = useGetClientQuery();
+  const [selectedClients, setSelectedClients] = React.useState<Array<Option>>(
+    [],
+  );
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const handlePageChange = (page: number) => {
+    setTimeout(() => {
+      setQuery(location, history, { name: "page", value: 1 });
+    }, 5000);
+    setCurrentPage(page);
+  };
+  const saleArray: RowObj[] = data.saleList.map(
     ({ id, client, saleItems, created_at, updated_at }) => {
       return {
         id,
         clientName: client.name,
         clientCode: client.companyCode,
-        products: saleItems.map(({ product }) => product.name),
+        products: saleItems.map(
+          ({ stockProduct }) => stockProduct?.product.name,
+        ),
         created_at,
         updated_at,
       };
@@ -63,7 +86,6 @@ function SaleList() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
-  const history = useHistory();
   const columns = [
     columnHelper.accessor("clientName", {
       id: "clientName",
@@ -154,6 +176,7 @@ function SaleList() {
       },
     }),
   ];
+
   const table = useReactTable({
     data: saleArray,
     columns: columns as any,
@@ -165,6 +188,11 @@ function SaleList() {
     getSortedRowModel: getSortedRowModel(),
     debugTable: true,
   });
+
+  useEffect(() => {
+    refetch();
+  }, [location.search, refetch]);
+
   return (
     <Card
       flexDirection="column"
@@ -181,6 +209,23 @@ function SaleList() {
         >
           Sale List
         </Text>
+
+        <Select
+          options={clientData.map((client) => {
+            return { label: client.name, value: client.id };
+          })}
+          isMulti
+          value={selectedClients}
+          onChange={(newValue) => {
+            setQuery(location, history, {
+              name: "client",
+              value: newValue.map((op: Option) => op.value),
+            });
+            handlePageChange(1);
+            setSelectedClients(newValue as Option[]);
+          }}
+          placeholder="Select a client"
+        />
       </Flex>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -221,7 +266,7 @@ function SaleList() {
           <Tbody>
             {table
               .getRowModel()
-              .rows.slice(0, 11)
+              .rows.slice(0)
               .map((row) => {
                 return (
                   <Tr
@@ -251,6 +296,14 @@ function SaleList() {
               })}
           </Tbody>
         </Table>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={data.totalPages}
+          onPageChange={(page: number) => {
+            setCurrentPage(page);
+          }}
+          setQueryParams
+        />
       </Box>
     </Card>
   );

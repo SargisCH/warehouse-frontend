@@ -1,24 +1,23 @@
 import { Box } from "@chakra-ui/react";
 import { Switch, useRouteMatch } from "react-router-dom";
 import { Route } from "react-router-dom";
-import ClientList from "./ClientList";
-import UpsertClient from "./UpsertClient";
+import CreditForm from "./CreditForm";
+import CreditList from "./CreditList";
 
-export default function Inventory() {
+export default function ProductCategory() {
   const match = useRouteMatch();
-
   return (
     <Box>
-      <h1>Client</h1>
+      <h1>Credit </h1>
       <Switch>
         <Route path={`${match.path}`} exact={true}>
-          <ClientList />
+          <CreditList />
         </Route>
-        <Route path={`${match.path}/upsert/:clientId`}>
-          <UpsertClient />
+        <Route path={`${match.path}/upsert/:creditId`}>
+          <CreditForm />
         </Route>
         <Route path={`${match.path}/upsert`}>
-          <UpsertClient />
+          <CreditForm />
         </Route>
       </Switch>
     </Box>

@@ -14,11 +14,24 @@ import {
   useCreateClientMutation,
   ClientType,
 } from "api/client";
+import { useGetManagerQuery, useLazyGetClientScheduleQuery } from "api/manager";
 import AlertDialog from "components/alertDialog/AlertDialog";
 import { useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import Select from "react-select";
 import { links } from "routes";
+import { Weekday } from "types";
+
+const weekDays: Weekday[] = [
+  Weekday.MONDAY,
+  Weekday.TUESDAY,
+  Weekday.WEDNESDAY,
+  Weekday.THURSDAY,
+  Weekday.FRIDAY,
+  Weekday.SATURDAY,
+  Weekday.SUNDAY,
+];
+
 type OptionType = {
   label: string;
   value: string;
@@ -27,7 +40,12 @@ const options: OptionType[] = [
   { label: "Limited Company", value: "lts" },
   { label: "PE", value: "pe" },
 ];
-const UpsertClient = (props: { create: boolean }) => {
+type WeekdayOptionArray = Array<{
+  label: Weekday;
+  value: Weekday;
+}>;
+
+const UpsertClient = () => {
   const [name, setName] = useState("");
   const [companyCode, setCompanyCode] = useState("");
   const [email, setEmail] = useState("");
@@ -43,11 +61,16 @@ const UpsertClient = (props: { create: boolean }) => {
   const [contactPerson, setContactPerson] = useState("");
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [manager, setManager] = useState<OptionType>();
+  const [selectedWeekdays, setSelectedWeekdays] =
+    useState<WeekdayOptionArray>();
   const params = useParams() as any;
 
   const [createClient] = useCreateClientMutation();
   const [updateClient] = useUpdateClientMutation();
   const [deleteClient] = useDeleteClientMutation();
+  const [getClientSchedule] = useLazyGetClientScheduleQuery();
+  const { data: managersArray = [] } = useGetManagerQuery();
   const history = useHistory();
   const [getClientById] = useLazyGetClientByIdQuery();
   useEffect(() => {
@@ -71,6 +94,31 @@ const UpsertClient = (props: { create: boolean }) => {
         setAddress(res.data.address);
         setAccountNumber(res.data.accountNumber);
         setBankAccountNumber(res.data.bankAccountNumber);
+
+        const managerFound = managersArray.find(
+          (m: Partial<{ id: number }>) => {
+            return m.id === res.data.managerId;
+          },
+        );
+        if (managerFound) {
+          setManager({
+            label: managerFound.name,
+            value: String(managerFound.id),
+          });
+
+          const scheduleRes = await getClientSchedule({
+            managerId: managerFound.id,
+            clientId: params.clientId,
+          });
+          if (scheduleRes.data.dayPlan) {
+            setSelectedWeekdays(
+              scheduleRes.data.dayPlan?.map((d: Weekday) => ({
+                label: d,
+                value: d,
+              })),
+            );
+          }
+        }
         setTimeout(() => {
           setIsLoading(false);
         }, 100);
@@ -78,7 +126,7 @@ const UpsertClient = (props: { create: boolean }) => {
         //setCurrency(productItemRes.data.currency);
       }
     })();
-  }, [params.clientId, getClientById]);
+  }, [params.clientId, getClientById, managersArray]);
 
   const saveClient = async () => {
     const data: ClientType = {
@@ -95,6 +143,8 @@ const UpsertClient = (props: { create: boolean }) => {
       contactPerson,
       bankAccountNumber,
       accountNumber,
+      managerId: Number(manager.value),
+      dayPlan: selectedWeekdays.map((d) => d.value),
     };
     if (params.clientId) {
       await updateClient({
@@ -244,6 +294,30 @@ const UpsertClient = (props: { create: boolean }) => {
             />
           </FormControl>
         </Flex>
+      </Flex>
+      <Flex gap="20px" width={"60%"} mt="10px">
+        <FormControl>
+          <FormLabel>Assign Manager</FormLabel>
+          <Select
+            value={manager}
+            onChange={setManager}
+            options={managersArray.map((m) => ({
+              label: m.name,
+              value: String(m.id),
+            }))}
+          />
+        </FormControl>
+        <FormControl>
+          <FormLabel>Day plan</FormLabel>
+          <Select
+            value={selectedWeekdays}
+            onChange={(newValue) =>
+              setSelectedWeekdays(newValue as WeekdayOptionArray)
+            }
+            options={weekDays.map((d) => ({ label: d, value: d }))}
+            isMulti
+          />
+        </FormControl>
       </Flex>
       <Box mt={5}>
         <Button colorScheme="teal" onClick={() => saveClient()}>

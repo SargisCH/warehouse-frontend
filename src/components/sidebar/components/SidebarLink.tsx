@@ -28,7 +28,7 @@ export default function SidebarLink({ route, isGroup }: Props) {
 
   let location = useLocation();
   const activeRoute = (routeName: string) => {
-    return location.pathname.includes(routeName);
+    return location.pathname === routeName;
   };
   const getLink = (routeArg: RouteTypeExtended, isGroup = false) => {
     if (
@@ -36,7 +36,7 @@ export default function SidebarLink({ route, isGroup }: Props) {
       routeArg.layout === "/auth" ||
       routeArg.layout === "/rtl"
     ) {
-      const isActiveRoute = activeRoute(routeArg.path);
+      const isActiveRoute = activeRoute(routeArg.layout + routeArg.path);
       return (
         <NavLink key={routeArg.path} to={routeArg.layout + routeArg.path}>
           {routeArg.icon ? (

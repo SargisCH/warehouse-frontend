@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
+import { Role } from "types";
 
 interface User {
   email: string;
@@ -8,6 +9,7 @@ interface User {
     id: number;
     name: string;
   };
+  role: Role;
 }
 
 const initialState = {
@@ -16,6 +18,7 @@ const initialState = {
   companyName: "",
   tenantId: null,
   tenant: { id: null, name: "" },
+  role: Role.USER,
 } as User;
 
 const userSlice = createSlice({

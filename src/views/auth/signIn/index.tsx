@@ -22,8 +22,8 @@
 */
 
 import React, { useEffect } from "react";
-import { NavLink, useHistory,Redirect } from "react-router-dom";
-
+import { NavLink, useHistory } from "react-router-dom";
+// Chakra imports
 import {
   Box,
   Button,
@@ -41,20 +41,22 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { Amplify } from "aws-amplify";
-import { signIn as amplifySignIn } from "aws-amplify/auth";
+import { confirmSignIn, signIn as amplifySignIn } from "aws-amplify/auth";
+// Custom components
 import { HSeparator } from "components/separator/Separator";
 import DefaultAuth from "layouts/auth/Default";
+// Assets
 import illustration from "assets/img/auth/auth.png";
 import { FcGoogle } from "react-icons/fc";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { RiEyeCloseLine } from "react-icons/ri";
 import { Field, Form, Formik } from "formik";
-import { useGetUserMutation, useSignUpMutation } from "api/auth";
+import { useGetUserMutation } from "api/auth";
 import { useDispatch } from "react-redux";
 import { setUserData } from "store/slices/userSlice";
 
 function SignIn() {
-  
+  // Chakra color mode
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = "gray.400";
   const textColorDetails = useColorModeValue("navy.700", "secondaryGray.600");
@@ -81,7 +83,6 @@ function SignIn() {
       history.push("/admin/default");
     }
   }, [resStatus, data, dispatch]);
-  
   return (
     <DefaultAuth illustrationBackground={illustration} image={illustration}>
       <Flex
@@ -149,26 +150,28 @@ function SignIn() {
 
           <Formik
             initialValues={{ email: "", password: "" }}
-            onSubmit={(values, actions) => { 
-                setTimeout(async () => {
-                  alert(JSON.stringify(values, null, 2));
-                  actions.setSubmitting(true);
-                  try {               
-                    const ampData = await amplifySignIn({
-                      username: values.email,
-                      password: values.password
-                    });
-                 
-                    if (ampData.isSignedIn) {
-                      getUser(values.email);
-                    }
-                  
-                  } catch (e) {
-                    console.log("eeeeeeeeeee", e);
+            onSubmit={(values, actions) => {
+              setTimeout(async () => {
+                alert(JSON.stringify(values, null, 2));
+                actions.setSubmitting(false);
+                try {
+                  const ampData = await amplifySignIn({
+                    username: values.email,
+                    password: values.password,
+                  });
+                  if (
+                    ampData.nextStep.signInStep ===
+                    "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED"
+                  ) {
+                    history.push(`/auth/change-password/${values.email}`);
+                  } else if (ampData.isSignedIn) {
+                    getUser(values.email);
                   }
-                }, 1000);
+                } catch (e) {
+                  console.log("eeeeeeeeeee", e);
+                }
+              }, 1000);
             }}
-           
           >
             {(props) => (
               <Form>
@@ -196,7 +199,6 @@ function SignIn() {
                         placeholder="mail@simmmple.com"
                         fontWeight="500"
                         size="lg"
-                    
                       />
                       <FormErrorMessage>{form.errors.email}</FormErrorMessage>
                     </FormControl>
@@ -226,8 +228,6 @@ function SignIn() {
                           size="lg"
                           type={show ? "text" : "password"}
                           name="password"
-                        
-              
                         />
                         <InputRightElement
                           display="flex"
@@ -276,7 +276,6 @@ function SignIn() {
                     </Text>
                   </NavLink>
                 </Flex>
-             
                 <Button
                   type="submit"
                   fontSize="sm"
@@ -289,7 +288,6 @@ function SignIn() {
                 >
                   Sign In
                 </Button>
-         
               </Form>
             )}
           </Formik>

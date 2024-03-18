@@ -6,23 +6,24 @@ import {
   Input,
   Box,
   Spinner,
+  NumberInput,
+  NumberInputField,
 } from "@chakra-ui/react";
 import {
   useAddSaleMutation,
-  useGetClientByIdQuery,
   SaleType,
   PaymentType,
   useLazyGetClientByIdQuery,
   ClientType,
   useLazyGetClientQuery,
 } from "api/client";
-import { useGetProductQuery } from "api/product";
 import { Reducer, useEffect, useReducer, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
 import { links } from "routes";
+import { useGetStockProductQuery } from "api/product";
 type OptionType = {
   label: string | number;
   value: string | number;
@@ -32,18 +33,17 @@ type SaleAction =
   | { type: "SET_PAYMENT_TYPE"; payload: OptionType }
   | { type: "SET_CLIENT_ID"; payload: number }
   | { type: "SET_PARTIAL_CREDIT_AMOUNT"; payload: number }
-  | { type: "SET_PRICE"; payload: { index: number; data: number } }
+  | { type: "SET_PRICE"; payload: { index: number; data: number | string } }
   | { type: "SET_PRICE_UNIT"; payload: { index: number; data: OptionType } }
   | { type: "SET_AMOUNT_UNIT"; payload: { index: number; data: OptionType } }
-  | { type: "SET_AMOUNT"; payload: { index: number; data: number } }
+  | { type: "SET_AMOUNT"; payload: { index: number; data: number | string } }
   | { type: "SET_PRODUCT"; payload: { index: number; data: OptionType } }
   | { type: "ADD_PRODUCT" }
   | { type: "DELETE_PRODUCT"; payload: { index: number } }
   | {
       type: "SET_PRODUCT_UNITS";
       payload: {
-        productId: number;
-        inStockUnit: OptionType;
+        stockProductId: number;
         priceUnit: OptionType;
       };
     };
@@ -65,9 +65,9 @@ const SaleReducer: Reducer<SaleStateType, SaleAction> = (
         saleItems: [
           ...state.saleItems,
           {
-            product: null,
-            price: null,
-            amount: null,
+            stockProduct: null,
+            price: 0,
+            amount: 0,
             priceUnit: {
               label: "KG",
               value: "KG",
@@ -92,7 +92,7 @@ const SaleReducer: Reducer<SaleStateType, SaleAction> = (
       const saleItems = [...state.saleItems];
       saleItems[action.payload.index] = {
         ...saleItems[action.payload.index],
-        product: action.payload.data,
+        stockProduct: action.payload.data,
       };
       return {
         ...state,
@@ -100,15 +100,14 @@ const SaleReducer: Reducer<SaleStateType, SaleAction> = (
       };
     }
     case "SET_PRODUCT_UNITS": {
-      const { productId, inStockUnit, priceUnit } = action.payload;
+      const { stockProductId, priceUnit } = action.payload;
       const saleItems = [...state.saleItems];
       const itemIndex = saleItems.findIndex(
-        (si) => si.product.value === productId,
+        (si) => si.stockProduct.value === stockProductId,
       );
       saleItems[itemIndex] = {
         ...saleItems[itemIndex],
         priceUnit,
-        amountUnit: inStockUnit,
       };
       return {
         ...state,
@@ -169,11 +168,11 @@ type SaleStateType = {
   paymentType: OptionType;
   partialCreditAmount?: number;
   saleItems: Array<{
-    amount: number;
+    amount: number | string;
     amountUnit: OptionType;
-    price: number;
+    price: number | string;
     priceUnit: OptionType;
-    product: OptionType;
+    stockProduct: OptionType;
   }>;
 };
 
@@ -192,7 +191,8 @@ const UpsertSale = () => {
   const history = useHistory();
   const [getClientById] = useLazyGetClientByIdQuery();
   const [getClients] = useLazyGetClientQuery();
-  const { data: products = [] } = useGetProductQuery();
+  const { data } = useGetStockProductQuery();
+  const stockProducts = data?.stockProducts || [];
   useEffect(() => {
     (async () => {
       if (params.clientId) {
@@ -213,13 +213,15 @@ const UpsertSale = () => {
       clientId: saleState.clientId,
       paymentType: saleState.paymentType.value as PaymentType,
       partialCreditAmount: saleState.partialCreditAmount,
-      saleItems: saleState.saleItems.map((si) => ({
-        productId: Number(si.product.value),
-        price: si.price,
-        priceUnit: si.priceUnit.value.toString(),
-        amount: si.amount,
-        amountUnit: si.amountUnit.value.toString(),
-      })),
+      saleItems: saleState.saleItems.map((si) => {
+        return {
+          stockProductId: Number(si.stockProduct.value),
+          price: Number(si.price),
+          priceUnit: si.priceUnit.value.toString(),
+          amount: Number(si.amount),
+          amountUnit: si.amountUnit.value.toString(),
+        };
+      }),
     };
     await addSale(data);
     history.push(links.sale);
@@ -319,30 +321,26 @@ const UpsertSale = () => {
                   <FormControl>
                     <FormLabel>Product</FormLabel>
                     <Select
-                      options={products.map((pd) => ({
-                        label: pd.name,
+                      options={stockProducts.map((pd) => ({
+                        label: pd.product.name,
                         value: pd.id,
                       }))}
-                      value={si.product}
+                      value={si.stockProduct}
                       onChange={(op) => {
                         dispatch({
                           type: "SET_PRODUCT",
                           payload: { index: siIndex, data: op },
                         });
-                        const productFound = products.find(
+                        const stockProductFound = stockProducts.find(
                           (pr) => pr.id === op.value,
                         );
                         dispatch({
                           type: "SET_PRODUCT_UNITS",
                           payload: {
-                            productId: Number(op.value),
+                            stockProductId: Number(op.value),
                             priceUnit: {
-                              label: productFound.priceUnit,
-                              value: productFound.priceUnit,
-                            },
-                            inStockUnit: {
-                              label: productFound.inStockUnit,
-                              value: productFound.inStockUnit,
+                              label: stockProductFound.product.priceUnit,
+                              value: stockProductFound.product.priceUnit,
                             },
                           },
                         });
@@ -351,20 +349,20 @@ const UpsertSale = () => {
                   </FormControl>
                   <FormControl>
                     <FormLabel>Price</FormLabel>
-                    <Input
-                      placeholder="Price for one unit"
-                      type="number"
+                    <NumberInput
                       value={si.price}
-                      onChange={(e) =>
+                      onChange={(value) =>
                         dispatch({
                           type: "SET_PRICE",
                           payload: {
                             index: siIndex,
-                            data: Number(e.target.value),
+                            data: value,
                           },
                         })
                       }
-                    />
+                    >
+                      <NumberInputField placeholder="Price for one unit" />
+                    </NumberInput>
                   </FormControl>
                   <FormControl>
                     <FormLabel>Price unit</FormLabel>
@@ -377,20 +375,20 @@ const UpsertSale = () => {
                   </FormControl>
                   <FormControl>
                     <FormLabel>Amount</FormLabel>
-                    <Input
-                      placeholder="Amount for one unit"
-                      type="number"
+                    <NumberInput
                       value={si.amount}
-                      onChange={(e) =>
+                      onChange={(value) =>
                         dispatch({
                           type: "SET_AMOUNT",
                           payload: {
                             index: siIndex,
-                            data: Number(e.target.value),
+                            data: value,
                           },
                         })
                       }
-                    />
+                    >
+                      <NumberInputField placeholder="Amount for one unit" />
+                    </NumberInput>
                   </FormControl>
 
                   <FormControl>

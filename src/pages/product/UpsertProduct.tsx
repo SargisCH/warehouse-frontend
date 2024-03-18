@@ -6,6 +6,8 @@ import {
   Input,
   Box,
   Spinner,
+  NumberInput,
+  NumberInputField,
 } from "@chakra-ui/react";
 import {
   useDeleteProductMutation,
@@ -16,40 +18,37 @@ import {
 import { useGetInventoryQuery } from "api/inventory";
 import AlertDialog from "components/alertDialog/AlertDialog";
 import { useEffect, useMemo, useState } from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory, useParams, useLocation } from "react-router-dom";
 import Select from "react-select";
 import { links } from "routes";
 import IngredientAmount from "./IngredientAmounts";
 
 const UpsertProduct = (props: { create: boolean }) => {
   const [name, setName] = useState("");
-  const [inStock, setInStock] = useState<number>();
-  const [price, setPrice] = useState<number>();
+  const [price, setPrice] = useState<number | string>(0);
   //const [currency, setCurrency] = useState<string>("");
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<{
     label: string;
     value: string;
   }>();
-  const [selectedInStockUnit, setSelectedInStockUnit] = useState<{
-    label: string;
-    value: string;
-  }>();
   const [selectedInventory, setSelectedInventory] = useState([]);
   const [ingredientAmounts, setIngredientAmounts] = useState<{
-    [key: number | string]: { amount: number; unit: string };
+    [key: number | string]: { amount: number | string; unit: string };
   }>({});
   const [ingredientsDefaultAmount, setDefaultIngredientsAmount] = useState<{
     [key: number | string]: { amount: number; unit: string };
   }>({});
   const [isLoading, setIsLoading] = useState(false);
   const params = useParams() as any;
-  const { data: inventoryData = [] } = useGetInventoryQuery();
+  const { data } = useGetInventoryQuery();
+  const inventoryData = data?.inventories || [];
 
   const [createProduct, { isError, error }] = useCreateProductMutation();
   const [updateProduct] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
   const history = useHistory();
+
   // Use the mutation hook
   //const layout = useBreakpointValue({
   //base: "mobile",
@@ -66,15 +65,10 @@ const UpsertProduct = (props: { create: boolean }) => {
           productId: params.productId,
         });
         setName(productItemRes.data.name);
-        setInStock(productItemRes.data.inStock);
         setPrice(productItemRes.data.price);
         setSelectedUnit({
           label: productItemRes.data.priceUnit,
           value: productItemRes.data.priceUnit,
-        });
-        setSelectedInStockUnit({
-          label: productItemRes.data.inStockUnit,
-          value: productItemRes.data.inStockUnit,
         });
         const inventoryArray: Array<{ label: string; value: number }> = [];
         const ingredientsAmountDefault: {
@@ -83,7 +77,7 @@ const UpsertProduct = (props: { create: boolean }) => {
         productItemRes.data.ingredients.forEach(
           ({ inventoryId, amountUnit, amount }) => {
             const inventoryMatched = inventoryData.find(
-              (inv) => inv.id === inventoryId
+              (inv) => inv.id === inventoryId,
             );
             if (inventoryMatched) {
               inventoryArray.push({
@@ -95,7 +89,7 @@ const UpsertProduct = (props: { create: boolean }) => {
               unit: amountUnit,
               amount: amount,
             };
-          }
+          },
         );
         setSelectedInventory(inventoryArray);
         setDefaultIngredientsAmount(ingredientsAmountDefault);
@@ -117,7 +111,6 @@ const UpsertProduct = (props: { create: boolean }) => {
     }> = [];
     Object.keys(ingredientAmounts).forEach((invId: number | string) => {
       const invIndex = selectedInventory.findIndex((inv) => {
-        console.log(inv.value, invId);
         return inv.value === Number(invId);
       });
       if (invIndex === -1) {
@@ -126,16 +119,14 @@ const UpsertProduct = (props: { create: boolean }) => {
       if (!ingredientAmounts?.[invId]) return;
       ingredients.push({
         inventory: Number(invId),
-        amount: ingredientAmounts[invId].amount,
+        amount: Number(ingredientAmounts[invId].amount),
         unit: ingredientAmounts[invId].unit,
       });
     });
     const data = {
       name,
-      inStock,
-      inStockUnit: selectedInStockUnit.value,
       priceUnit: selectedUnit.value,
-      price,
+      price: Number(price),
       ingredients,
     };
     if (params.productId) {
@@ -144,7 +135,7 @@ const UpsertProduct = (props: { create: boolean }) => {
         id: params.productId,
       });
     } else {
-      await createProduct(data);
+      await createProduct({ ...data });
     }
     history.push(links.product);
   };
@@ -173,15 +164,6 @@ const UpsertProduct = (props: { create: boolean }) => {
             />
           </FormControl>
           <FormControl>
-            <FormLabel>In Stock</FormLabel>
-            <Input
-              type="number"
-              placeholder="In Stock"
-              value={inStock}
-              onChange={(e) => setInStock(Number(e.target.value))}
-            />
-          </FormControl>
-          <FormControl>
             <FormLabel>Ingredients</FormLabel>
             <Select
               isMulti
@@ -198,26 +180,10 @@ const UpsertProduct = (props: { create: boolean }) => {
         </Flex>
         <Flex gap="20px" direction={"column"}>
           <FormControl>
-            <FormLabel>Price</FormLabel>
-            <Input
-              type="number"
-              placeholder="Price"
-              value={price}
-              onChange={(e) => setPrice(Number(e.target.value))}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>In Stock Unit</FormLabel>
-            <Select
-              value={selectedInStockUnit}
-              onChange={(valueSelected) => {
-                setSelectedInStockUnit(valueSelected);
-              }}
-              options={[
-                { label: "KG", value: "kg" },
-                { label: "GRAM", value: "g" },
-              ]}
-            />
+            <FormLabel>Price </FormLabel>
+            <NumberInput value={price} onChange={setPrice}>
+              <NumberInputField defaultValue={price} placeholder="Price" />
+            </NumberInput>
           </FormControl>
         </Flex>
         <Flex>
@@ -251,7 +217,7 @@ const UpsertProduct = (props: { create: boolean }) => {
           selectedIngredients={selectedInventory}
           setIngredientsAmount={(amounts: {
             [key: number | string]: {
-              amount: number;
+              amount: number | string;
               unit: string;
             };
           }) => {

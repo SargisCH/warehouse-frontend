@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import {
   Box,
-  Button,
   Flex,
   Table,
   Tbody,
@@ -10,6 +9,7 @@ import {
   Th,
   Thead,
   Tr,
+  Link,
   useColorModeValue,
 } from "@chakra-ui/react";
 import {
@@ -20,23 +20,38 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ClientType, useGetClientQuery } from "api/client";
+import { useGetCreditQuery } from "api/credit";
 // Custom components
 import Card from "components/card/Card";
 import * as React from "react";
 import dayjs from "dayjs";
-import "./client.css";
-import { useHistory } from "react-router-dom";
+import "./credit.css";
+import { useHistory, Link as ReactLink } from "react-router-dom";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import ReactSelect from "react-select";
 import { Weekday } from "types";
+import { useGetClientQuery } from "api/client";
 // Assets
 
-type RowObj = ClientType;
+type RowObj = {
+  id: number | string;
+  name: string;
+  client: {
+    name: string;
+  };
+  sale: {
+    id?: number;
+  };
+  amount: number;
+  created_at: string;
+  updated_at: string;
+};
 
+type OptionType = { label: string; value: string | number };
 type DayOptionType = { label: Weekday; value: Weekday };
-
 const weekDayOptions: DayOptionType[] = [
   Weekday.MONDAY,
   Weekday.TUESDAY,
@@ -50,11 +65,14 @@ const weekDayOptions: DayOptionType[] = [
 const columnHelper = createColumnHelper<RowObj>();
 
 // const columns = columnsDataCheck;
-function ClientList() {
+function CreditList() {
   const [selectedDay, setSelectedDay] = React.useState<DayOptionType>();
-  const { data: clientArray = [], refetch } = useGetClientQuery({
+  const [selectedClient, setSelectedClient] = React.useState<OptionType>();
+  const { data: creditArray = [], refetch } = useGetCreditQuery({
     weekDay: selectedDay?.value as string,
+    clientId: selectedClient?.value,
   });
+  const { data: clients } = useGetClientQuery();
   useEffect(() => {
     refetch();
   }, [refetch]);
@@ -63,8 +81,8 @@ function ClientList() {
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
   const columns = [
-    columnHelper.accessor("name", {
-      id: "name",
+    columnHelper.accessor("client.name", {
+      id: "client_name",
       header: () => (
         <Text
           justifyContent="space-between"
@@ -72,7 +90,7 @@ function ClientList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          NAME
+          Client Name
         </Text>
       ),
       cell: (info: any) => {
@@ -85,8 +103,8 @@ function ClientList() {
         );
       },
     }),
-    columnHelper.accessor("companyCode", {
-      id: "companyCode",
+    columnHelper.accessor("sale.id", {
+      id: "sale_id",
       header: () => (
         <Text
           justifyContent="space-between"
@@ -94,7 +112,50 @@ function ClientList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Code
+          Sale Id
+        </Text>
+      ),
+      cell: (info: any) => {
+        const value = info.getValue();
+        return (
+          <Flex align="center">
+            <Text
+              color={textColor}
+              fontSize="sm"
+              fontWeight="700"
+              display={"inline-flex"}
+              flexGrow={1}
+            >
+              {value ? (
+                <Link
+                  as={ReactLink}
+                  flexGrow={1}
+                  _hover={{ textDecoration: "underline", color: "purple" }}
+                  to={links.saleInfo(value)}
+                  display="flex"
+                  justifyContent={"space-between"}
+                >
+                  {value}
+                  <FontAwesomeIcon icon={faArrowRight} />
+                </Link>
+              ) : (
+                "N/A"
+              )}
+            </Text>
+          </Flex>
+        );
+      },
+    }),
+    columnHelper.accessor("amount", {
+      id: "amount",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Amount
         </Text>
       ),
       cell: (info: any) => {
@@ -106,73 +167,6 @@ function ClientList() {
           </Flex>
         );
       },
-    }),
-    columnHelper.accessor("email", {
-      id: "email",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Email
-        </Text>
-      ),
-      cell: (info: any) => {
-        return (
-          <Flex align="center">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              {info.getValue()}
-            </Text>
-          </Flex>
-        );
-      },
-    }),
-    columnHelper.accessor("phoneNumber", {
-      id: "phoneNumber",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Phone number
-        </Text>
-      ),
-      cell: (info: any) => {
-        return (
-          <Flex align="center">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              {info.getValue()}
-            </Text>
-          </Flex>
-        );
-      },
-    }),
-    columnHelper.display({
-      id: "actions",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Actions
-        </Text>
-      ),
-      cell: (info) => (
-        <Button
-          onClick={(e) => {
-            e.stopPropagation();
-            history.push(links.saleCreate(info.row.original.id));
-          }}
-        >
-          Order
-        </Button>
-      ),
     }),
     columnHelper.accessor("created_at", {
       id: "created_at",
@@ -212,7 +206,7 @@ function ClientList() {
     }),
   ];
   const table = useReactTable({
-    data: clientArray,
+    data: creditArray,
     columns: columns as any,
     state: {
       sorting,
@@ -237,19 +231,25 @@ function ClientList() {
           fontWeight="700"
           lineHeight="100%"
         >
-          Client List
+          Credit List
         </Text>
-        <Flex>
-          <Box marginRight={10} width={"200px"}>
-            <ReactSelect
-              placeholder="Day plan"
-              options={weekDayOptions}
-              value={selectedDay}
-              onChange={setSelectedDay}
-            />
-          </Box>
-          <TableAddButton label="Add Client" link={links.createClient} />
-        </Flex>
+        <Box marginRight={10} width={"200px"}>
+          <ReactSelect
+            placeholder="Day plan"
+            options={weekDayOptions}
+            value={selectedDay}
+            onChange={setSelectedDay}
+          />
+        </Box>
+        <Box marginRight={10} width={"200px"}>
+          <ReactSelect
+            placeholder="choose a clients"
+            options={clients?.map((cl) => ({ label: cl.name, value: cl.id }))}
+            value={selectedClient}
+            onChange={setSelectedClient}
+          />
+        </Box>
+        <TableAddButton label="Add Credit" link={links.createCredit} />
       </Flex>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -297,7 +297,7 @@ function ClientList() {
                     key={row.id}
                     cursor="pointer"
                     onClick={() => {
-                      history.push(links.client(row.original.id));
+                      history.push(links.credit(row.original.id));
                     }}
                   >
                     {row.getVisibleCells().map((cell) => {
@@ -325,4 +325,4 @@ function ClientList() {
   );
 }
 
-export default ClientList;
+export default CreditList;

@@ -25,7 +25,12 @@ import SignUp from "views/auth/signup";
 import ProductCategory from "pages/productCategory/ProductCategory";
 import Client from "pages/client/Client";
 import Sale from "pages/sale/Sale";
+import Credit from "pages/credit/Credit";
 import VerifyEmail from "views/auth/verifyEmail";
+import TransactionHistory from "pages/transactionHistory/TransactionHistory";
+import StockProductList from "pages/product/StockProductList";
+import Manager from "pages/manager/Manager";
+import ChangePassword from "views/auth/changePassword";
 
 const routes: RouteTypeExtended[] = [
   {
@@ -85,13 +90,20 @@ const routes: RouteTypeExtended[] = [
     icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
     component: VerifyEmail,
   },
-  // {
-  //   name: "RTL Admin",
-  //   layout: "/rtl",
-  //   path: "/rtl-default",
-  //   icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
-  //   component: RTL,
-  // },
+  {
+    name: "Change password",
+    layout: "/auth",
+    path: "/change-password/:email",
+    icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
+    component: ChangePassword,
+  },
+  {
+    name: "RTL Admin",
+    layout: "/rtl",
+    path: "/rtl-default",
+    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+    component: RTL,
+  },
   {
     name: "",
     layout: "",
@@ -117,6 +129,14 @@ const routes: RouteTypeExtended[] = [
         exact: true,
         icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
         component: Product,
+      },
+      {
+        name: "Stock Products",
+        layout: "/admin",
+        path: "/products/stockProducts",
+        exact: true,
+        icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+        component: StockProductList,
       },
       {
         name: "Categories",
@@ -172,6 +192,30 @@ const routes: RouteTypeExtended[] = [
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: InventorySupplierOrder,
   },
+  {
+    name: "Credit List",
+    layout: "/admin",
+    path: "/credit",
+    exact: true,
+    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+    component: Credit,
+  },
+  {
+    name: "Transaction History List",
+    layout: "/admin",
+    path: "/transactionHistory",
+    exact: true,
+    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+    component: TransactionHistory,
+  },
+  {
+    name: "Managers",
+    layout: "/admin",
+    path: "/manager",
+    exact: true,
+    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+    component: Manager,
+  },
 ];
 
 export const links = {
@@ -183,6 +227,7 @@ export const links = {
   productItem: (productId: string | number) =>
     `/admin/products/upsert/${productId}`,
   createProduct: "/admin/products/upsert/",
+  addInStock: "/admin/products/addInStock/",
   suppliers: "/admin/suppliers",
   supplier: (supplierId: string | number) =>
     `/admin/suppliers/upsert/${supplierId}`,
@@ -203,5 +248,15 @@ export const links = {
   sale: "/admin/sale",
   saleCreate: (clientId: string | number) => `/admin/sale/create/${clientId}`,
   saleInfo: (saleId: number) => `/admin/sale/info/${saleId}`,
+  credits: "/admin/credit",
+  createCredit: "/admin/credit/upsert/",
+  credit: (creditId: string | number) => `/admin/credit/upsert/${creditId}`,
+  managers: "/admin/manager",
+  createManager: "/admin/manager/upsert/",
+  manager: (managerId: string | number) => `/admin/manager/upsert/${managerId}`,
+  transactionHistories: "/admin/transactionHistory",
+  createTransactionHistory: "/admin/transactionHistory/upsert/",
+  transactionHistory: (transactionHistoryId: string | number) =>
+    `/admin/transactionHistory/upsert/${transactionHistoryId}`,
 };
 export default routes;

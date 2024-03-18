@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import {
   Box,
-  Button,
   Flex,
   Table,
   Tbody,
@@ -20,41 +19,24 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ClientType, useGetClientQuery } from "api/client";
+import { ManagerType, useGetManagerQuery } from "api/manager";
 // Custom components
 import Card from "components/card/Card";
 import * as React from "react";
-import dayjs from "dayjs";
-import "./client.css";
+import "./manager.css";
 import { useHistory } from "react-router-dom";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
-import ReactSelect from "react-select";
-import { Weekday } from "types";
+import dayjs from "dayjs";
 // Assets
 
-type RowObj = ClientType;
-
-type DayOptionType = { label: Weekday; value: Weekday };
-
-const weekDayOptions: DayOptionType[] = [
-  Weekday.MONDAY,
-  Weekday.TUESDAY,
-  Weekday.WEDNESDAY,
-  Weekday.THURSDAY,
-  Weekday.FRIDAY,
-  Weekday.SATURDAY,
-  Weekday.SUNDAY,
-].map((d) => ({ label: d, value: d }));
+type RowObj = ManagerType;
 
 const columnHelper = createColumnHelper<RowObj>();
 
 // const columns = columnsDataCheck;
-function ClientList() {
-  const [selectedDay, setSelectedDay] = React.useState<DayOptionType>();
-  const { data: clientArray = [], refetch } = useGetClientQuery({
-    weekDay: selectedDay?.value as string,
-  });
+function ManagerList() {
+  const { data: managerArray = [], refetch } = useGetManagerQuery();
   useEffect(() => {
     refetch();
   }, [refetch]);
@@ -73,28 +55,6 @@ function ClientList() {
           color="gray.400"
         >
           NAME
-        </Text>
-      ),
-      cell: (info: any) => {
-        return (
-          <Flex align="center">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              {info.getValue()}
-            </Text>
-          </Flex>
-        );
-      },
-    }),
-    columnHelper.accessor("companyCode", {
-      id: "companyCode",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Code
         </Text>
       ),
       cell: (info: any) => {
@@ -151,29 +111,6 @@ function ClientList() {
         );
       },
     }),
-    columnHelper.display({
-      id: "actions",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Actions
-        </Text>
-      ),
-      cell: (info) => (
-        <Button
-          onClick={(e) => {
-            e.stopPropagation();
-            history.push(links.saleCreate(info.row.original.id));
-          }}
-        >
-          Order
-        </Button>
-      ),
-    }),
     columnHelper.accessor("created_at", {
       id: "created_at",
       header: () => (
@@ -212,7 +149,7 @@ function ClientList() {
     }),
   ];
   const table = useReactTable({
-    data: clientArray,
+    data: managerArray,
     columns: columns as any,
     state: {
       sorting,
@@ -228,7 +165,6 @@ function ClientList() {
       w="100%"
       px="0px"
       overflowX={{ sm: "scroll", lg: "hidden" }}
-      minHeight="500px"
     >
       <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
         <Text
@@ -237,19 +173,9 @@ function ClientList() {
           fontWeight="700"
           lineHeight="100%"
         >
-          Client List
+          Manager List
         </Text>
-        <Flex>
-          <Box marginRight={10} width={"200px"}>
-            <ReactSelect
-              placeholder="Day plan"
-              options={weekDayOptions}
-              value={selectedDay}
-              onChange={setSelectedDay}
-            />
-          </Box>
-          <TableAddButton label="Add Client" link={links.createClient} />
-        </Flex>
+        <TableAddButton label="Add Manager" link={links.createManager} />
       </Flex>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -297,7 +223,7 @@ function ClientList() {
                     key={row.id}
                     cursor="pointer"
                     onClick={() => {
-                      history.push(links.client(row.original.id));
+                      history.push(links.manager(row.original.id));
                     }}
                   >
                     {row.getVisibleCells().map((cell) => {
@@ -325,4 +251,4 @@ function ClientList() {
   );
 }
 
-export default ClientList;
+export default ManagerList;

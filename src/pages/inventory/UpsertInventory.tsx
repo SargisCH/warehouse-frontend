@@ -5,6 +5,8 @@ import {
   FormLabel,
   Input,
   Box,
+  NumberInput,
+  NumberInputField,
 } from "@chakra-ui/react";
 import {
   InventoryItem,
@@ -15,6 +17,7 @@ import {
   useUpdateInventoryMutation,
 } from "api/inventory";
 import AlertDialog from "components/alertDialog/AlertDialog";
+import withAdminRoute from "hocs/withAdminRoute";
 import { useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import Select from "react-select";
@@ -22,8 +25,8 @@ import { links } from "routes";
 
 const UpsertInventory = (props: { create: boolean }) => {
   const [name, setName] = useState("");
-  const [amount, setAmount] = useState<number>();
-  const [price, setPrice] = useState<number>();
+  const [amount, setAmount] = useState<number | string>();
+  const [price, setPrice] = useState<number | string>();
   const [currency, setCurrency] = useState<string>("");
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<{
@@ -64,17 +67,17 @@ const UpsertInventory = (props: { create: boolean }) => {
   const saveInventory = async () => {
     const data = {
       name,
-      amount,
+      amount: Number(amount),
       amountUnit: selectedUnit.value,
-      price,
+      price: Number(price),
     };
     if (params.inventoryId) {
       await updateInventory({
         name,
-        amount,
+        amount: Number(amount),
         amountUnit: selectedUnit.value,
         id: params.inventoryId,
-        price,
+        price: Number(price),
       });
     } else {
       await createInventory(data);
@@ -97,12 +100,9 @@ const UpsertInventory = (props: { create: boolean }) => {
           </FormControl>
           <FormControl>
             <FormLabel>Amount</FormLabel>
-            <Input
-              type="number"
-              placeholder="Amount"
-              value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
-            />
+            <NumberInput value={amount} onChange={setAmount}>
+              <NumberInputField placeholder="Amount" />
+            </NumberInput>
           </FormControl>
         </Flex>
         <Flex gap="20px" direction={"column"}>
@@ -121,12 +121,10 @@ const UpsertInventory = (props: { create: boolean }) => {
           </FormControl>
           <FormControl>
             <FormLabel>Price</FormLabel>
-            <Input
-              type="number"
-              placeholder="Price"
-              value={price}
-              onChange={(e) => setPrice(Number(e.target.value))}
-            />
+            <NumberInput value={price} onChange={setPrice}>
+              <NumberInputField placeholder="Price" />
+            </NumberInput>
+            <Input type="number" />
           </FormControl>
         </Flex>
         <Flex gap="20px">
@@ -171,4 +169,4 @@ const UpsertInventory = (props: { create: boolean }) => {
   );
 };
 
-export default UpsertInventory;
+export default withAdminRoute(UpsertInventory);

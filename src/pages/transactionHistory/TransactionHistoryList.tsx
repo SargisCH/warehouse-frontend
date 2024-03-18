@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import {
   Box,
-  Button,
   Flex,
   Table,
   Tbody,
@@ -10,6 +9,7 @@ import {
   Th,
   Thead,
   Tr,
+  Link,
   useColorModeValue,
 } from "@chakra-ui/react";
 import {
@@ -20,41 +20,45 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ClientType, useGetClientQuery } from "api/client";
+import {
+  useGetTransactionHistoryQuery,
+  TransactionType,
+} from "api/transactionHistory";
 // Custom components
 import Card from "components/card/Card";
 import * as React from "react";
 import dayjs from "dayjs";
-import "./client.css";
-import { useHistory } from "react-router-dom";
+import "./transactionHistory.css";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
-import ReactSelect from "react-select";
-import { Weekday } from "types";
+import { useHistory, Link as ReactLink } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 // Assets
 
-type RowObj = ClientType;
-
-type DayOptionType = { label: Weekday; value: Weekday };
-
-const weekDayOptions: DayOptionType[] = [
-  Weekday.MONDAY,
-  Weekday.TUESDAY,
-  Weekday.WEDNESDAY,
-  Weekday.THURSDAY,
-  Weekday.FRIDAY,
-  Weekday.SATURDAY,
-  Weekday.SUNDAY,
-].map((d) => ({ label: d, value: d }));
+type RowObj = {
+  id: number | string;
+  client: {
+    name: string;
+  };
+  inventorySupplier: {
+    name: string;
+  };
+  sale: {
+    id?: number;
+  };
+  transactionType: TransactionType;
+  amount: number;
+  created_at: string;
+  updated_at: string;
+};
 
 const columnHelper = createColumnHelper<RowObj>();
 
 // const columns = columnsDataCheck;
-function ClientList() {
-  const [selectedDay, setSelectedDay] = React.useState<DayOptionType>();
-  const { data: clientArray = [], refetch } = useGetClientQuery({
-    weekDay: selectedDay?.value as string,
-  });
+function TransactionHistoryList() {
+  const { data: transactionHistoryArray = [], refetch } =
+    useGetTransactionHistoryQuery();
   useEffect(() => {
     refetch();
   }, [refetch]);
@@ -63,8 +67,8 @@ function ClientList() {
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
   const columns = [
-    columnHelper.accessor("name", {
-      id: "name",
+    columnHelper.accessor("client.name", {
+      id: "client_name",
       header: () => (
         <Text
           justifyContent="space-between"
@@ -72,7 +76,97 @@ function ClientList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          NAME
+          <>Client Name</>
+        </Text>
+      ),
+      cell: (info: any) => {
+        return (
+          <Flex align="center">
+            <Text color={textColor} fontSize="sm" fontWeight="700">
+              {info.getValue() || "N/A"}
+            </Text>
+          </Flex>
+        );
+      },
+    }),
+    columnHelper.accessor("inventorySupplier.name", {
+      id: "inventorySupplier_name",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Supplier name
+        </Text>
+      ),
+      cell: (info: any) => {
+        return (
+          <Flex align="center">
+            <Text color={textColor} fontSize="sm" fontWeight="700">
+              {info.getValue() || "N/A"}
+            </Text>
+          </Flex>
+        );
+      },
+    }),
+    columnHelper.accessor("sale.id", {
+      id: "sale_id",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Sale Id
+        </Text>
+      ),
+      cell: (info: any) => {
+        const value = info.getValue();
+        return (
+          <Flex align="center">
+            <Text
+              color={textColor}
+              fontSize="sm"
+              fontWeight="700"
+              display={"inline-flex"}
+              flexGrow={1}
+            >
+              {value ? (
+                <Link
+                  as={ReactLink}
+                  flexGrow={1}
+                  _hover={{ textDecoration: "underline", color: "purple" }}
+                  to={links.saleInfo(value)}
+                  display="flex"
+                  justifyContent={"space-between"}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                >
+                  {value}
+                  <FontAwesomeIcon icon={faArrowRight} />
+                </Link>
+              ) : (
+                "N/A"
+              )}
+            </Text>
+          </Flex>
+        );
+      },
+    }),
+    columnHelper.accessor("amount", {
+      id: "amount",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Amount
         </Text>
       ),
       cell: (info: any) => {
@@ -85,8 +179,8 @@ function ClientList() {
         );
       },
     }),
-    columnHelper.accessor("companyCode", {
-      id: "companyCode",
+    columnHelper.accessor("transactionType", {
+      id: "transactionType",
       header: () => (
         <Text
           justifyContent="space-between"
@@ -94,7 +188,7 @@ function ClientList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Code
+          Transaction type
         </Text>
       ),
       cell: (info: any) => {
@@ -106,73 +200,6 @@ function ClientList() {
           </Flex>
         );
       },
-    }),
-    columnHelper.accessor("email", {
-      id: "email",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Email
-        </Text>
-      ),
-      cell: (info: any) => {
-        return (
-          <Flex align="center">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              {info.getValue()}
-            </Text>
-          </Flex>
-        );
-      },
-    }),
-    columnHelper.accessor("phoneNumber", {
-      id: "phoneNumber",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Phone number
-        </Text>
-      ),
-      cell: (info: any) => {
-        return (
-          <Flex align="center">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              {info.getValue()}
-            </Text>
-          </Flex>
-        );
-      },
-    }),
-    columnHelper.display({
-      id: "actions",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Actions
-        </Text>
-      ),
-      cell: (info) => (
-        <Button
-          onClick={(e) => {
-            e.stopPropagation();
-            history.push(links.saleCreate(info.row.original.id));
-          }}
-        >
-          Order
-        </Button>
-      ),
     }),
     columnHelper.accessor("created_at", {
       id: "created_at",
@@ -212,7 +239,7 @@ function ClientList() {
     }),
   ];
   const table = useReactTable({
-    data: clientArray,
+    data: transactionHistoryArray,
     columns: columns as any,
     state: {
       sorting,
@@ -228,7 +255,6 @@ function ClientList() {
       w="100%"
       px="0px"
       overflowX={{ sm: "scroll", lg: "hidden" }}
-      minHeight="500px"
     >
       <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
         <Text
@@ -237,19 +263,13 @@ function ClientList() {
           fontWeight="700"
           lineHeight="100%"
         >
-          Client List
+          Transaction History List
         </Text>
-        <Flex>
-          <Box marginRight={10} width={"200px"}>
-            <ReactSelect
-              placeholder="Day plan"
-              options={weekDayOptions}
-              value={selectedDay}
-              onChange={setSelectedDay}
-            />
-          </Box>
-          <TableAddButton label="Add Client" link={links.createClient} />
-        </Flex>
+
+        <TableAddButton
+          label="Add Transaction History"
+          link={links.createTransactionHistory}
+        />
       </Flex>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -297,7 +317,7 @@ function ClientList() {
                     key={row.id}
                     cursor="pointer"
                     onClick={() => {
-                      history.push(links.client(row.original.id));
+                      history.push(links.transactionHistory(row.original.id));
                     }}
                   >
                     {row.getVisibleCells().map((cell) => {
@@ -325,4 +345,4 @@ function ClientList() {
   );
 }
 
-export default ClientList;
+export default TransactionHistoryList;

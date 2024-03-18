@@ -12,15 +12,17 @@ const baseQueryAuthorized: BaseQueryFn<
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   const authRes = await fetchAuthSession();
-  
-  console.log('authRes:', authRes);
-
-
+  const headers: { Authorization?: string } = {};
+  const fetchArgs = args as FetchArgs;
+  if (
+    !fetchArgs.url.includes("register") &&
+    !fetchArgs.url.includes("verify-email")
+  ) {
+    headers.Authorization = "Bearer " + authRes.tokens.accessToken.toString();
+  }
   const res = await fetchBaseQuery({
     baseUrl: API_BASE_URL,
-    headers: {
-      Authorization: "Bearer " + authRes.tokens.accessToken.toString(),
-    },
+    headers,
   })(args, api, extraOptions);
   return res;
 };

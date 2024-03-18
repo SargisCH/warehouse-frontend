@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import {
   Box,
-  Button,
   Flex,
   Table,
   Tbody,
@@ -20,41 +19,33 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ClientType, useGetClientQuery } from "api/client";
+import { useGetStockProductQuery } from "api/product";
 // Custom components
 import Card from "components/card/Card";
+import Menu from "components/menu/MainMenu";
 import * as React from "react";
-import dayjs from "dayjs";
-import "./client.css";
+import "./product.css";
 import { useHistory } from "react-router-dom";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
-import ReactSelect from "react-select";
-import { Weekday } from "types";
 // Assets
 
-type RowObj = ClientType;
-
-type DayOptionType = { label: Weekday; value: Weekday };
-
-const weekDayOptions: DayOptionType[] = [
-  Weekday.MONDAY,
-  Weekday.TUESDAY,
-  Weekday.WEDNESDAY,
-  Weekday.THURSDAY,
-  Weekday.FRIDAY,
-  Weekday.SATURDAY,
-  Weekday.SUNDAY,
-].map((d) => ({ label: d, value: d }));
+type RowObj = {
+  id: number | string;
+  product: Partial<{ name: string; id: number; price: number }>;
+  inStock: number;
+  inStockUnit: string;
+  created_at: string;
+  updated_at: string;
+};
 
 const columnHelper = createColumnHelper<RowObj>();
 
 // const columns = columnsDataCheck;
-function ClientList() {
-  const [selectedDay, setSelectedDay] = React.useState<DayOptionType>();
-  const { data: clientArray = [], refetch } = useGetClientQuery({
-    weekDay: selectedDay?.value as string,
-  });
+function StockProductList() {
+  const { data, refetch } = useGetStockProductQuery();
+  const stockProductArray = data?.stockProducts || [];
+  const totalWorth = data?.totalWorth;
   useEffect(() => {
     refetch();
   }, [refetch]);
@@ -63,8 +54,8 @@ function ClientList() {
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
   const columns = [
-    columnHelper.accessor("name", {
-      id: "name",
+    columnHelper.accessor("product.name", {
+      id: "productName",
       header: () => (
         <Text
           justifyContent="space-between"
@@ -72,7 +63,7 @@ function ClientList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          NAME
+          Product
         </Text>
       ),
       cell: (info: any) => {
@@ -85,8 +76,8 @@ function ClientList() {
         );
       },
     }),
-    columnHelper.accessor("companyCode", {
-      id: "companyCode",
+    columnHelper.accessor("product.price", {
+      id: "productPrice",
       header: () => (
         <Text
           justifyContent="space-between"
@@ -94,88 +85,19 @@ function ClientList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Code
-        </Text>
-      ),
-      cell: (info: any) => {
-        return (
-          <Flex align="center">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              {info.getValue()}
-            </Text>
-          </Flex>
-        );
-      },
-    }),
-    columnHelper.accessor("email", {
-      id: "email",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Email
-        </Text>
-      ),
-      cell: (info: any) => {
-        return (
-          <Flex align="center">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              {info.getValue()}
-            </Text>
-          </Flex>
-        );
-      },
-    }),
-    columnHelper.accessor("phoneNumber", {
-      id: "phoneNumber",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Phone number
-        </Text>
-      ),
-      cell: (info: any) => {
-        return (
-          <Flex align="center">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              {info.getValue()}
-            </Text>
-          </Flex>
-        );
-      },
-    }),
-    columnHelper.display({
-      id: "actions",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Actions
+          Price
         </Text>
       ),
       cell: (info) => (
-        <Button
-          onClick={(e) => {
-            e.stopPropagation();
-            history.push(links.saleCreate(info.row.original.id));
-          }}
-        >
-          Order
-        </Button>
+        <Flex align="center">
+          <Text color={textColor} fontSize="sm" fontWeight="700">
+            {info.getValue()}
+          </Text>
+        </Flex>
       ),
     }),
-    columnHelper.accessor("created_at", {
-      id: "created_at",
+    columnHelper.accessor("inStock", {
+      id: "inStock",
       header: () => (
         <Text
           justifyContent="space-between"
@@ -183,36 +105,38 @@ function ClientList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Created at
+          In Stock
+        </Text>
+      ),
+      cell: (info) => (
+        <Flex align="center">
+          <Text color={textColor} fontSize="sm" fontWeight="700">
+            {info.getValue()}
+          </Text>
+        </Flex>
+      ),
+    }),
+    columnHelper.accessor("inStockUnit", {
+      id: "inStockUnit",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          In Stock Unit
         </Text>
       ),
       cell: (info) => (
         <Text color={textColor} fontSize="sm" fontWeight="700">
-          {dayjs(info.getValue()).format("DD/MM/YYYY")}
-        </Text>
-      ),
-    }),
-    columnHelper.accessor("updated_at", {
-      id: "updated_at",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Updated at
-        </Text>
-      ),
-      cell: (info) => (
-        <Text color={textColor} fontSize="sm" fontWeight="700">
-          {dayjs(info.getValue()).format("DD/MM/YYYY")}
+          {info.getValue()}
         </Text>
       ),
     }),
   ];
   const table = useReactTable({
-    data: clientArray,
+    data: stockProductArray,
     columns: columns as any,
     state: {
       sorting,
@@ -228,7 +152,6 @@ function ClientList() {
       w="100%"
       px="0px"
       overflowX={{ sm: "scroll", lg: "hidden" }}
-      minHeight="500px"
     >
       <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
         <Text
@@ -237,19 +160,8 @@ function ClientList() {
           fontWeight="700"
           lineHeight="100%"
         >
-          Client List
+          Stock Product List
         </Text>
-        <Flex>
-          <Box marginRight={10} width={"200px"}>
-            <ReactSelect
-              placeholder="Day plan"
-              options={weekDayOptions}
-              value={selectedDay}
-              onChange={setSelectedDay}
-            />
-          </Box>
-          <TableAddButton label="Add Client" link={links.createClient} />
-        </Flex>
       </Flex>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -297,7 +209,7 @@ function ClientList() {
                     key={row.id}
                     cursor="pointer"
                     onClick={() => {
-                      history.push(links.client(row.original.id));
+                      history.push(links.productItem(row.original.product.id));
                     }}
                   >
                     {row.getVisibleCells().map((cell) => {
@@ -320,9 +232,12 @@ function ClientList() {
               })}
           </Tbody>
         </Table>
+        <Text align={"right"} paddingRight="20">
+          Total worth: {totalWorth}
+        </Text>
       </Box>
     </Card>
   );
 }
 
-export default ClientList;
+export default StockProductList;

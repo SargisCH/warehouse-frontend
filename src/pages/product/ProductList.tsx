@@ -222,7 +222,14 @@ function ProductList() {
         >
           Product List
         </Text>
-        <TableAddButton link={links.createProduct} label={"Add Product"} />
+        <Flex>
+          <TableAddButton link={links.createProduct} label={"Add Product"} />
+          <TableAddButton
+            link={`${links.addInStock}`}
+            label={"Integrade product"}
+          />
+          <Menu />
+        </Flex>
       </Flex>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -247,7 +254,7 @@ function ProductList() {
                       >
                         {flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                         {{
                           asc: "",
@@ -284,7 +291,7 @@ function ProductList() {
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
-                            cell.getContext()
+                            cell.getContext(),
                           )}
                         </Td>
                       );

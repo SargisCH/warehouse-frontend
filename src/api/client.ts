@@ -1,5 +1,6 @@
+import { Weekday } from "types";
 import { api } from "./api";
-import { ProductItem } from "./product";
+import { ProductItem, StockProductItem } from "./product";
 
 export enum PaymentType {
   CASH = "CASH",
@@ -23,6 +24,9 @@ export type ClientType = {
   otherPhoneNumber: string;
   email: string;
   contactPerson: string;
+  managerId?: number;
+  manager?: Partial<{ name: string; id: number }>;
+  dayPlan?: Weekday[];
   updated_at?: string;
   created_at?: string;
 };
@@ -32,8 +36,8 @@ export interface SaleType {
   client?: ClientType;
   partialCreditAmount?: number;
   saleItems: Array<{
-    productId: number;
-    product?: ProductItem;
+    stockProductId: number;
+    stockProduct?: StockProductItem;
     price: number;
     priceUnit: string;
     amount: number;
@@ -75,11 +79,13 @@ const clientApi = api.injectEndpoints({
         };
       },
     }),
-    getClient: builder.query<ClientType[], void>({
-      query: () => ({
-        url: "client",
-        method: "GET",
-      }),
+    getClient: builder.query<ClientType[], { weekDay: string } | void>({
+      query: (arg: { weekDay: string } = { weekDay: "" }) => {
+        return {
+          url: `client?weekDay=${arg.weekDay ?? ""}`,
+          method: "GET",
+        };
+      },
     }),
     getClientById: builder.query<ClientType, { clientId: string | number }>({
       query: (arg: { clientId: string | number }) => ({
@@ -100,9 +106,12 @@ const clientApi = api.injectEndpoints({
         method: "GET",
       }),
     }),
-    getSale: builder.query<SaleReturnType[], void>({
-      query: () => ({
-        url: `sale/`,
+    getSale: builder.query<
+      { saleList: SaleReturnType[]; totalPages: number }[],
+      { query: string }
+    >({
+      query: ({ query }: { query: string }) => ({
+        url: `sale/${query}`,
         method: "GET",
       }),
     }),
