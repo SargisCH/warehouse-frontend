@@ -12,20 +12,23 @@ import {
 	MenuList,
 	Text,
 	useColorModeValue,
-	useColorMode
+	useColorMode,
+	Textarea
 } from '@chakra-ui/react';
 // Custom Components
 import { ItemContent } from 'components/menu/ItemContent';
 import { SearchBar } from 'components/navbar/searchBar/SearchBar';
 import { SidebarResponsive } from 'components/sidebar/Sidebar';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useState } from 'react';
 // Assets
 import navImage from 'assets/img/layout/Navbar.png';
 import { MdNotificationsNone, MdInfoOutline } from 'react-icons/md';
 import { IoMdMoon, IoMdSunny } from 'react-icons/io';
 import { FaEthereum } from 'react-icons/fa';
 import routes from 'routes';
+import { useSelector } from 'react-redux';
+import { RootState } from '@reduxjs/toolkit/query';
 export default function HeaderLinks(props: { secondary: boolean }) {
 	const { secondary } = props;
 	const { colorMode, toggleColorMode } = useColorMode();
@@ -43,6 +46,18 @@ export default function HeaderLinks(props: { secondary: boolean }) {
 		'14px 17px 40px 4px rgba(112, 144, 176, 0.06)'
 	);
 	const borderButton = useColorModeValue('secondaryGray.500', 'whiteAlpha.200');
+
+	interface RootState {
+		user: {
+		  tenant: {
+			currency:string;
+		  };
+		};
+	  }
+	
+    const currencyType = useSelector((state:RootState)=>state.user?.tenant?.currency||'')
+	const [currency] = useState(currencyType)
+
 	return (
 		<Flex
 			w={{ sm: '100%', md: 'auto' }}
@@ -50,7 +65,7 @@ export default function HeaderLinks(props: { secondary: boolean }) {
 			flexDirection='row'
 			bg={menuBg}
 			flexWrap={secondary ? { base: 'wrap', md: 'nowrap' } : 'unset'}
-			p='10px'
+			p='12px'
 			borderRadius='30px'
 			boxShadow={shadow}>
 			<SearchBar
@@ -174,6 +189,14 @@ export default function HeaderLinks(props: { secondary: boolean }) {
 					as={colorMode === 'light' ? IoMdMoon : IoMdSunny}
 				/>
 			</Button>
+			
+	      <Text 
+	            p='0px'
+				me='10px'
+				fontWeight="bold">
+				{currency}
+				</Text>
+			 
 			<Menu>
 				<MenuButton p='0px'>
 					<Avatar
