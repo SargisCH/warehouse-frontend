@@ -1,14 +1,7 @@
 import React, { ReactPortal, useEffect } from "react";
 import ReactDOM from "react-dom";
 import "./assets/css/App.css";
-import {
-  HashRouter,
-  Route,
-  Switch,
-  Redirect,
-  useHistory,
-  BrowserRouter,
-} from "react-router-dom";
+import { Route, Switch, Redirect, BrowserRouter } from "react-router-dom";
 import AuthLayout from "./layouts/auth";
 import AdminLayout from "./layouts/admin";
 import RTLLayout from "./layouts/rtl";
@@ -19,9 +12,36 @@ import { store } from "./store/store";
 import { Amplify } from "aws-amplify";
 import { fetchAuthSession } from "aws-amplify/auth";
 import { useGetUserMutation } from "api/auth";
-import { links } from "routes";
 import { setUserData } from "store/slices/userSlice";
 import { RootState } from "store/store";
+import { I18nextProvider } from "react-i18next";
+import i18next from "i18next";
+import common_am from "./translations/am/common.json";
+import common_en from "./translations/en/common.json";
+
+i18next.init(
+  {
+    interpolation: { escapeValue: false }, // React already does escaping
+    lng: "am",
+    resources: {
+      en: {
+        translation: {
+          common: common_en, // 'common' is our custom namespace
+        },
+      },
+      am: {
+        translation: {
+          common: common_am,
+        },
+      },
+    },
+  },
+  (err, t) => {
+    // You can use this callback to perform actions once the translations are loaded
+    if (err) return console.error("Error loading translations:", err);
+    console.log("Translations loaded");
+  },
+);
 
 interface Props {
   userEmail: string;
@@ -52,7 +72,7 @@ function App() {
           getUser(email as string);
         }
       } catch (e: any) {
-        console.log("eeeee", e);
+        console.log("eeeeeee", e);
       }
     })();
   }, [getUser, userEmail]);
@@ -86,7 +106,9 @@ ReactDOM.render(
   <ChakraProvider theme={theme}>
     <React.StrictMode>
       <Provider store={store}>
-        <App />
+        <I18nextProvider i18n={i18next}>
+          <App />
+        </I18nextProvider>
       </Provider>
     </React.StrictMode>
   </ChakraProvider>,

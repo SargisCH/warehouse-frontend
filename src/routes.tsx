@@ -40,21 +40,21 @@ const routes: RouteTypeExtended[] = [
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: MainDashboard,
   },
-  {
-    name: "NFT Marketplace",
-    layout: "/admin",
-    path: "/nft-marketplace",
-    icon: (
-      <Icon
-        as={MdOutlineShoppingCart}
-        width="20px"
-        height="20px"
-        color="inherit"
-      />
-    ),
-    component: NFTMarketplace,
-    secondary: true,
-  },
+  // {
+  //   name: "NFT Marketplace",
+  //   layout: "/admin",
+  //   path: "/nft-marketplace",
+  //   icon: (
+  //     <Icon
+  //       as={MdOutlineShoppingCart}
+  //       width="20px"
+  //       height="20px"
+  //       color="inherit"
+  //     />
+  //   ),
+  //   component: NFTMarketplace,
+  //   secondary: true,
+  // },
   // {
   //   name: "Data Tables",
   //   layout: "/admin",
@@ -90,20 +90,20 @@ const routes: RouteTypeExtended[] = [
     icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
     component: VerifyEmail,
   },
-  {
-    name: "Change password",
-    layout: "/auth",
-    path: "/change-password/:email",
-    icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
-    component: ChangePassword,
-  },
-  {
-    name: "RTL Admin",
-    layout: "/rtl",
-    path: "/rtl-default",
-    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
-    component: RTL,
-  },
+  // {
+  //   name: "Change password",
+  //   layout: "/auth",
+  //   path: "/change-password/:email",
+  //   icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
+  //   component: ChangePassword,
+  // },
+  // {
+  //   name: "RTL Admin",
+  //   layout: "/rtl",
+  //   path: "/rtl-default",
+  //   icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+  //   component: RTL,
+  // },
   {
     name: "",
     layout: "",
@@ -113,9 +113,11 @@ const routes: RouteTypeExtended[] = [
     component: () => <></>,
     group: true,
     groupName: "Pahest",
+    translationKey: "warehouse",
     nestedRoutes: [
       {
         name: "Humq",
+        translationKey: "inventory",
         layout: "/admin",
         path: "/inventory",
         exact: true,
@@ -125,6 +127,7 @@ const routes: RouteTypeExtended[] = [
       {
         name: "Products",
         layout: "/admin",
+        translationKey: "products",
         path: "/products",
         exact: true,
         icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
@@ -134,6 +137,7 @@ const routes: RouteTypeExtended[] = [
         name: "Stock Products",
         layout: "/admin",
         path: "/products/stockProducts",
+        translationKey: "stockProducts",
         exact: true,
         icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
         component: StockProductList,
@@ -142,6 +146,7 @@ const routes: RouteTypeExtended[] = [
         name: "Categories",
         layout: "/admin",
         path: "/productCategory",
+        translationKey: "categories",
         exact: true,
         icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
         component: ProductCategory,
@@ -157,11 +162,13 @@ const routes: RouteTypeExtended[] = [
     component: () => <></>,
     group: true,
     groupName: "Vacharq",
+    translationKey: "sales",
     nestedRoutes: [
       {
         name: "vacharqneri patmutyun",
         layout: "/admin",
         path: "/sale",
+        translationKey: "salesHistory",
         exact: true,
         icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
         component: Sale,
@@ -170,6 +177,7 @@ const routes: RouteTypeExtended[] = [
         name: "vacharaketer",
         layout: "/admin",
         path: "/client",
+        translationKey: "clients",
         exact: true,
         icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
         component: Client,
@@ -178,6 +186,7 @@ const routes: RouteTypeExtended[] = [
   },
   {
     name: "Inventory Suppliers",
+    translationKey: "inventorySuppliers",
     layout: "/admin",
     path: "/suppliers",
     exact: true,
@@ -186,6 +195,7 @@ const routes: RouteTypeExtended[] = [
   },
   {
     name: "Suppy Orders",
+    translationKey: "supplyOrders",
     layout: "/admin",
     path: "/supply-orders",
     exact: true,
@@ -193,7 +203,8 @@ const routes: RouteTypeExtended[] = [
     component: InventorySupplierOrder,
   },
   {
-    name: "Credit List",
+    name: "Credit list",
+    translationKey: "creditList",
     layout: "/admin",
     path: "/credit",
     exact: true,
@@ -204,6 +215,7 @@ const routes: RouteTypeExtended[] = [
     name: "Transaction History List",
     layout: "/admin",
     path: "/transactionHistory",
+    translationKey: "transactionHistoryList",
     exact: true,
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: TransactionHistory,
@@ -212,6 +224,7 @@ const routes: RouteTypeExtended[] = [
     name: "Managers",
     layout: "/admin",
     path: "/manager",
+    translationKey: "managers",
     exact: true,
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: Manager,

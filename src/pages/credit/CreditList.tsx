@@ -34,6 +34,7 @@ import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import ReactSelect from "react-select";
 import { Weekday } from "types";
 import { useGetClientQuery } from "api/client";
+import { Trans } from "react-i18next";
 // Assets
 
 type RowObj = {
@@ -223,6 +224,7 @@ function CreditList() {
       px="0px"
       overflowX={{ sm: "scroll", lg: "hidden" }}
       minHeight="500px"
+      position={"static"}
     >
       <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
         <Text

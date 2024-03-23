@@ -153,6 +153,7 @@ export default function Dashboard(props: { [x: string]: any }) {
               pe="20px"
               minH="calc(100vh - 160px)"
               pt="50px"
+              background={"#f8f9fc"}
             >
               <Switch>
                 {getRoutes(routes)}
@@ -160,7 +161,7 @@ export default function Dashboard(props: { [x: string]: any }) {
               </Switch>
             </Box>
           ) : null}
-          <Box>
+          <Box background={"#f8f9fc"}>
             <Footer />
           </Box>
         </Box>
