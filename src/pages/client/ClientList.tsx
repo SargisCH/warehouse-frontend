@@ -229,6 +229,7 @@ function ClientList() {
       px="0px"
       overflowX={{ sm: "scroll", lg: "hidden" }}
       minHeight="500px"
+      position={"static"}
     >
       <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
         <Text

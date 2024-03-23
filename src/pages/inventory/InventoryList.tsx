@@ -192,6 +192,7 @@ function InventoryList() {
   });
   return (
     <Card
+      position={"static"}
       flexDirection="column"
       w="100%"
       px="0px"

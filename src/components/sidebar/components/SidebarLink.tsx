@@ -7,6 +7,7 @@ import {
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router-dom";
 import { RouteTypeExtended } from "types";
 
@@ -25,7 +26,7 @@ export default function SidebarLink({ route, isGroup }: Props) {
     "secondaryGray.600",
     "secondaryGray.600",
   );
-
+  const { t } = useTranslation();
   let location = useLocation();
   const activeRoute = (routeName: string) => {
     return location.pathname === routeName;
@@ -59,7 +60,9 @@ export default function SidebarLink({ route, isGroup }: Props) {
                     color={isActiveRoute ? activeColor : textColor}
                     fontWeight={isActiveRoute ? "bold" : "normal"}
                   >
-                    {routeArg.name}
+                    {routeArg.translationKey
+                      ? t(`common.${routeArg.translationKey}`)
+                      : routeArg.name}
                   </Text>
                 </Flex>
                 <Box
@@ -85,7 +88,9 @@ export default function SidebarLink({ route, isGroup }: Props) {
                   color={isActiveRoute ? activeColor : inactiveColor}
                   fontWeight={isActiveRoute ? "bold" : "normal"}
                 >
-                  {routeArg.name}
+                  {routeArg.translationKey
+                    ? t(`common.${routeArg.translationKey}`)
+                    : routeArg.name}
                 </Text>
                 <Box h="36px" w="4px" bg="brand.400" borderRadius="5px" />
               </HStack>
@@ -107,7 +112,9 @@ export default function SidebarLink({ route, isGroup }: Props) {
               onClick={onToggle}
               color={isOpen ? activeColor : inactiveColor}
             >
-              {route.groupName}
+              {route.translationKey
+                ? t(`common.${route.translationKey}`)
+                : route.groupName}
             </Text>
           </HStack>
         </Box>
