@@ -1,7 +1,9 @@
 /* eslint-disable */
 
 // chakra imports
+import { routeAccess } from "helpers/routeAccess";
 import { useSelector } from "react-redux";
+import { RootState } from "store/store";
 import { RouteTypeExtended } from "types";
 import SidebarLink from "./SidebarLink";
 
@@ -9,7 +11,7 @@ export function SidebarLinks(props: {
   routes: Array<RoutesType | Array<RoutesType>>;
 }) {
   //   Chakra color mode
-
+  const user = useSelector((state: RootState) => state.user);
   const { routes } = props;
   // verifies if routeName is the one active (in browser input)
 
@@ -23,8 +25,12 @@ export function SidebarLinks(props: {
       )
         return null;
       if (Array.isArray(route.nestedRoutes)) {
+        const hasRouteGroupAccess = routeAccess(user, route);
+        if (!hasRouteGroupAccess) return null;
         return <SidebarLink isGroup={true} route={route} key={index} />;
       }
+      const hasAccess = routeAccess(user, route);
+      if (!hasAccess) return null;
       return <SidebarLink route={route} key={route.path} />;
     });
   };

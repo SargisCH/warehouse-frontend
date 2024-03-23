@@ -1,3 +1,5 @@
+import { Role } from "types";
+
 export {};
 
 declare global {

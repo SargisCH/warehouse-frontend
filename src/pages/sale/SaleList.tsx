@@ -37,6 +37,7 @@ type RowObj = {
   clientName: string;
   clientCode: string;
   products: string[];
+  totalPrice: number;
   created_at: string;
   updated_at: string;
 };
@@ -66,6 +67,16 @@ function SaleList() {
     }, 5000);
     setCurrentPage(page);
   };
+  const total = React.useMemo(() => {
+    return data.saleList.reduce((saleAcc, sale) => {
+      return (
+        saleAcc +
+        sale.saleItems.reduce((acc, item) => {
+          return acc + item.price * item.amount;
+        }, 0)
+      );
+    }, 0);
+  }, [data.saleList]);
   const saleArray: RowObj[] = data.saleList.map(
     ({ id, client, saleItems, created_at, updated_at }) => {
       return {
@@ -75,6 +86,9 @@ function SaleList() {
         products: saleItems.map(
           ({ stockProduct }) => stockProduct?.product.name,
         ),
+        totalPrice: saleItems.reduce((acc, item) => {
+          return acc + item.price * item.amount;
+        }, 0),
         created_at,
         updated_at,
       };
@@ -162,7 +176,7 @@ function SaleList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Created At
+          Updated At
         </Text>
       ),
       cell: (info: any) => {
@@ -170,6 +184,28 @@ function SaleList() {
           <Flex align="center">
             <Text color={textColor} fontSize="sm" fontWeight="700">
               {dayjs(info.getValue()).format("DD/MM/YYYY")}
+            </Text>
+          </Flex>
+        );
+      },
+    }),
+    columnHelper.accessor("totalPrice", {
+      id: "totalPrice",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Total
+        </Text>
+      ),
+      cell: (info: any) => {
+        return (
+          <Flex align="center">
+            <Text color={textColor} fontSize="sm" fontWeight="700">
+              {info.getValue()}
             </Text>
           </Flex>
         );
@@ -297,14 +333,19 @@ function SaleList() {
               })}
           </Tbody>
         </Table>
-        <Pagination
-          currentPage={currentPage}
-          totalPages={data.totalPages}
-          onPageChange={(page: number) => {
-            setCurrentPage(page);
-          }}
-          setQueryParams
-        />
+        <Flex justifyContent={"flex-end"} paddingRight="20px">
+          <Text fontWeight={"bold"}> Total: {total} </Text>
+        </Flex>
+        <Flex marginTop={"20px"} justifyContent="flex-end">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={data.totalPages}
+            onPageChange={(page: number) => {
+              setCurrentPage(page);
+            }}
+            setQueryParams
+          />
+        </Flex>
       </Box>
     </Card>
   );

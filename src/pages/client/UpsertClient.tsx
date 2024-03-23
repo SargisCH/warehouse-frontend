@@ -92,6 +92,7 @@ const UpsertClient = () => {
         setOtherPhoneNumber(res.data.otherPhoneNumber);
         setLegalAddress(res.data.legalAddress);
         setAddress(res.data.address);
+        setContactPerson(res.data.contactPerson);
         setAccountNumber(res.data.accountNumber);
         setBankAccountNumber(res.data.bankAccountNumber);
 
@@ -168,9 +169,9 @@ const UpsertClient = () => {
     );
   }
   return (
-    <Flex direction="column">
-      <Flex gap="20px">
-        <Flex direction={"column"} gap="20px">
+    <Box>
+      <Flex direction="column" gap="20px">
+        <Flex gap="20px">
           <FormControl>
             <FormLabel>Name</FormLabel>
             <Input
@@ -199,7 +200,7 @@ const UpsertClient = () => {
             />
           </FormControl>
         </Flex>
-        <Flex direction={"column"} gap="20px">
+        <Flex gap="20px">
           <FormControl>
             <FormLabel>Email</FormLabel>
             <Input
@@ -226,6 +227,8 @@ const UpsertClient = () => {
               onChange={(e) => setBankAccountNumber(e.target.value)}
             />
           </FormControl>
+        </Flex>
+        <Flex gap="20px">
           <FormControl>
             <FormLabel>Account Number</FormLabel>
             <Input
@@ -235,8 +238,6 @@ const UpsertClient = () => {
               onChange={(e) => setAccountNumber(e.target.value)}
             />
           </FormControl>
-        </Flex>
-        <Flex direction={"column"} gap="20px">
           <FormControl>
             <FormLabel>Tax Id</FormLabel>
             <Input
@@ -255,6 +256,8 @@ const UpsertClient = () => {
               onChange={(e) => setLegalAddress(e.target.value)}
             />
           </FormControl>
+        </Flex>
+        <Flex gap="20px">
           <FormControl>
             <FormLabel>Address</FormLabel>
             <Input
@@ -264,8 +267,6 @@ const UpsertClient = () => {
               onChange={(e) => setAddress(e.target.value)}
             />
           </FormControl>
-        </Flex>
-        <Flex direction={"column"} gap="20px">
           <FormControl>
             <FormLabel>Phone Number</FormLabel>
             <Input
@@ -284,18 +285,18 @@ const UpsertClient = () => {
               onChange={(e) => setOtherPhoneNumber(e.target.value)}
             />
           </FormControl>
-          <FormControl>
-            <FormLabel>Contact Person</FormLabel>
-            <Input
-              type="text"
-              placeholder="Contact Person"
-              value={address}
-              onChange={(e) => setContactPerson(e.target.value)}
-            />
-          </FormControl>
         </Flex>
       </Flex>
-      <Flex gap="20px" width={"60%"} mt="10px">
+      <Flex gap="20px" mt="10px">
+        <FormControl>
+          <FormLabel>Contact Person</FormLabel>
+          <Input
+            type="text"
+            placeholder="Contact Person"
+            value={contactPerson}
+            onChange={(e) => setContactPerson(e.target.value)}
+          />
+        </FormControl>
         <FormControl>
           <FormLabel>Assign Manager</FormLabel>
           <Select
@@ -345,7 +346,7 @@ const UpsertClient = () => {
           headerText={`Delete Inventory Supplier`}
         />
       ) : null}
-    </Flex>
+    </Box>
   );
 };
 

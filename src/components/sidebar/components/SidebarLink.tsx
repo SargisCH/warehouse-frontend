@@ -7,8 +7,11 @@ import {
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
+import { routeAccess } from "helpers/routeAccess";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { NavLink, useLocation } from "react-router-dom";
+import { RootState } from "store/store";
 import { RouteTypeExtended } from "types";
 
 type Props = {
@@ -31,6 +34,8 @@ export default function SidebarLink({ route, isGroup }: Props) {
   const activeRoute = (routeName: string) => {
     return location.pathname === routeName;
   };
+  const user = useSelector((state: RootState) => state.user);
+
   const getLink = (routeArg: RouteTypeExtended, isGroup = false) => {
     if (
       routeArg.layout === "/admin" ||
@@ -119,9 +124,11 @@ export default function SidebarLink({ route, isGroup }: Props) {
           </HStack>
         </Box>
         <Collapse in={isOpen} animateOpacity>
-          {route.nestedRoutes.map((nestedRoute: RouteTypeExtended) =>
-            getLink(nestedRoute, true),
-          )}
+          {route.nestedRoutes.map((nestedRoute: RouteTypeExtended) => {
+            const hasAccess = routeAccess(user, nestedRoute);
+            if (!hasAccess) return null;
+            return getLink(nestedRoute, true);
+          })}
         </Collapse>
       </div>
     );

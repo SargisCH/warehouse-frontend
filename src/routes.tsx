@@ -17,7 +17,7 @@ import Inventory from "pages/inventory/Inventory";
 import Product from "pages/product/Product";
 import InventorySupplier from "pages/inventorySupplier/InventorySupplier";
 import InventorySupplierOrder from "pages/supplyOrder/SupplyOrder";
-import { RouteTypeExtended } from "./types/index";
+import { Role, RouteTypeExtended } from "./types/index";
 
 // Auth Imports
 import SignInCentered from "views/auth/signIn";
@@ -39,6 +39,7 @@ const routes: RouteTypeExtended[] = [
     path: "/default",
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: MainDashboard,
+    role: [Role.ADMIN, Role.MANAGER],
   },
   // {
   //   name: "NFT Marketplace",
@@ -75,6 +76,7 @@ const routes: RouteTypeExtended[] = [
     path: "/sign-in",
     icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
     component: SignInCentered,
+    role: [],
   },
   {
     name: "Sign Up",
@@ -82,6 +84,7 @@ const routes: RouteTypeExtended[] = [
     path: "/sign-up",
     icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
     component: SignUp,
+    role: [],
   },
   {
     name: "Verify Email",
@@ -89,6 +92,7 @@ const routes: RouteTypeExtended[] = [
     path: "/verify-email/:email",
     icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
     component: VerifyEmail,
+    role: [],
   },
   // {
   //   name: "Change password",
@@ -114,6 +118,7 @@ const routes: RouteTypeExtended[] = [
     group: true,
     groupName: "Pahest",
     translationKey: "warehouse",
+    role: [],
     nestedRoutes: [
       {
         name: "Humq",
@@ -123,6 +128,7 @@ const routes: RouteTypeExtended[] = [
         exact: true,
         icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
         component: Inventory,
+        role: [Role.ADMIN],
       },
       {
         name: "Products",
@@ -132,6 +138,7 @@ const routes: RouteTypeExtended[] = [
         exact: true,
         icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
         component: Product,
+        role: [Role.ADMIN],
       },
       {
         name: "Stock Products",
@@ -141,6 +148,7 @@ const routes: RouteTypeExtended[] = [
         exact: true,
         icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
         component: StockProductList,
+        role: [Role.ADMIN],
       },
       {
         name: "Categories",
@@ -150,6 +158,7 @@ const routes: RouteTypeExtended[] = [
         exact: true,
         icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
         component: ProductCategory,
+        role: [Role.ADMIN],
       },
     ],
   },
@@ -163,6 +172,7 @@ const routes: RouteTypeExtended[] = [
     group: true,
     groupName: "Vacharq",
     translationKey: "sales",
+    role: [],
     nestedRoutes: [
       {
         name: "vacharqneri patmutyun",
@@ -172,6 +182,7 @@ const routes: RouteTypeExtended[] = [
         exact: true,
         icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
         component: Sale,
+        role: [Role.ADMIN, Role.MANAGER],
       },
       {
         name: "vacharaketer",
@@ -181,6 +192,7 @@ const routes: RouteTypeExtended[] = [
         exact: true,
         icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
         component: Client,
+        role: [Role.ADMIN, Role.MANAGER],
       },
     ],
   },
@@ -192,6 +204,7 @@ const routes: RouteTypeExtended[] = [
     exact: true,
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: InventorySupplier,
+    role: [Role.ADMIN],
   },
   {
     name: "Suppy Orders",
@@ -201,6 +214,7 @@ const routes: RouteTypeExtended[] = [
     exact: true,
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: InventorySupplierOrder,
+    role: [Role.ADMIN],
   },
   {
     name: "Credit list",
@@ -210,6 +224,7 @@ const routes: RouteTypeExtended[] = [
     exact: true,
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: Credit,
+    role: [Role.ADMIN, Role.MANAGER],
   },
   {
     name: "Transaction History List",
@@ -219,6 +234,7 @@ const routes: RouteTypeExtended[] = [
     exact: true,
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: TransactionHistory,
+    role: [Role.ADMIN, Role.MANAGER],
   },
   {
     name: "Managers",
@@ -228,6 +244,7 @@ const routes: RouteTypeExtended[] = [
     exact: true,
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: Manager,
+    role: [Role.ADMIN],
   },
 ];
 

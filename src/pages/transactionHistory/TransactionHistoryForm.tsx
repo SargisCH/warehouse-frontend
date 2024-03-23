@@ -23,6 +23,9 @@ import Select from "react-select";
 import { links } from "routes";
 import dayjs from "dayjs";
 import { useGetInventorySupplierQuery } from "api/inventorySupplier";
+import { useSelector } from "react-redux";
+import { RootState } from "store/store";
+import { Role } from "types";
 type OptionType = {
   label: string;
   value: string;
@@ -38,6 +41,8 @@ const transactionTypeOptions = [
   },
 ];
 const TransactionHistoryForm = () => {
+  const { role: userRole } = useSelector((state: RootState) => state.user);
+  const isManager = userRole === Role.MANAGER;
   const [amount, setAmount] = useState<number>();
   const [selectedClient, setSelectedClient] = useState<OptionType>();
   const [selectedSupplier, setSelectedSupplier] = useState<OptionType>();
@@ -113,6 +118,14 @@ const TransactionHistoryForm = () => {
     }
     history.push(links.transactionHistories);
   };
+  useEffect(() => {
+    if (isManager) {
+      setSelectedType({
+        label: TransactionType.IN,
+        value: TransactionType.IN,
+      });
+    }
+  }, [isManager, setSelectedType]);
   return (
     <Flex direction="column">
       <Flex gap="20px">
@@ -128,6 +141,7 @@ const TransactionHistoryForm = () => {
             <Select
               value={selectedType}
               onChange={setSelectedType}
+              isDisabled={isManager}
               options={transactionTypeOptions.map((tr) => ({
                 label: tr.label,
                 value: tr.value,

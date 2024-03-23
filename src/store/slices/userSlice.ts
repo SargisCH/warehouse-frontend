@@ -1,16 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { Role } from "types";
-
-interface User {
-  email: string;
-  id: number;
-  tenant: {
-    id: number;
-    name: string;
-  };
-  role: Role;
-}
+import { Role, User } from "types";
 
 const initialState = {
   email: "",

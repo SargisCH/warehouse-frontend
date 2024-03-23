@@ -8,6 +8,7 @@ import {
   Spinner,
   NumberInput,
   NumberInputField,
+  Text,
 } from "@chakra-ui/react";
 import {
   useAddSaleMutation,
@@ -17,7 +18,7 @@ import {
   ClientType,
   useLazyGetClientQuery,
 } from "api/client";
-import { Reducer, useEffect, useReducer, useState } from "react";
+import { Reducer, useEffect, useMemo, useReducer, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -193,6 +194,41 @@ const UpsertSale = () => {
   const [getClients] = useLazyGetClientQuery();
   const { data } = useGetStockProductQuery();
   const stockProducts = data?.stockProducts || [];
+  const totals = useMemo(() => {
+    const totalsTemp: {
+      cash: number;
+      credit: number;
+      transfer: number;
+      partial_credit: number;
+      total: number;
+      [key: string]: number;
+    } = {
+      cash: 0,
+      credit: 0,
+      transfer: 0,
+      partial_credit: 0,
+      total: 0,
+    };
+    if (!saleState.saleItems?.length) return totalsTemp;
+    const total = saleState.saleItems.reduce((acc, item) => {
+      return acc + Number(item.amount) * Number(item.price);
+    }, 0);
+    totalsTemp.total = total;
+    if (saleState.paymentType.value === PaymentType.CASH) {
+      totalsTemp.cash = total;
+    } else if (saleState.paymentType.value === PaymentType.TRANSFER) {
+      totalsTemp.transfer = total;
+    } else if (saleState.paymentType.value === PaymentType.CREDIT) {
+      totalsTemp.credit = total;
+    } else {
+      totalsTemp.partial_credit = saleState.partialCreditAmount;
+    }
+    return totalsTemp;
+  }, [
+    saleState.saleItems,
+    saleState.paymentType.value,
+    saleState.partialCreditAmount,
+  ]);
   useEffect(() => {
     (async () => {
       if (params.clientId) {
@@ -207,7 +243,11 @@ const UpsertSale = () => {
       }
     })();
   }, [params.clientId, setClients, getClients, getClientById]);
-
+  useEffect(() => {
+    if (saleState.paymentType.value && !saleState.saleItems?.length) {
+      dispatch({ type: "ADD_PRODUCT" });
+    }
+  }, [saleState.paymentType, saleState.saleItems.length]);
   const saveSale = async () => {
     const data: SaleType = {
       clientId: saleState.clientId,
@@ -226,6 +266,7 @@ const UpsertSale = () => {
     await addSale(data);
     history.push(links.sale);
   };
+
   if (isLoading) {
     return (
       <Spinner
@@ -240,7 +281,7 @@ const UpsertSale = () => {
   return (
     <Flex direction="column">
       <Flex direction="row">
-        <Flex direction="column" width={"100%"} gap="20px">
+        <Box width={"100%"} gap="20px">
           <Flex direction={"column"} width={"100%"} gap="20px">
             <Flex gap="20px" width={"100%"}>
               <FormControl>
@@ -300,21 +341,8 @@ const UpsertSale = () => {
                 </FormControl>
               ) : null}
             </Flex>
-
-            {!saleState.saleItems.length ? (
-              <Button
-                maxWidth={"150px"}
-                paddingLeft="10px"
-                paddingRight="10px"
-                onClick={() => {
-                  dispatch({ type: "ADD_PRODUCT" });
-                }}
-              >
-                Add Product
-              </Button>
-            ) : null}
           </Flex>
-          <Flex direction="column" gap={"20px"}>
+          <Flex direction="column" gap={"20px"} marginTop="20px">
             {saleState.saleItems?.map((si, siIndex) => {
               return (
                 <Flex gap="20px">
@@ -437,8 +465,29 @@ const UpsertSale = () => {
               );
             })}
           </Flex>
-        </Flex>
+        </Box>
       </Flex>
+      {saleState.saleItems.length ? (
+        <Flex justifyContent={"flex-end"}>
+          <Box marginTop={"20px"} paddingRight="20px">
+            <Text>
+              {saleState.paymentType.value === PaymentType.PARTIAL_CREDIT ? (
+                <>partial credit : {totals.partial_credit}</>
+              ) : (
+                <>
+                  {(saleState.paymentType.value as string).toLowerCase()} :
+                  {
+                    totals[
+                      (saleState.paymentType.value as string).toLowerCase()
+                    ]
+                  }
+                </>
+              )}
+            </Text>
+            <Text>Total: {totals.total}</Text>
+          </Box>
+        </Flex>
+      ) : null}
       <Box mt={5}>
         <Button colorScheme="teal" onClick={() => saveSale()}>
           Save
