@@ -372,6 +372,15 @@ const UpsertSale = () => {
                             },
                           },
                         });
+                        if (stockProductFound) {
+                          dispatch({
+                            type: "SET_PRICE",
+                            payload: {
+                              index: siIndex,
+                              data: stockProductFound.product?.price,
+                            },
+                          });
+                        }
                       }}
                     />
                   </FormControl>
@@ -379,15 +388,15 @@ const UpsertSale = () => {
                     <FormLabel>Price</FormLabel>
                     <NumberInput
                       value={si.price}
-                      onChange={(value) =>
+                      onChange={(value) => {
                         dispatch({
                           type: "SET_PRICE",
                           payload: {
                             index: siIndex,
                             data: value,
                           },
-                        })
-                      }
+                        });
+                      }}
                     >
                       <NumberInputField placeholder="Price for one unit" />
                     </NumberInput>

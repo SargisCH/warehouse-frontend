@@ -35,6 +35,7 @@ export default function SaleInfo() {
           <Tr>
             <Th>Product Name</Th>
             <Th>Price</Th>
+            <Th>Original price</Th>
             <Th>Price Unit</Th>
             <Th>Amount</Th>
             <Th>Amount Unit</Th>
@@ -43,10 +44,12 @@ export default function SaleInfo() {
         </Thead>
         <Tbody>
           {saleData.saleItems?.map((item, index) => {
+            const priceChanged = typeof item.originalPrice === "number";
             return (
               <Tr key={index}>
                 <Td>{item.stockProduct?.product.name}</Td>
-                <Td>{item.price}</Td>
+                <Td color={priceChanged ? "red.500" : ""}>{item.price}</Td>
+                <Td>{priceChanged ? item.originalPrice : item.price}</Td>
                 <Td>{item.priceUnit}</Td>
                 <Td>{item.amount}</Td>
                 <Td>{item.amountUnit}</Td>

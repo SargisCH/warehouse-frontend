@@ -25,10 +25,15 @@ import dayjs from "dayjs";
 import { useGetInventorySupplierQuery } from "api/inventorySupplier";
 import { useSelector } from "react-redux";
 import { RootState } from "store/store";
-import { Role } from "types";
+import { Role, TransactionStatus } from "types";
 type OptionType = {
   label: string;
   value: string;
+};
+
+type TransactionStatusOptionType = {
+  label: TransactionStatus;
+  value: TransactionStatus;
 };
 const transactionTypeOptions = [
   {
@@ -40,6 +45,22 @@ const transactionTypeOptions = [
     value: TransactionType.OUT,
   },
 ];
+
+const transactionStatusOptions = [
+  {
+    label: TransactionStatus.PENDING,
+    value: TransactionStatus.PENDING,
+  },
+  {
+    label: TransactionStatus.FINISHED,
+    value: TransactionStatus.FINISHED,
+  },
+  {
+    label: TransactionStatus.FAILED,
+    value: TransactionStatus.FAILED,
+  },
+];
+
 const TransactionHistoryForm = () => {
   const { role: userRole } = useSelector((state: RootState) => state.user);
   const isManager = userRole === Role.MANAGER;
@@ -57,6 +78,8 @@ const TransactionHistoryForm = () => {
   const [getTransactionHistoryById] = useLazyGetTransactionHistoryByIdQuery();
   const { data: clients = [] } = useGetClientQuery();
   const { data: suppliers = [] } = useGetInventorySupplierQuery();
+  const [selectedStatus, setSelectedStatus] =
+    useState<TransactionStatusOptionType>();
   const history = useHistory();
   useEffect(() => {
     (async () => {
@@ -88,6 +111,10 @@ const TransactionHistoryForm = () => {
           label: res.data.transactionType,
           value: res.data.transactionType,
         });
+        setSelectedStatus({
+          label: res.data.status,
+          value: res.data.status,
+        });
       }
     })();
   }, [
@@ -102,6 +129,7 @@ const TransactionHistoryForm = () => {
       amount,
       date: date,
       transactionType: selectedType.value,
+      status: selectedStatus?.value ?? TransactionStatus.PENDING,
     };
     if (selectedType.value === TransactionType.OUT) {
       data.inventorySupplierId = Number(selectedSupplier.value);
@@ -181,6 +209,24 @@ const TransactionHistoryForm = () => {
             </FormControl>
           )}
         </Flex>
+      </Flex>
+      <Flex width={"30%"}>
+        <FormControl>
+          <FormLabel>Transaction Status</FormLabel>
+          <Select
+            value={
+              !params.transactionHistoryId
+                ? {
+                    label: TransactionStatus.PENDING,
+                    value: TransactionStatus.PENDING,
+                  }
+                : selectedStatus
+            }
+            onChange={setSelectedStatus}
+            isDisabled={!params.transactionHistoryId}
+            options={transactionStatusOptions}
+          />
+        </FormControl>
       </Flex>
       <Box mt={5}>
         <Button colorScheme="teal" onClick={() => saveCredit()}>

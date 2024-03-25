@@ -31,3 +31,9 @@ export enum Role {
   MANAGER = "MANAGER",
   USER = "USER",
 }
+
+export enum TransactionStatus {
+  PENDING = "PENDING",
+  FAILED = "FAILED",
+  FINISHED = "FINISHED",
+}

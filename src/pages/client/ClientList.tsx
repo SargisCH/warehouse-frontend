@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Flex,
+  Input,
   Table,
   Tbody,
   Td,
@@ -30,7 +31,10 @@ import { useHistory } from "react-router-dom";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
 import ReactSelect from "react-select";
-import { Weekday } from "types";
+import { Role, Weekday } from "types";
+import { useSelector } from "react-redux";
+import { RootState } from "store/store";
+import { ManagerType, useLazyGetManagerQuery } from "api/manager";
 // Assets
 
 type RowObj = ClientType;
@@ -48,20 +52,52 @@ const weekDayOptions: DayOptionType[] = [
 ].map((d) => ({ label: d, value: d }));
 
 const columnHelper = createColumnHelper<RowObj>();
-
+let searchTimeoutId: ReturnType<typeof setTimeout>;
 // const columns = columnsDataCheck;
 function ClientList() {
+  const user = useSelector((state: RootState) => state.user);
+  const [selectedManager, setSelectedManager] = React.useState<{
+    label: string;
+    value: number;
+  }>();
+  const [getManagers, { data: managersData = [] }] = useLazyGetManagerQuery();
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [searchFilter, setSearchFilter] = React.useState("");
   const [selectedDay, setSelectedDay] = React.useState<DayOptionType>();
-  const { data: clientArray = [], refetch } = useGetClientQuery({
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  console.log("sorting", sorting);
+
+  const queryObject = {
     weekDay: selectedDay?.value as string,
-  });
+    searchTerm: searchFilter,
+    managerId: selectedManager?.value,
+    sortKey: "",
+    sortOrder: "",
+  };
+  if (sorting.length) {
+    queryObject.sortKey = sorting[0].id;
+    queryObject.sortOrder = sorting[0].desc ? "desc" : "asc";
+  }
+  const { data: clientArray = [], refetch } = useGetClientQuery(queryObject);
   useEffect(() => {
     refetch();
   }, [refetch]);
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  useEffect(() => {
+    if (user.role === Role.ADMIN) {
+      getManagers();
+    }
+  }, [user.role, getManagers]);
+
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
+  const handleSearchTermChange = (e: any) => {
+    setSearchTerm(e.target.value);
+    clearTimeout(searchTimeoutId);
+    searchTimeoutId = setTimeout(() => {
+      setSearchFilter(e.target.value);
+    }, 500);
+  };
   const columns = [
     columnHelper.accessor("name", {
       id: "name",
@@ -214,13 +250,14 @@ function ClientList() {
   const table = useReactTable({
     data: clientArray,
     columns: columns as any,
-    state: {
-      sorting,
-    },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     debugTable: true,
+    manualSorting: true,
+    state: {
+      sorting,
+    },
   });
   return (
     <Card
@@ -241,12 +278,34 @@ function ClientList() {
           Client List
         </Text>
         <Flex>
+          {user.role === Role.ADMIN ? (
+            <Box marginRight={10} width={"200px"}>
+              <ReactSelect
+                placeholder="Manager"
+                options={managersData.map((m) => {
+                  return {
+                    label: m.name,
+                    value: m.id,
+                  };
+                })}
+                value={selectedManager}
+                onChange={setSelectedManager}
+              />
+            </Box>
+          ) : null}
           <Box marginRight={10} width={"200px"}>
             <ReactSelect
               placeholder="Day plan"
               options={weekDayOptions}
               value={selectedDay}
               onChange={setSelectedDay}
+            />
+          </Box>
+          <Box marginRight={10} width={"200px"}>
+            <Input
+              placeholder="Search term"
+              value={searchTerm}
+              onChange={handleSearchTermChange}
             />
           </Box>
           <TableAddButton label="Add Client" link={links.createClient} />

@@ -34,6 +34,7 @@ import { TableAddButton } from "components/tableAddButton/TableAddButton";
 import { useHistory, Link as ReactLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { TransactionStatus } from "types";
 // Assets
 
 type RowObj = {
@@ -49,6 +50,7 @@ type RowObj = {
   };
   transactionType: TransactionType;
   amount: number;
+  status: TransactionStatus;
   created_at: string;
   updated_at: string;
 };
@@ -167,6 +169,28 @@ function TransactionHistoryList() {
           color="gray.400"
         >
           Amount
+        </Text>
+      ),
+      cell: (info: any) => {
+        return (
+          <Flex align="center">
+            <Text color={textColor} fontSize="sm" fontWeight="700">
+              {info.getValue()}
+            </Text>
+          </Flex>
+        );
+      },
+    }),
+    columnHelper.accessor("status", {
+      id: "status",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Status
         </Text>
       ),
       cell: (info: any) => {

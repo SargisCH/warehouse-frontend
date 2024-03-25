@@ -40,6 +40,7 @@ type RowObj = {
   totalPrice: number;
   created_at: string;
   updated_at: string;
+  priceChanged?: boolean;
 };
 
 const columnHelper = createColumnHelper<RowObj>();
@@ -89,6 +90,9 @@ function SaleList() {
         totalPrice: saleItems.reduce((acc, item) => {
           return acc + item.price * item.amount;
         }, 0),
+        priceChanged: saleItems.some(
+          (si) => typeof si.originalPrice === "number",
+        ),
         created_at,
         updated_at,
       };
@@ -202,9 +206,15 @@ function SaleList() {
         </Text>
       ),
       cell: (info: any) => {
+        const priceChanged = info.row.original?.priceChanged;
         return (
           <Flex align="center">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
+            <Text
+              title="Original price has been changed"
+              color={priceChanged ? "red.500" : textColor}
+              fontSize="sm"
+              fontWeight="700"
+            >
               {info.getValue()}
             </Text>
           </Flex>

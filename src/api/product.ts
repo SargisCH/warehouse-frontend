@@ -16,7 +16,12 @@ export type ProductItem = {
 
 export type StockProductItem = {
   id: number;
-  product?: Partial<{ name: string; id: number; priceUnit: string }>;
+  product?: Partial<{
+    name: string;
+    id: number;
+    price: number;
+    priceUnit: string;
+  }>;
   productId: number;
   inStock: number;
   inStockUnit?: string;

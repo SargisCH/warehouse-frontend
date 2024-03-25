@@ -1,3 +1,4 @@
+import { TransactionStatus } from "types";
 import { api } from "./api";
 import { SaleType } from "./client";
 
@@ -20,6 +21,7 @@ export type TransactionHistoryItem = {
   amount: number;
   transactionType: TransactionType;
   date?: Date;
+  status: TransactionStatus;
   updated_at?: string;
   created_at?: string;
 };

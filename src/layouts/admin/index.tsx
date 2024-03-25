@@ -1,13 +1,11 @@
 // Chakra imports
 import { Box, useDisclosure } from "@chakra-ui/react";
-import { useGetUserMutation } from "api/auth";
 import Footer from "components/footer/FooterAdmin";
 // Layout components
 import Navbar from "components/navbar/NavbarAdmin";
 import Sidebar from "components/sidebar/Sidebar";
 import { SidebarContext } from "contexts/SidebarContext";
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import {
   Redirect,
   Route,
@@ -16,8 +14,6 @@ import {
   useLocation,
 } from "react-router-dom";
 import routes from "routes";
-import { setUserData } from "store/slices/userSlice";
-import { RootState } from "store/store";
 import { RouteTypeExtended } from "types";
 
 // Custom Chakra theme
@@ -33,7 +29,6 @@ export default function Dashboard(props: { [x: string]: any }) {
     history.push(`/auth/sign-in?next=${location.pathname}`);
   }
 
-  const userEmail = useSelector((state: RootState) => state.user.email || "");
   const getRoute = () => {
     return window.location.pathname !== "/admin/full-screen-maps";
   };
@@ -103,16 +98,7 @@ export default function Dashboard(props: { [x: string]: any }) {
   useEffect(() => {}, []);
   document.documentElement.dir = "ltr";
   const { onOpen } = useDisclosure();
-  const [getUser, { data: userData }] = useGetUserMutation();
-  const dispatch = useDispatch();
-  useEffect(() => {
-    getUser(userEmail);
-  }, []);
-  useEffect(() => {
-    if (userData?.email) {
-      dispatch(setUserData(userData));
-    }
-  }, [dispatch, userData]);
+
   return (
     <Box>
       <SidebarContext.Provider

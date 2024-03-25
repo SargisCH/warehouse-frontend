@@ -42,6 +42,7 @@ export interface SaleType {
     priceUnit: string;
     amount: number;
     amountUnit: string;
+    originalPrice?: number;
   }>;
   paymentType: PaymentType;
   updated_at?: string;
@@ -79,10 +80,31 @@ const clientApi = api.injectEndpoints({
         };
       },
     }),
-    getClient: builder.query<ClientType[], { weekDay: string } | void>({
-      query: (arg: { weekDay: string } = { weekDay: "" }) => {
+    getClient: builder.query<
+      ClientType[],
+      {
+        weekDay?: string;
+        searchTerm?: string;
+        managerId?: number;
+        sortKey?: string;
+        sortOrder?: string;
+      } | void
+    >({
+      query: (
+        arg: {
+          weekDay?: string;
+          searchTerm?: string;
+          managerId?: number;
+          sortKey?: string;
+          sortOrder?: string;
+        } = {
+          weekDay: "",
+          searchTerm: "",
+        },
+      ) => {
+        const queryString = `weekDay=${arg.weekDay ?? ""}&searchTerm=${arg.searchTerm || ""}&managerId=${arg.managerId || ""}&sortKey=${arg.sortKey || ""}&sortOrder=${arg.sortOrder || ""}`;
         return {
-          url: `client?weekDay=${arg.weekDay ?? ""}`,
+          url: `client?${queryString}`,
           method: "GET",
         };
       },
