@@ -26,7 +26,7 @@ export default function Dashboard(props: { [x: string]: any }) {
   const history = useHistory();
   const location = useLocation();
   if (!props.userEmail) {
-    history.push(`/auth/sign-in?next=${location.pathname}`);
+    history.push(`/auth/sign-in?next=${location.pathname}?${location.search}`);
   }
 
   const getRoute = () => {

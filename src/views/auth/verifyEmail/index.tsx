@@ -25,7 +25,6 @@ export default function VerifyEmail() {
       initialValues={{ code: "" }}
       onSubmit={(values, actions) => {
         setTimeout(() => {
-          alert(JSON.stringify(values, null, 2));
           actions.setSubmitting(false);
           verifyEmailRequest({ ...values, email: params.email });
         }, 1000);

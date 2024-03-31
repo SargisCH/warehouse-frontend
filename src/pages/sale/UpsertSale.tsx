@@ -8,184 +8,87 @@ import {
   Spinner,
   NumberInput,
   NumberInputField,
-  Text,
+  FormErrorMessage,
 } from "@chakra-ui/react";
 import {
   useAddSaleMutation,
-  SaleType,
   PaymentType,
   useLazyGetClientByIdQuery,
   ClientType,
   useLazyGetClientQuery,
 } from "api/client";
-import { Reducer, useEffect, useMemo, useReducer, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
 import { links } from "routes";
 import { useGetStockProductQuery } from "api/product";
-type OptionType = {
-  label: string | number;
-  value: string | number;
+import { Form, Formik, FieldArray, getIn } from "formik";
+import * as Yup from "yup";
+import SaleForm from "./SaleForm";
+
+const paymentTypeOptions = [
+  {
+    label: PaymentType.CASH,
+    value: PaymentType.CASH,
+  },
+  {
+    label: PaymentType.TRANSFER,
+    value: PaymentType.TRANSFER,
+  },
+  {
+    label: PaymentType.CREDIT,
+    value: PaymentType.CREDIT,
+  },
+  {
+    label: PaymentType.PARTIAL_CREDIT,
+    value: PaymentType.PARTIAL_CREDIT,
+  },
+];
+
+const generateKey = (pre: string) => {
+  return `${pre}_${new Date().getTime()}`;
 };
 
-type SaleAction =
-  | { type: "SET_PAYMENT_TYPE"; payload: OptionType }
-  | { type: "SET_CLIENT_ID"; payload: number }
-  | { type: "SET_PARTIAL_CREDIT_AMOUNT"; payload: number }
-  | { type: "SET_PRICE"; payload: { index: number; data: number | string } }
-  | { type: "SET_PRICE_UNIT"; payload: { index: number; data: OptionType } }
-  | { type: "SET_AMOUNT_UNIT"; payload: { index: number; data: OptionType } }
-  | { type: "SET_AMOUNT"; payload: { index: number; data: number | string } }
-  | { type: "SET_PRODUCT"; payload: { index: number; data: OptionType } }
-  | { type: "ADD_PRODUCT" }
-  | { type: "DELETE_PRODUCT"; payload: { index: number } }
-  | {
-      type: "SET_PRODUCT_UNITS";
-      payload: {
-        stockProductId: number;
-        priceUnit: OptionType;
-      };
-    };
+const SaleSchema = Yup.object().shape({
+  clientId: Yup.number().required("Required"),
+  paymentType: Yup.string().required("Required"),
+  partialCreditAmount: Yup.number().optional(),
+  saleItems: Yup.array(
+    Yup.object({
+      amount: Yup.number()
+        .notOneOf([0], "Amount should be greater than 0")
+        .required("Required"),
+      amountUnit: Yup.string().required("Required"),
+      price: Yup.number().required("Required"),
+      priceUnit: Yup.string().required("Required"),
+      stockProduct: Yup.number().required("Required"),
+    }),
+  ),
+});
 
-const SaleReducer: Reducer<SaleStateType, SaleAction> = (
-  state,
-  action,
-): SaleStateType => {
-  switch (action.type) {
-    case "SET_CLIENT_ID":
-      return { ...state, clientId: action.payload };
-    case "SET_PAYMENT_TYPE":
-      return { ...state, paymentType: action.payload };
-    case "SET_PARTIAL_CREDIT_AMOUNT":
-      return { ...state, partialCreditAmount: action.payload };
-    case "ADD_PRODUCT": {
-      return {
-        ...state,
-        saleItems: [
-          ...state.saleItems,
-          {
-            stockProduct: null,
-            price: 0,
-            amount: 0,
-            priceUnit: {
-              label: "KG",
-              value: "KG",
-            },
-            amountUnit: {
-              label: "item",
-              value: "item",
-            },
-          },
-        ],
-      };
-    }
-    case "DELETE_PRODUCT": {
-      return {
-        ...state,
-        saleItems: state.saleItems.filter(
-          (_, index) => index !== action.payload.index,
-        ),
-      };
-    }
-    case "SET_PRODUCT": {
-      const saleItems = [...state.saleItems];
-      saleItems[action.payload.index] = {
-        ...saleItems[action.payload.index],
-        stockProduct: action.payload.data,
-      };
-      return {
-        ...state,
-        saleItems,
-      };
-    }
-    case "SET_PRODUCT_UNITS": {
-      const { stockProductId, priceUnit } = action.payload;
-      const saleItems = [...state.saleItems];
-      const itemIndex = saleItems.findIndex(
-        (si) => si.stockProduct.value === stockProductId,
-      );
-      saleItems[itemIndex] = {
-        ...saleItems[itemIndex],
-        priceUnit,
-      };
-      return {
-        ...state,
-        saleItems,
-      };
-    }
-    case "SET_PRICE_UNIT": {
-      const saleItems = [...state.saleItems];
-      saleItems[action.payload.index] = {
-        ...saleItems[action.payload.index],
-        priceUnit: action.payload.data,
-      };
-      return {
-        ...state,
-        saleItems,
-      };
-    }
-    case "SET_AMOUNT_UNIT": {
-      const saleItems = [...state.saleItems];
-      saleItems[action.payload.index] = {
-        ...saleItems[action.payload.index],
-        amountUnit: action.payload.data,
-      };
-      return {
-        ...state,
-        saleItems,
-      };
-    }
-    case "SET_PRICE": {
-      const saleItems = [...state.saleItems];
-      saleItems[action.payload.index] = {
-        ...saleItems[action.payload.index],
-        price: action.payload.data,
-      };
-      return {
-        ...state,
-        saleItems,
-      };
-    }
-    case "SET_AMOUNT": {
-      const saleItems = [...state.saleItems];
-      saleItems[action.payload.index] = {
-        ...saleItems[action.payload.index],
-        amount: action.payload.data,
-      };
-      return {
-        ...state,
-        saleItems,
-      };
-    }
-    default:
-      return state;
-  }
-};
-
-type SaleStateType = {
+export type SaleStateType = {
   clientId: number;
-  paymentType: OptionType;
+  paymentType: string;
   partialCreditAmount?: number;
   saleItems: Array<{
     amount: number | string;
-    amountUnit: OptionType;
+    amountUnit: string;
     price: number | string;
-    priceUnit: OptionType;
-    stockProduct: OptionType;
+    priceUnit: string;
+    stockProduct: number;
+    reactKey?: string;
   }>;
-};
-
-const initialState: SaleStateType = {
-  clientId: null,
-  saleItems: [],
-  paymentType: { label: "", value: "" },
 };
 
 const UpsertSale = () => {
   const params = useParams() as any;
-  const [saleState, dispatch] = useReducer(SaleReducer, initialState);
+  const [initialState, setInitialState] = useState<SaleStateType>({
+    clientId: null,
+    paymentType: "",
+    saleItems: [],
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [clients, setClients] = useState<Array<ClientType>>([]);
   const [addSale] = useAddSaleMutation();
@@ -194,47 +97,15 @@ const UpsertSale = () => {
   const [getClients] = useLazyGetClientQuery();
   const { data } = useGetStockProductQuery();
   const stockProducts = data?.stockProducts || [];
-  const totals = useMemo(() => {
-    const totalsTemp: {
-      cash: number;
-      credit: number;
-      transfer: number;
-      partial_credit: number;
-      total: number;
-      [key: string]: number;
-    } = {
-      cash: 0,
-      credit: 0,
-      transfer: 0,
-      partial_credit: 0,
-      total: 0,
-    };
-    if (!saleState.saleItems?.length) return totalsTemp;
-    const total = saleState.saleItems.reduce((acc, item) => {
-      return acc + Number(item.amount) * Number(item.price);
-    }, 0);
-    totalsTemp.total = total;
-    if (saleState.paymentType.value === PaymentType.CASH) {
-      totalsTemp.cash = total;
-    } else if (saleState.paymentType.value === PaymentType.TRANSFER) {
-      totalsTemp.transfer = total;
-    } else if (saleState.paymentType.value === PaymentType.CREDIT) {
-      totalsTemp.credit = total;
-    } else {
-      totalsTemp.partial_credit = saleState.partialCreditAmount;
-    }
-    return totalsTemp;
-  }, [
-    saleState.saleItems,
-    saleState.paymentType.value,
-    saleState.partialCreditAmount,
-  ]);
+
   useEffect(() => {
     (async () => {
       if (params.clientId) {
         setIsLoading(true);
         const clientRes = await getClientById({ clientId: params.clientId });
-        dispatch({ type: "SET_CLIENT_ID", payload: clientRes.data.id });
+        if (!initialState.clientId) {
+          setInitialState({ ...initialState, clientId: clientRes.data.id });
+        }
         setClients([clientRes.data]);
         setIsLoading(false);
       } else {
@@ -242,31 +113,26 @@ const UpsertSale = () => {
         setClients(allClientRes.data);
       }
     })();
-  }, [params.clientId, setClients, getClients, getClientById]);
-  useEffect(() => {
-    if (saleState.paymentType.value && !saleState.saleItems?.length) {
-      dispatch({ type: "ADD_PRODUCT" });
-    }
-  }, [saleState.paymentType, saleState.saleItems.length]);
-  const saveSale = async () => {
-    const data: SaleType = {
-      clientId: saleState.clientId,
-      paymentType: saleState.paymentType.value as PaymentType,
-      partialCreditAmount: saleState.partialCreditAmount,
-      saleItems: saleState.saleItems.map((si) => {
-        return {
-          stockProductId: Number(si.stockProduct.value),
-          price: Number(si.price),
-          priceUnit: si.priceUnit.value.toString(),
-          amount: Number(si.amount),
-          amountUnit: si.amountUnit.value.toString(),
-        };
-      }),
-    };
-    await addSale(data);
-    history.push(links.sale);
-  };
-
+  }, [
+    params.clientId,
+    setClients,
+    getClients,
+    getClientById,
+    setInitialState,
+    initialState,
+  ]);
+  const clientOptions = useMemo(
+    () =>
+      clients.map((cl) => ({
+        label: cl.name,
+        value: cl.id,
+      })),
+    [clients],
+  );
+  const stockProductOptions = stockProducts.map((pd) => ({
+    label: pd.product.name,
+    value: pd.id,
+  }));
   if (isLoading) {
     return (
       <Spinner
@@ -278,229 +144,363 @@ const UpsertSale = () => {
       />
     );
   }
+  if (params.clientId && !initialState.clientId) return null;
   return (
     <Flex direction="column">
-      <Flex direction="row">
-        <Box width={"100%"} gap="20px">
-          <Flex direction={"column"} width={"100%"} gap="20px">
-            <Flex gap="20px" width={"100%"}>
-              <FormControl>
-                <FormLabel>Clients</FormLabel>
-                <Select
-                  options={clients.map((cl) => ({
-                    label: cl.name,
-                    value: cl.id,
-                  }))}
-                  value={{
-                    value: saleState.clientId,
-                    label:
-                      clients.find((cl) => cl.id === saleState.clientId)
-                        ?.name ?? saleState.clientId,
-                  }}
-                  isDisabled={params.clientId}
-                  onChange={(op) => {
-                    dispatch({ type: "SET_CLIENT_ID", payload: op.value });
-                  }}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Payment Type</FormLabel>
-                <Select
-                  options={[
-                    { label: PaymentType.CASH, value: PaymentType.CASH },
-                    {
-                      label: PaymentType.TRANSFER,
-                      value: PaymentType.TRANSFER,
-                    },
-                    { label: PaymentType.CREDIT, value: PaymentType.CREDIT },
-                    {
-                      label: PaymentType.PARTIAL_CREDIT,
-                      value: PaymentType.PARTIAL_CREDIT,
-                    },
-                  ]}
-                  value={saleState.paymentType}
-                  onChange={(op) => {
-                    dispatch({ type: "SET_PAYMENT_TYPE", payload: op });
-                  }}
-                />
-              </FormControl>
-              {saleState.paymentType.value === PaymentType.PARTIAL_CREDIT ? (
-                <FormControl>
-                  <FormLabel>Partial credit amount</FormLabel>
-                  <Input
-                    placeholder="How is paid right now"
-                    type="number"
-                    value={saleState.partialCreditAmount}
-                    onChange={(e) =>
-                      dispatch({
-                        type: "SET_PARTIAL_CREDIT_AMOUNT",
-                        payload: Number(e.target.value),
-                      })
-                    }
-                  />
-                </FormControl>
-              ) : null}
-            </Flex>
-          </Flex>
-          <Flex direction="column" gap={"20px"} marginTop="20px">
-            {saleState.saleItems?.map((si, siIndex) => {
-              return (
-                <Flex gap="20px">
-                  <FormControl>
-                    <FormLabel>Product</FormLabel>
-                    <Select
-                      options={stockProducts.map((pd) => ({
-                        label: pd.product.name,
-                        value: pd.id,
-                      }))}
-                      value={si.stockProduct}
-                      onChange={(op) => {
-                        dispatch({
-                          type: "SET_PRODUCT",
-                          payload: { index: siIndex, data: op },
-                        });
-                        const stockProductFound = stockProducts.find(
-                          (pr) => pr.id === op.value,
-                        );
-                        dispatch({
-                          type: "SET_PRODUCT_UNITS",
-                          payload: {
-                            stockProductId: Number(op.value),
-                            priceUnit: {
-                              label: stockProductFound.product.priceUnit,
-                              value: stockProductFound.product.priceUnit,
-                            },
-                          },
-                        });
-                        if (stockProductFound) {
-                          dispatch({
-                            type: "SET_PRICE",
-                            payload: {
-                              index: siIndex,
-                              data: stockProductFound.product?.price,
-                            },
-                          });
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormControl>
-                    <FormLabel>Price</FormLabel>
-                    <NumberInput
-                      value={si.price}
-                      onChange={(value) => {
-                        dispatch({
-                          type: "SET_PRICE",
-                          payload: {
-                            index: siIndex,
-                            data: value,
-                          },
-                        });
-                      }}
-                    >
-                      <NumberInputField placeholder="Price for one unit" />
-                    </NumberInput>
-                  </FormControl>
-                  <FormControl>
-                    <FormLabel>Price unit</FormLabel>
-                    <Select
-                      placeholder="Price unit"
-                      options={[si.priceUnit]}
-                      value={si.priceUnit}
-                      isDisabled={true}
-                    />
-                  </FormControl>
-                  <FormControl>
-                    <FormLabel>Amount</FormLabel>
-                    <NumberInput
-                      value={si.amount}
-                      onChange={(value) =>
-                        dispatch({
-                          type: "SET_AMOUNT",
-                          payload: {
-                            index: siIndex,
-                            data: value,
-                          },
-                        })
-                      }
-                    >
-                      <NumberInputField placeholder="Amount for one unit" />
-                    </NumberInput>
-                  </FormControl>
+      <Box>
+        <Formik
+          initialValues={{ ...initialState }}
+          validationSchema={SaleSchema}
+          onSubmit={async (values) => {
+            const itemsToSend = values.saleItems.map((si) => {
+              return {
+                ...si,
+                amount: Number(si.amount),
+                price: Number(si.price),
+                stockProductId: si.stockProduct,
+                stockProduct: undefined,
+                reactKey: undefined,
+              };
+            });
+            try {
+              await addSale({
+                ...values,
+                paymentType: values.paymentType as PaymentType,
+                saleItems: itemsToSend,
+                partialCreditAmount: values.partialCreditAmount
+                  ? Number(values.partialCreditAmount)
+                  : undefined,
+              });
+              history.push(links.sale);
+            } catch (e: any) {
+              alert(e.message || e);
+            }
+          }}
+        >
+          {({
+            values,
+            handleSubmit,
+            errors,
+            touched,
+            setFieldValue,
+            isSubmitting,
+          }) => {
+            const selectedClient = clients.find((c) => {
+              return c.id === values.clientId;
+            });
 
-                  <FormControl>
-                    <FormLabel>Amount unit</FormLabel>
-                    <Select
-                      placeholder="Amount unit"
-                      options={[si.amountUnit]}
-                      isDisabled={true}
-                      value={si.amountUnit}
-                    />
-                  </FormControl>
-                  <FormControl
-                    width={"auto"}
-                    alignItems="flex-end"
-                    display={"flex"}
-                    marginBottom={1}
-                  >
-                    <Button
-                      background="teal.500"
-                      onClick={() => {
-                        dispatch({ type: "ADD_PRODUCT" });
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faPlus} />
-                    </Button>
-                  </FormControl>
-                  <FormControl
-                    width="auto"
-                    alignItems="flex-end"
-                    display={"flex"}
-                    marginBottom={1}
-                  >
-                    <Button
-                      background="red.500"
-                      onClick={() =>
-                        dispatch({
-                          type: "DELETE_PRODUCT",
-                          payload: { index: siIndex },
-                        })
-                      }
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </Button>
-                  </FormControl>
+            return (
+              <Form onSubmit={handleSubmit}>
+                <Flex direction="row">
+                  <Box width={"100%"} gap="20px">
+                    <Flex direction={"column"} width={"100%"} gap="20px">
+                      <Flex gap="20px" width={"100%"}>
+                        <FormControl
+                          isInvalid={errors.clientId && touched.clientId}
+                        >
+                          <FormLabel>Clients</FormLabel>
+                          <Select
+                            options={clientOptions}
+                            value={{
+                              value: values.clientId,
+                              label: selectedClient?.name ?? values.clientId,
+                            }}
+                            isDisabled={params.clientId}
+                            onChange={(op) =>
+                              setFieldValue("clientId", op.value)
+                            }
+                          />
+                          <FormErrorMessage>{errors.clientId}</FormErrorMessage>
+                        </FormControl>
+                        <FormControl
+                          isInvalid={errors.paymentType && touched.paymentType}
+                        >
+                          <FormLabel>Payment Type</FormLabel>
+                          <Select
+                            options={paymentTypeOptions}
+                            value={paymentTypeOptions.find(
+                              (op) => op.value === values.paymentType,
+                            )}
+                            onChange={(op) => {
+                              setFieldValue("paymentType", op.value);
+                              if (!values.saleItems.length) {
+                                values.saleItems.push({
+                                  stockProduct: null,
+                                  amountUnit: "item",
+                                  amount: 0,
+                                  price: 0,
+                                  priceUnit: "",
+                                  reactKey: generateKey("product"),
+                                });
+                              }
+                            }}
+                          />
+                          <FormErrorMessage>
+                            {errors.paymentType}
+                          </FormErrorMessage>
+                        </FormControl>
+                        {values.paymentType === PaymentType.PARTIAL_CREDIT ? (
+                          <FormControl
+                            isInvalid={
+                              errors.partialCreditAmount &&
+                              touched.partialCreditAmount
+                            }
+                          >
+                            <FormLabel>Partial credit amount</FormLabel>
+                            <Input
+                              placeholder="How is paid right now"
+                              type="number"
+                              value={values.partialCreditAmount}
+                              onChange={(e) =>
+                                setFieldValue(
+                                  "partialCreditAmount",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                            <FormErrorMessage>
+                              {errors.partialCreditAmount}
+                            </FormErrorMessage>
+                          </FormControl>
+                        ) : null}
+                      </Flex>
+                    </Flex>
+                    <Flex direction="column" gap={"20px"} marginTop="20px">
+                      <FieldArray name="saleItems">
+                        {({ push, remove }) => {
+                          return values.saleItems?.map((si, siIndex) => {
+                            const stockProductError = getIn(
+                              errors,
+                              `saleItems[${siIndex}].stockProduct`,
+                            );
+                            const stockProductTouched = getIn(
+                              touched,
+                              `saleItems[${siIndex}].stockProduct`,
+                            );
+                            const priceError = getIn(
+                              errors,
+                              `saleItems[${siIndex}].price`,
+                            );
+                            const priceTouched = getIn(
+                              touched,
+                              `saleItems[${siIndex}].price`,
+                            );
+                            const priceUnitError = getIn(
+                              errors,
+                              `saleItems[${siIndex}].priceUnit`,
+                            );
+                            const priceUnitTouched = getIn(
+                              touched,
+                              `saleItems[${siIndex}].priceUnit`,
+                            );
+                            const amountError = getIn(
+                              errors,
+                              `saleItems[${siIndex}].amount`,
+                            );
+                            const amountTouched = getIn(
+                              touched,
+                              `saleItems[${siIndex}].amount`,
+                            );
+                            const amountUnitError = getIn(
+                              errors,
+                              `saleItems[${siIndex}].amountUnit`,
+                            );
+                            const amountUnitTouched = getIn(
+                              touched,
+                              `saleItems[${siIndex}].amountUnit`,
+                            );
+                            return (
+                              <Flex
+                                gap="20px"
+                                key={si.stockProduct ?? si.reactKey}
+                              >
+                                <FormControl
+                                  isInvalid={
+                                    stockProductError && stockProductTouched
+                                  }
+                                >
+                                  <FormLabel>Product</FormLabel>
+                                  <Select
+                                    options={stockProductOptions}
+                                    value={stockProductOptions.find(
+                                      (so) => so.value === si.stockProduct,
+                                    )}
+                                    onChange={(op) => {
+                                      setFieldValue(
+                                        `saleItems[${siIndex}].stockProduct`,
+                                        op.value,
+                                      );
+                                      const stockProductFound =
+                                        stockProducts.find(
+                                          (pr) => pr.id === op.value,
+                                        );
+
+                                      if (stockProductFound) {
+                                        setFieldValue(
+                                          `saleItems[${siIndex}].priceUnit`,
+                                          stockProductFound.product.priceUnit,
+                                        );
+                                        setFieldValue(
+                                          `saleItems[${siIndex}].amountUnit`,
+                                          stockProductFound.inStockUnit,
+                                        );
+                                        setFieldValue(
+                                          `saleItems[${siIndex}].price`,
+                                          stockProductFound.product?.price,
+                                        );
+                                      }
+                                    }}
+                                  />
+                                  <FormErrorMessage>
+                                    {stockProductError}
+                                  </FormErrorMessage>
+                                </FormControl>
+                                <FormControl
+                                  isInvalid={priceError && priceTouched}
+                                >
+                                  <FormLabel>Price</FormLabel>
+                                  <NumberInput
+                                    value={si.price}
+                                    onChange={(value) => {
+                                      setFieldValue(
+                                        `saleItems[${siIndex}].price`,
+                                        value,
+                                      );
+                                    }}
+                                  >
+                                    <NumberInputField placeholder="Price for one unit" />
+                                  </NumberInput>
+                                  <FormErrorMessage>
+                                    {priceError}
+                                  </FormErrorMessage>
+                                </FormControl>
+                                <FormControl
+                                  isInvalid={priceUnitError && priceUnitTouched}
+                                >
+                                  <FormLabel>Price unit</FormLabel>
+                                  <Select
+                                    placeholder="Price unit"
+                                    options={[
+                                      {
+                                        label: si.priceUnit,
+                                        value: si.priceUnit,
+                                      },
+                                    ]}
+                                    value={{
+                                      label: si.priceUnit,
+                                      value: si.priceUnit,
+                                    }}
+                                    isDisabled={true}
+                                  />
+                                  <FormErrorMessage>
+                                    {priceUnitError}
+                                  </FormErrorMessage>
+                                </FormControl>
+                                <FormControl
+                                  isInvalid={amountError && amountTouched}
+                                >
+                                  <FormLabel>Amount</FormLabel>
+                                  <NumberInput
+                                    value={values.saleItems[siIndex]?.amount}
+                                  >
+                                    <NumberInputField
+                                      placeholder="Amount for one unit"
+                                      onChange={(e) =>
+                                        setFieldValue(
+                                          `saleItems[${siIndex}].amount`,
+                                          e.target.value,
+                                        )
+                                      }
+                                    />
+                                  </NumberInput>
+                                  <FormErrorMessage>
+                                    {amountError}
+                                  </FormErrorMessage>
+                                </FormControl>
+                                <FormControl
+                                  isInvalid={
+                                    amountUnitError && amountUnitTouched
+                                  }
+                                >
+                                  <FormLabel>Amount unit</FormLabel>
+                                  <Select
+                                    placeholder="Amount unit"
+                                    options={[
+                                      {
+                                        label: si.amountUnit,
+                                        value: si.amountUnit,
+                                      },
+                                    ]}
+                                    isDisabled={true}
+                                    value={{
+                                      label: si.amountUnit,
+                                      value: si.amountUnit,
+                                    }}
+                                  />
+                                </FormControl>
+
+                                <FormControl
+                                  width={"auto"}
+                                  alignItems="flex-end"
+                                  display={"flex"}
+                                  marginBottom={1}
+                                >
+                                  <Button
+                                    background="teal.500"
+                                    onClick={() => {
+                                      push({
+                                        amount: 0,
+                                        price: 0,
+                                        stockProduct: null,
+                                        amountUnit: "item",
+                                        priceUnit: "",
+                                        reactKey: generateKey("product"),
+                                      });
+                                    }}
+                                  >
+                                    <FontAwesomeIcon icon={faPlus} />
+                                  </Button>
+                                </FormControl>
+                                <FormControl
+                                  width="auto"
+                                  alignItems="flex-end"
+                                  display={"flex"}
+                                  marginBottom={1}
+                                >
+                                  <Button
+                                    background="red.500"
+                                    onClick={() => remove(siIndex)}
+                                  >
+                                    <FontAwesomeIcon icon={faTrash} />
+                                  </Button>
+                                </FormControl>
+                              </Flex>
+                            );
+                          });
+                        }}
+                      </FieldArray>
+                    </Flex>
+                    <Box mt={5}>
+                      <Flex justifyContent={"space-between"}>
+                        <Button
+                          colorScheme="teal"
+                          isLoading={isSubmitting}
+                          disabled={isSubmitting}
+                          type="submit"
+                        >
+                          Save
+                        </Button>
+                        <Box>
+                          <SaleForm values={values} />
+                        </Box>
+                      </Flex>
+                    </Box>
+                  </Box>
                 </Flex>
-              );
-            })}
-          </Flex>
-        </Box>
-      </Flex>
-      {saleState.saleItems.length ? (
-        <Flex justifyContent={"flex-end"}>
-          <Box marginTop={"20px"} paddingRight="20px">
-            <Text>
-              {saleState.paymentType.value === PaymentType.PARTIAL_CREDIT ? (
-                <>partial credit : {totals.partial_credit}</>
-              ) : (
-                <>
-                  {(saleState.paymentType.value as string).toLowerCase()} :
-                  {
-                    totals[
-                      (saleState.paymentType.value as string).toLowerCase()
-                    ]
-                  }
-                </>
-              )}
-            </Text>
-            <Text>Total: {totals.total}</Text>
-          </Box>
-        </Flex>
-      ) : null}
-      <Box mt={5}>
-        <Button colorScheme="teal" onClick={() => saveSale()}>
-          Save
-        </Button>
+              </Form>
+            );
+          }}
+        </Formik>
       </Box>
     </Flex>
   );

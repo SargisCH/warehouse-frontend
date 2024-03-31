@@ -268,16 +268,19 @@ function ClientList() {
       minHeight="500px"
       position={"static"}
     >
-      <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
-        <Text
-          color={textColor}
-          fontSize="22px"
-          fontWeight="700"
-          lineHeight="100%"
-        >
-          Client List
-        </Text>
-        <Flex>
+      <Box px="25px" mb="8px">
+        <Flex justifyContent={"space-between"}>
+          <Text
+            color={textColor}
+            fontSize="22px"
+            fontWeight="700"
+            lineHeight="100%"
+          >
+            Client List
+          </Text>
+          <TableAddButton label="Add Client" link={links.createClient} />
+        </Flex>
+        <Flex marginTop={"20px"} justifyContent="flex-start">
           {user.role === Role.ADMIN ? (
             <Box marginRight={10} width={"200px"}>
               <ReactSelect
@@ -290,6 +293,7 @@ function ClientList() {
                 })}
                 value={selectedManager}
                 onChange={setSelectedManager}
+                isClearable
               />
             </Box>
           ) : null}
@@ -299,6 +303,7 @@ function ClientList() {
               options={weekDayOptions}
               value={selectedDay}
               onChange={setSelectedDay}
+              isClearable
             />
           </Box>
           <Box marginRight={10} width={"200px"}>
@@ -308,9 +313,8 @@ function ClientList() {
               onChange={handleSearchTermChange}
             />
           </Box>
-          <TableAddButton label="Add Client" link={links.createClient} />
         </Flex>
-      </Flex>
+      </Box>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">
           <Thead>
