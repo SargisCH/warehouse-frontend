@@ -16,7 +16,8 @@ const baseQueryAuthorized: BaseQueryFn<
   const fetchArgs = args as FetchArgs;
   if (
     !fetchArgs.url.includes("register") &&
-    !fetchArgs.url.includes("verify-email")
+    !fetchArgs.url.includes("verify-email") &&
+    !fetchArgs.url.includes("change-password")
   ) {
     headers.Authorization = "Bearer " + authRes.tokens.accessToken.toString();
   }

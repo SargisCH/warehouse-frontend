@@ -94,13 +94,14 @@ const routes: RouteTypeExtended[] = [
     component: VerifyEmail,
     role: [],
   },
-  // {
-  //   name: "Change password",
-  //   layout: "/auth",
-  //   path: "/change-password/:email",
-  //   icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
-  //   component: ChangePassword,
-  // },
+  {
+    name: "Change password",
+    layout: "/auth",
+    path: "/change-password/:email",
+    icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
+    component: ChangePassword,
+    role: [],
+  },
   // {
   //   name: "RTL Admin",
   //   layout: "/rtl",

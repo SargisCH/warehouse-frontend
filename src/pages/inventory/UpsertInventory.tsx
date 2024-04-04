@@ -60,6 +60,7 @@ const UpsertInventory = (props: { create: boolean }) => {
           value: inventoryItemRes.data.amountUnit,
         });
         setCurrency(inventoryItemRes.data.currency);
+        setPrice(inventoryItemRes.data.price);
       }
     })();
   }, [params.inventoryId]);
@@ -124,7 +125,6 @@ const UpsertInventory = (props: { create: boolean }) => {
             <NumberInput value={price} onChange={setPrice}>
               <NumberInputField placeholder="Price" />
             </NumberInput>
-            <Input type="number" />
           </FormControl>
         </Flex>
         <Flex gap="20px">
