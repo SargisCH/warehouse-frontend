@@ -37,6 +37,7 @@ import {
   Input,
   InputGroup,
   InputRightElement,
+  Spinner,
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
@@ -54,6 +55,7 @@ import { Field, Form, Formik } from "formik";
 import { useGetUserMutation } from "api/auth";
 import { useDispatch } from "react-redux";
 import { setUserData } from "store/slices/userSlice";
+import FullPageLoader from "components/fullPageLoader/FullPageLoader";
 
 function SignIn() {
   // Chakra color mode
@@ -152,8 +154,6 @@ function SignIn() {
             initialValues={{ email: "", password: "" }}
             onSubmit={(values, actions) => {
               setTimeout(async () => {
-                alert(JSON.stringify(values, null, 2));
-                actions.setSubmitting(false);
                 try {
                   const ampData = await amplifySignIn({
                     username: values.email,
@@ -173,123 +173,129 @@ function SignIn() {
               }, 1000);
             }}
           >
-            {(props) => (
-              <Form>
-                <Field name="email">
-                  {({ field, form }: { field: any; form: any }) => (
-                    <FormControl
-                      isInvalid={form.errors.email && form.touched.email}
-                    >
-                      <FormLabel
-                        display="flex"
-                        ms="4px"
-                        fontSize="sm"
-                        fontWeight="500"
-                        color={textColor}
-                        mb="8px"
+            {(props) =>
+              props.isSubmitting ? (
+                <FullPageLoader />
+              ) : (
+                <Form>
+                  <Field name="email">
+                    {({ field, form }: { field: any; form: any }) => (
+                      <FormControl
+                        isInvalid={form.errors.email && form.touched.email}
                       >
-                        Email<Text color={brandStars}>*</Text>
-                      </FormLabel>
-                      <Input
-                        {...field}
-                        isRequired={true}
-                        fontSize="sm"
-                        ms={{ base: "0px", md: "0px" }}
-                        type="email"
-                        placeholder="mail@simmmple.com"
-                        fontWeight="500"
-                        size="lg"
-                      />
-                      <FormErrorMessage>{form.errors.email}</FormErrorMessage>
-                    </FormControl>
-                  )}
-                </Field>
-                <Field name="password">
-                  {({ field, form }: { field: any; form: any }) => (
-                    <FormControl
-                      mt={"10px"}
-                      isInvalid={form.errors.password && form.touched.password}
-                    >
-                      <FormLabel
-                        ms="4px"
-                        fontSize="sm"
-                        fontWeight="500"
-                        color={textColor}
-                        display="flex"
-                      >
-                        Password<Text color={brandStars}>*</Text>
-                      </FormLabel>
-                      <InputGroup size="md">
+                        <FormLabel
+                          display="flex"
+                          ms="4px"
+                          fontSize="sm"
+                          fontWeight="500"
+                          color={textColor}
+                          mb="8px"
+                        >
+                          Email<Text color={brandStars}>*</Text>
+                        </FormLabel>
                         <Input
                           {...field}
                           isRequired={true}
                           fontSize="sm"
-                          placeholder="Min. 8 characters"
+                          ms={{ base: "0px", md: "0px" }}
+                          type="email"
+                          placeholder="mail@simmmple.com"
+                          fontWeight="500"
                           size="lg"
-                          type={show ? "text" : "password"}
-                          name="password"
                         />
-                        <InputRightElement
+                        <FormErrorMessage>{form.errors.email}</FormErrorMessage>
+                      </FormControl>
+                    )}
+                  </Field>
+                  <Field name="password">
+                    {({ field, form }: { field: any; form: any }) => (
+                      <FormControl
+                        mt={"10px"}
+                        isInvalid={
+                          form.errors.password && form.touched.password
+                        }
+                      >
+                        <FormLabel
+                          ms="4px"
+                          fontSize="sm"
+                          fontWeight="500"
+                          color={textColor}
                           display="flex"
-                          alignItems="center"
-                          mt="4px"
                         >
-                          <Icon
-                            color={textColorSecondary}
-                            _hover={{ cursor: "pointer" }}
-                            as={show ? RiEyeCloseLine : MdOutlineRemoveRedEye}
-                            onClick={handleClick}
+                          Password<Text color={brandStars}>*</Text>
+                        </FormLabel>
+                        <InputGroup size="md">
+                          <Input
+                            {...field}
+                            isRequired={true}
+                            fontSize="sm"
+                            placeholder="Min. 8 characters"
+                            size="lg"
+                            type={show ? "text" : "password"}
+                            name="password"
                           />
-                        </InputRightElement>
-                      </InputGroup>
-                      <FormErrorMessage>
-                        {form.errors.password}
-                      </FormErrorMessage>
+                          <InputRightElement
+                            display="flex"
+                            alignItems="center"
+                            mt="4px"
+                          >
+                            <Icon
+                              color={textColorSecondary}
+                              _hover={{ cursor: "pointer" }}
+                              as={show ? RiEyeCloseLine : MdOutlineRemoveRedEye}
+                              onClick={handleClick}
+                            />
+                          </InputRightElement>
+                        </InputGroup>
+                        <FormErrorMessage>
+                          {form.errors.password}
+                        </FormErrorMessage>
+                      </FormControl>
+                    )}
+                  </Field>
+                  <Flex justifyContent="space-between" align="center" mb="24px">
+                    <FormControl display="flex" alignItems="center">
+                      <Checkbox
+                        id="remember-login"
+                        colorScheme="brandScheme"
+                        me="10px"
+                      />
+                      <FormLabel
+                        htmlFor="remember-login"
+                        mb="0"
+                        fontWeight="normal"
+                        color={textColor}
+                        fontSize="sm"
+                      >
+                        Keep me logged in
+                      </FormLabel>
                     </FormControl>
-                  )}
-                </Field>
-                <Flex justifyContent="space-between" align="center" mb="24px">
-                  <FormControl display="flex" alignItems="center">
-                    <Checkbox
-                      id="remember-login"
-                      colorScheme="brandScheme"
-                      me="10px"
-                    />
-                    <FormLabel
-                      htmlFor="remember-login"
-                      mb="0"
-                      fontWeight="normal"
-                      color={textColor}
-                      fontSize="sm"
-                    >
-                      Keep me logged in
-                    </FormLabel>
-                  </FormControl>
-                  <NavLink to="/auth/forgot-password">
-                    <Text
-                      color={textColorBrand}
-                      fontSize="sm"
-                      w="124px"
-                      fontWeight="500"
-                    >
-                      Forgot password?
-                    </Text>
-                  </NavLink>
-                </Flex>
-                <Button
-                  type="submit"
-                  fontSize="sm"
-                  variant="brand"
-                  fontWeight="500"
-                  w="100%"
-                  h="50"
-                  mb="24px"
-                  isLoading={props.isSubmitting}
-                >
-                  Sign In
-                </Button>
-              </Form>
-            )}
+                    <NavLink to="/auth/forgot-password">
+                      <Text
+                        color={textColorBrand}
+                        fontSize="sm"
+                        w="124px"
+                        fontWeight="500"
+                      >
+                        Forgot password?
+                      </Text>
+                    </NavLink>
+                  </Flex>
+                  <Button
+                    type="submit"
+                    fontSize="sm"
+                    variant="brand"
+                    fontWeight="500"
+                    w="100%"
+                    h="50"
+                    mb="24px"
+                    isLoading={props.isSubmitting}
+                  >
+                    Sign In
+                  </Button>
+                </Form>
+              )
+            }
           </Formik>
           <Flex
             flexDirection="column"

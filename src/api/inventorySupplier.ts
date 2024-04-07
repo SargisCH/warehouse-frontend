@@ -71,7 +71,7 @@ const inventorySupplierApi = api.injectEndpoints({
     }),
     createSupplierOrder: builder.mutation({
       query: (newSupplierOrder) => ({
-        url: `inventorySupplier/${newSupplierOrder.id}/order/create`,
+        url: `inventorySupplier/${newSupplierOrder.supplierId}/order/create`,
         method: "POST",
         body: newSupplierOrder,
       }),

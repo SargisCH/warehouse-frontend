@@ -9,6 +9,7 @@ export const TableAddButton = ({
   link: string;
   label: string;
 }) => {
+  console.log("table add button");
   return (
     <Box display={"flex"} justifyContent="flex-end" alignItems={"center"}>
       <ChakraLink

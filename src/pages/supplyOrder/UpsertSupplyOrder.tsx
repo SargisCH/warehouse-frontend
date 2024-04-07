@@ -3,8 +3,9 @@ import {
   Flex,
   FormControl,
   FormLabel,
-  Input,
   Box,
+  NumberInput,
+  NumberInputField,
 } from "@chakra-ui/react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -20,42 +21,56 @@ import {
   useLazyGetInventorySupplierByIdQuery,
 } from "api/inventorySupplier";
 import AlertDialog from "components/alertDialog/AlertDialog";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import Select from "react-select";
 import { links } from "routes";
 import dayjs from "dayjs";
-type OptionType = {
-  label: string;
-  value: number | string;
+import { useFormik } from "formik";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { generateKey } from "helpers/generateKey";
+
+type OrderType = {
+  orderId?: number;
+  supplierId: number;
+  orderDate: Date;
+  orderItems: Array<{
+    inventoryId: number;
+    amount: number;
+    price: number;
+    amountUnit: string;
+    priceUnit: string;
+    reactKey?: string;
+  }>;
 };
 
-const UpsertSupplierOrder = (props: { create: boolean }) => {
+const unitOptions = [
+  { label: "kg", value: "kg" },
+  { label: "gram", value: "g" },
+];
+const intialValues: OrderType = {
+  supplierId: null,
+  orderDate: dayjs().toDate(),
+  orderItems: [
+    {
+      inventoryId: null,
+      amount: 0,
+      amountUnit: "",
+      price: 0,
+      priceUnit: "",
+      reactKey: generateKey("orderItem"),
+    },
+  ],
+};
+const UpsertSupplierOrder = () => {
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
-  const [selectedInventory, setSelectedInventory] = useState<Array<OptionType>>(
-    [],
-  );
-  const [selectedSupplier, setSelectedSupplier] = useState<OptionType>();
   const [orderItemLatestDetails, setOrderItemLatestDetails] = useState<{
     [key: number]: OrderItem;
   }>({});
-  const [amount, setAmount] = useState<{
-    [key: number]: number;
-  }>({});
-  const [price, setPrice] = useState<{
-    [key: number]: number;
-  }>({});
-  const [selectedAmountUnit, setSelectedAmountUnit] = useState<{
-    [key: number]: OptionType;
-  }>({});
-  const [selectedPriceUnit, setSelectedPriceUnit] = useState<{
-    [key: number]: OptionType;
-  }>({});
   const [suppliers, setSuppliers] = useState([]);
-  const [orderDate, setOrderDate] = useState(new Date());
   const params = useParams() as any;
-  const [createSupplierOrder, { isLoading, isError, error }] =
-    useCreateSupplierOrderMutation();
+  const [createSupplierOrder] = useCreateSupplierOrderMutation();
   const [updateSupplierOrder] = useUpdateInventorySupplierOrderMutation();
   const [deleteInventorySupplierOrder] =
     useDeleteInventorySupplierOrderMutation();
@@ -64,9 +79,46 @@ const UpsertSupplierOrder = (props: { create: boolean }) => {
     useLazyGetInventorySupplierOrderByIdQuery();
   const [getLatestOrderDetailsQuery] = useLazyGetLatestOrderDetailsQuery();
   const { data } = useGetInventoryQuery();
-  const inventoryData = data?.inventories || [];
+  const inventoryData = useMemo(
+    () => data?.inventories || [],
+    [data?.inventories],
+  );
   const [getSuppliers] = useLazyGetInventorySupplierQuery();
   const [getSupplierById] = useLazyGetInventorySupplierByIdQuery();
+
+  const { values, setFieldValue, handleSubmit, isSubmitting } = useFormik({
+    initialValues: { ...intialValues },
+    onSubmit: async (values) => {
+      const data: OrderType = {
+        ...values,
+        orderItems: values.orderItems.map((oi) => ({
+          ...oi,
+          amount: Number(oi.amount),
+          price: Number(oi.price),
+          reactKey: undefined,
+        })),
+      };
+      try {
+        if (params.inventorySupplierOrderId) {
+          data.orderId = params.inventorySupplierOrderId;
+          await updateSupplierOrder(data);
+        } else {
+          await createSupplierOrder(data);
+        }
+        history.push(links.supplyOrders);
+      } catch (e) {
+        alert(e.toString());
+      }
+    },
+  });
+  const inventoryOptions = inventoryData.map((inventory) => ({
+    label: inventory.name,
+    value: inventory.id,
+  }));
+  const supplierOptions = suppliers?.map((s) => ({
+    label: s.name,
+    value: s.id,
+  }));
   useEffect(() => {
     (async () => {
       if (params.inventorySupplierOrderId) {
@@ -74,39 +126,22 @@ const UpsertSupplierOrder = (props: { create: boolean }) => {
           inventorySupplierId: params.inventorySupplierId,
           inventorySupplierOrderId: params.inventorySupplierOrderId,
         });
+        const initialValuesRes: Partial<OrderType> = {
+          supplierId: params.inventorySupplierId,
+          orderItems: orderRes.data.orderItems.map((oi) => {
+            return {
+              amount: oi.amount,
+              amountUnit: oi.amountUnit,
+              price: oi.price,
+              priceUnit: oi.priceUnit,
+              inventoryId: oi.inventoryId,
+              reactKey: generateKey("orderItems"),
+            };
+          }),
+        };
         if (dayjs(orderRes.data.orderDate).isValid()) {
-          setOrderDate(dayjs(orderRes.data.orderDate).toDate());
+          initialValuesRes.orderDate = dayjs(orderRes.data.orderDate).toDate();
         }
-        const orderInventory: Array<{ label: string; value: number }> = [];
-        const amountTemp: { [key: number]: number } = {};
-        const selectedAmountTemp: { [key: number]: OptionType } = {};
-        const priceTemp: { [key: number]: number } = {};
-        const selectedPriceTemp: { [key: number]: OptionType } = {};
-        orderRes.data.orderItems.forEach((order) => {
-          amountTemp[order.inventory.id] = order.amount;
-          priceTemp[order.inventory.id] = order.price;
-          selectedAmountTemp[order.inventory.id] = {
-            label: order.amountUnit,
-            value: order.amountUnit,
-          };
-          selectedPriceTemp[order.inventory.id] = {
-            label: order.priceUnit,
-            value: order.priceUnit,
-          };
-          const inventoryMatch = inventoryData.find(
-            (inv) => inv.id === order.inventory.id,
-          );
-          if (!inventoryMatch) return;
-          orderInventory.push({
-            label: inventoryMatch.name,
-            value: order.inventory.id,
-          });
-        });
-        setAmount(amountTemp);
-        setSelectedAmountUnit(selectedAmountTemp);
-        setPrice(priceTemp);
-        setSelectedPriceUnit(selectedPriceTemp);
-        setSelectedInventory(orderInventory);
       }
     })();
   }, [
@@ -116,58 +151,42 @@ const UpsertSupplierOrder = (props: { create: boolean }) => {
     params.inventorySupplierOrderId,
   ]);
 
+  console.log("values outside", values);
   useEffect(() => {
     (async () => {
       if (params.inventorySupplierOrderId) return;
-      selectedInventory.forEach(async (inv: OptionType) => {
-        if (orderItemLatestDetails[Number(inv.value)]) {
+
+      values.orderItems.forEach(async (oi, oiIndex) => {
+        if (!oi.inventoryId || orderItemLatestDetails[oi.inventoryId]) {
           return;
         }
 
         const latestOrderRes = await getLatestOrderDetailsQuery({
           inventorySupplierId: params.inventorySupplierId,
-          inventoryId: Number(inv.value),
+          inventoryId: Number(oi.inventoryId),
         });
         const orderItem = latestOrderRes.data.orderItem;
         if (!orderItem) return;
         setOrderItemLatestDetails({
           ...orderItemLatestDetails,
-          [Number(inv.value)]: orderItem,
+          [oi.inventoryId]: orderItem,
         });
-        setAmount({
-          ...amount,
-          [Number(inv.value)]: orderItem.amount,
-        });
-        setPrice({
-          ...price,
-          [Number(inv.value)]: orderItem.price,
-        });
-        setSelectedAmountUnit({
-          ...selectedAmountUnit,
-          [Number(inv.value)]: {
-            label: orderItem.amountUnit,
-            value: orderItem.amountUnit,
-          },
-        });
-        setSelectedPriceUnit({
-          ...selectedPriceUnit,
-          [Number(inv.value)]: {
-            label: orderItem.priceUnit,
-            value: orderItem.priceUnit,
-          },
-        });
+        setFieldValue(`orderItems[${oiIndex}].amount`, orderItem.amount);
+        setFieldValue(`orderItems[${oiIndex}].price`, orderItem.price);
+        setFieldValue(`orderItems[${oiIndex}].priceUnit`, orderItem.priceUnit);
+        setFieldValue(
+          `orderItems[${oiIndex}].amountUnit`,
+          orderItem.amountUnit,
+        );
       });
     })();
   }, [
-    selectedInventory,
+    setFieldValue,
+    values.orderItems,
     orderItemLatestDetails,
     getLatestOrderDetailsQuery,
     params.inventorySupplierId,
     params.inventorySupplierOrderId,
-    amount,
-    price,
-    selectedAmountUnit,
-    selectedPriceUnit,
   ]);
   useEffect(() => {
     // getting the supplier mentioned in params or getting all the suppliers
@@ -176,176 +195,209 @@ const UpsertSupplierOrder = (props: { create: boolean }) => {
         const supplierData = await getSupplierById({
           inventorySupplierId: params.inventorySupplierId,
         });
-        setSelectedSupplier({
-          label: supplierData.data.name,
-          value: supplierData.data.id,
-        });
+        setFieldValue("supplierId", Number(params.inventorySupplierId));
         setSuppliers([supplierData.data]);
       } else {
         const suppliersRes = await getSuppliers();
         setSuppliers(suppliersRes.data);
       }
     })();
-  }, [params.inventorySupplierId, getSupplierById, getSuppliers]);
+  }, [
+    params.inventorySupplierId,
+    getSupplierById,
+    getSuppliers,
+    setFieldValue,
+  ]);
 
-  const saveInventorySupplierOrder = async () => {
-    if (!selectedSupplier) return;
-    const data: any = {
-      id: selectedSupplier.value,
-      orderDate,
-      orderItems: [],
-    };
-    selectedInventory.forEach((inv: OptionType) => {
-      data.orderItems.push({
-        inventoryId: inv.value,
-        amount: amount[Number(inv.value)],
-        amountUnit: selectedAmountUnit[Number(inv.value)].value,
-        price: price[Number(inv.value)],
-        priceUnit: selectedPriceUnit[Number(inv.value)].value,
-      });
-    });
-    try {
-      if (params.inventorySupplierOrderId) {
-        data.orderId = params.inventorySupplierOrderId;
-        await updateSupplierOrder(data);
-      } else {
-        await createSupplierOrder(data);
-      }
-      history.push(links.supplyOrders);
-    } catch (e) {
-      alert(e.toString());
-    }
-  };
-
+  const selectedSupplier = suppliers.find((s) => s.id === values.supplierId);
   return (
-    <Flex direction="column">
-      <Flex gap="20px">
-        <FormControl>
-          <FormLabel>Select Order Items</FormLabel>
-          <Select
-            options={inventoryData.map((inv) => ({
-              label: inv.name,
-              value: inv.id,
-            }))}
-            isMulti
-            value={selectedInventory}
-            onChange={(newSelectedInventory) =>
-              setSelectedInventory([...newSelectedInventory])
-            }
-            isDisabled={!selectedSupplier}
-          />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Order date</FormLabel>
-          <DatePicker
-            selected={orderDate}
-            onChange={(date: Date) => setOrderDate(date)}
-          />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Suplier</FormLabel>
-          <Select
-            options={suppliers.map((inv) => ({
-              label: inv.name,
-              value: inv.id,
-            }))}
-            value={selectedSupplier}
-            onChange={(newSelectedSupplier) =>
-              setSelectedSupplier(newSelectedSupplier)
-            }
-            isDisabled={params.inventorySupplierId}
-          />
-        </FormControl>
-      </Flex>
-      {selectedInventory.map((inv: OptionType, index) => {
-        return (
-          <Flex key={index}>
-            <FormControl>
-              <FormLabel>Inventory name</FormLabel>
-              <Input
-                placeholder={inv.label}
-                value={inv.label}
-                disabled={true}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel>Amount</FormLabel>
-              <Input
-                placeholder="Amount"
-                value={amount[Number(inv.value)] || ""}
-                onChange={(e) => {
-                  setAmount({
-                    ...amount,
-                    [inv.value]: Number(e.target.value),
-                  });
-                }}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel>Amount Unit</FormLabel>
-              <Select
-                placeholder="Select amount Unit"
-                value={selectedAmountUnit[Number(inv.value)]}
-                onChange={(newSelectedUnit) => {
-                  setSelectedAmountUnit({
-                    ...selectedAmountUnit,
-                    [inv.value]: newSelectedUnit,
-                  });
-                }}
-                options={[
-                  { label: "kg", value: "kg" },
-                  { label: "gram", value: "g" },
-                ]}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel>Price</FormLabel>
-              <Input
-                placeholder="Price"
-                value={price[Number(inv.value)] || ""}
-                onChange={(e) => {
-                  setPrice({
-                    ...price,
-                    [inv.value]: Number(e.target.value),
-                  });
-                }}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel>Price Unit</FormLabel>
-              <Select
-                placeholder="Select price unit"
-                value={selectedPriceUnit[Number(inv.value)]}
-                onChange={(newSelectedUnit) => {
-                  setSelectedPriceUnit({
-                    ...selectedPriceUnit,
-                    [inv.value]: newSelectedUnit,
-                  });
-                }}
-                options={[
-                  { label: "kg", value: "kg" },
-                  { label: "gram", value: "g" },
-                ]}
-              />
-            </FormControl>
-          </Flex>
-        );
-      })}
-      <Box mt={5}>
-        <Button colorScheme="teal" onClick={saveInventorySupplierOrder}>
-          Save
-        </Button>
-        {params.inventorySupplierOrderId ? (
+    <Box>
+      <form onSubmit={handleSubmit}>
+        <Flex gap="20px">
+          <FormControl>
+            <FormLabel>Order date</FormLabel>
+            <DatePicker
+              selected={values.orderDate}
+              onChange={(date: Date) => setFieldValue("orderDate", date)}
+            />
+          </FormControl>
+          <FormControl>
+            <FormLabel>Suplier</FormLabel>
+            <Select
+              options={supplierOptions}
+              value={{
+                label: selectedSupplier?.name || "",
+                value: selectedSupplier?.id || "",
+              }}
+              onChange={(newSelectedSupplier) =>
+                setFieldValue("supplierId", newSelectedSupplier.value)
+              }
+              isDisabled={params.inventorySupplierId}
+            />
+          </FormControl>
+        </Flex>
+        {values.orderItems.map((oi, oiIndex) => {
+          const selectedAmountUnit = unitOptions.find(
+            (op) => oi.amountUnit === op.value,
+          );
+          const selectedPriceUnit = unitOptions.find(
+            (op) => oi.priceUnit === op.value,
+          );
+          const selectedInventory = inventoryData.find(
+            (inv) => inv.id === oi.inventoryId,
+          );
+          return (
+            <Flex gap={"20px"} key={oi.reactKey}>
+              <FormControl>
+                <FormLabel>Select Inventory</FormLabel>
+                <Select
+                  name={`orderItems[${oiIndex}].inventoryId`}
+                  placeholder="Select Inventory"
+                  value={{
+                    label: selectedInventory?.name ?? "",
+                    value: selectedInventory?.id ?? "",
+                  }}
+                  onChange={(newSelectedUnit) => {
+                    setFieldValue(
+                      `orderItems[${oiIndex}].inventoryId`,
+                      newSelectedUnit.value,
+                    );
+                  }}
+                  options={inventoryOptions}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Amount</FormLabel>
+                <NumberInput value={oi.amount}>
+                  <NumberInputField
+                    placeholder="Amount"
+                    name={`orderItems[${oiIndex}].amount`}
+                    onChange={(e) => {
+                      setFieldValue(
+                        `orderItems[${oiIndex}].amount`,
+                        e.target.value,
+                      );
+                    }}
+                  />
+                </NumberInput>
+              </FormControl>
+              <FormControl>
+                <FormLabel>Amount Unit</FormLabel>
+                <Select
+                  name={`orderItems[${oiIndex}].amountUnit`}
+                  placeholder="Select amount Unit"
+                  value={{
+                    label: selectedAmountUnit?.label ?? "",
+                    value: selectedAmountUnit?.value ?? "",
+                  }}
+                  onChange={(newSelectedUnit) => {
+                    setFieldValue(
+                      `orderItems[${oiIndex}].amountUnit`,
+                      newSelectedUnit.value,
+                    );
+                  }}
+                  options={unitOptions}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Price</FormLabel>
+                <NumberInput value={oi.price}>
+                  <NumberInputField
+                    name={`orderItems[${oiIndex}].price`}
+                    placeholder="Price"
+                    onChange={(e) => {
+                      setFieldValue(
+                        `orderItems[${oiIndex}].price`,
+                        e.target.value,
+                      );
+                    }}
+                  />
+                </NumberInput>
+              </FormControl>
+              <FormControl>
+                <FormLabel>Price Unit</FormLabel>
+                <Select
+                  placeholder="Select price unit"
+                  name={`orderItems[${oiIndex}].priceUnit`}
+                  value={{
+                    label: selectedPriceUnit?.label || "",
+                    value: selectedPriceUnit?.value || "",
+                  }}
+                  onChange={(newSelectedUnit) => {
+                    setFieldValue(
+                      `orderItems[${oiIndex}].priceUnit`,
+                      newSelectedUnit.value,
+                    );
+                  }}
+                  options={unitOptions}
+                />
+              </FormControl>
+              <FormControl
+                width={"auto"}
+                alignItems="flex-end"
+                display={"flex"}
+                marginBottom={1}
+              >
+                <Button
+                  colorScheme={"teal"}
+                  onClick={() => {
+                    setFieldValue("orderItems", [
+                      ...values.orderItems,
+                      {
+                        inventoryId: null,
+                        amount: 0,
+                        amountUnit: "",
+                        price: 0,
+                        priceUnit: "",
+                        reactKey: generateKey("orderItem"),
+                      },
+                    ]);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faPlus} />
+                </Button>
+              </FormControl>
+              <FormControl
+                width={"auto"}
+                alignItems="flex-end"
+                display={"flex"}
+                marginBottom={1}
+              >
+                <Button
+                  colorScheme={"red"}
+                  onClick={() => {
+                    setFieldValue(
+                      "orderItems",
+                      values.orderItems.filter((_, index) => index !== oiIndex),
+                    );
+                  }}
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                </Button>
+              </FormControl>
+            </Flex>
+          );
+        })}
+        <Box mt={5}>
           <Button
-            ml={4}
-            colorScheme="red"
-            onClick={() => setIsDeleteDialogOpened(true)}
+            colorScheme="teal"
+            type="submit"
+            isLoading={isSubmitting}
+            isDisabled={isSubmitting}
           >
-            Delete
+            Save
           </Button>
-        ) : null}
-      </Box>
-
+          {params.inventorySupplierOrderId ? (
+            <Button
+              ml={4}
+              colorScheme="red"
+              onClick={() => setIsDeleteDialogOpened(true)}
+            >
+              Delete
+            </Button>
+          ) : null}
+        </Box>
+      </form>
       {isDeleteDialogOpened ? (
         <AlertDialog
           handleConfirm={async () => {
@@ -361,7 +413,7 @@ const UpsertSupplierOrder = (props: { create: boolean }) => {
           headerText={`Delete Inventory`}
         />
       ) : null}
-    </Flex>
+    </Box>
   );
 };
 

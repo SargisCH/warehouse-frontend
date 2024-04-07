@@ -22,23 +22,32 @@ import { useHistory, useParams, useLocation } from "react-router-dom";
 import Select from "react-select";
 import { links } from "routes";
 import IngredientAmount from "./IngredientAmounts";
+import { FieldArray, Form, Formik } from "formik";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { generateKey } from "helpers/generateKey";
+
+const unitOptions = [
+  { label: "KG", value: "kg" },
+  { label: "GRAM", value: "g" },
+];
 
 const UpsertProduct = (props: { create: boolean }) => {
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState<number | string>(0);
-  //const [currency, setCurrency] = useState<string>("");
+  const [initialValues, setInitialValues] = useState({
+    name: "",
+    price: null,
+    priceUnit: "",
+    ingredients: [
+      {
+        reactKey: generateKey("ingredient"),
+        amount: 0,
+        amountUnit: "",
+        inventoryId: null,
+      },
+    ],
+  });
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
-  const [selectedUnit, setSelectedUnit] = useState<{
-    label: string;
-    value: string;
-  }>();
-  const [selectedInventory, setSelectedInventory] = useState([]);
-  const [ingredientAmounts, setIngredientAmounts] = useState<{
-    [key: number | string]: { amount: number | string; unit: string };
-  }>({});
-  const [ingredientsDefaultAmount, setDefaultIngredientsAmount] = useState<{
-    [key: number | string]: { amount: number; unit: string };
-  }>({});
+
   const [isLoading, setIsLoading] = useState(false);
   const params = useParams() as any;
   const { data } = useGetInventoryQuery();
@@ -49,13 +58,6 @@ const UpsertProduct = (props: { create: boolean }) => {
   const [deleteProduct] = useDeleteProductMutation();
   const history = useHistory();
 
-  // Use the mutation hook
-  //const layout = useBreakpointValue({
-  //base: "mobile",
-  //md: "tablet",
-  //lg: "desktop",
-  //});
-  //const direction = ["tablet", "mobile"].includes(layout) ? "column" : "row";
   const [getProductById] = useLazyGetProductByIdQuery();
   useEffect(() => {
     (async () => {
@@ -64,81 +66,26 @@ const UpsertProduct = (props: { create: boolean }) => {
         const productItemRes = await getProductById({
           productId: params.productId,
         });
-        setName(productItemRes.data.name);
-        setPrice(productItemRes.data.price);
-        setSelectedUnit({
-          label: productItemRes.data.priceUnit,
-          value: productItemRes.data.priceUnit,
+        setInitialValues({
+          name: productItemRes.data.name,
+          price: productItemRes.data.price,
+          priceUnit: productItemRes.data.priceUnit,
+          ingredients:
+            productItemRes.data.ingredients.map((ing) => ({
+              ...ing,
+              amount: ing.amount,
+              amountUnit: ing.amountUnit,
+              inventoryId: ing.inventoryId,
+              reactKey: generateKey("ingredient"),
+            })) ?? [],
         });
-        const inventoryArray: Array<{ label: string; value: number }> = [];
-        const ingredientsAmountDefault: {
-          [key: number | string]: { unit: string; amount: number };
-        } = {};
-        productItemRes.data.ingredients.forEach(
-          ({ inventoryId, amountUnit, amount }) => {
-            const inventoryMatched = inventoryData.find(
-              (inv) => inv.id === inventoryId,
-            );
-            if (inventoryMatched) {
-              inventoryArray.push({
-                label: inventoryMatched.name,
-                value: inventoryMatched.id,
-              });
-            }
-            ingredientsAmountDefault[inventoryId] = {
-              unit: amountUnit,
-              amount: amount,
-            };
-          },
-        );
-        setSelectedInventory(inventoryArray);
-        setDefaultIngredientsAmount(ingredientsAmountDefault);
-        setIngredientAmounts(ingredientsAmountDefault);
         setTimeout(() => {
           setIsLoading(false);
         }, 100);
-
-        //setCurrency(productItemRes.data.currency);
       }
     })();
   }, [params.productId, getProductById, inventoryData]);
 
-  const saveProduct = async () => {
-    const ingredients: Array<{
-      inventory: number;
-      amount: number;
-      unit: string;
-    }> = [];
-    Object.keys(ingredientAmounts).forEach((invId: number | string) => {
-      const invIndex = selectedInventory.findIndex((inv) => {
-        return inv.value === Number(invId);
-      });
-      if (invIndex === -1) {
-        return;
-      }
-      if (!ingredientAmounts?.[invId]) return;
-      ingredients.push({
-        inventory: Number(invId),
-        amount: Number(ingredientAmounts[invId].amount),
-        unit: ingredientAmounts[invId].unit,
-      });
-    });
-    const data = {
-      name,
-      priceUnit: selectedUnit.value,
-      price: Number(price),
-      ingredients,
-    };
-    if (params.productId) {
-      await updateProduct({
-        ...data,
-        id: params.productId,
-      });
-    } else {
-      await createProduct({ ...data });
-    }
-    history.push(links.product);
-  };
   if (isLoading) {
     return (
       <Spinner
@@ -151,96 +98,210 @@ const UpsertProduct = (props: { create: boolean }) => {
     );
   }
   return (
-    <Flex direction="column">
-      <Flex gap="20px">
-        <Flex direction={"column"} gap="20px">
-          <FormControl>
-            <FormLabel>Name</FormLabel>
-            <Input
-              type="text"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Ingredients</FormLabel>
-            <Select
-              isMulti
-              value={selectedInventory}
-              onChange={(valueSelected) => {
-                setSelectedInventory([...valueSelected]);
-              }}
-              options={inventoryData.map((inv) => ({
-                label: inv.name,
-                value: inv.id,
-              }))}
-            />
-          </FormControl>
-        </Flex>
-        <Flex gap="20px" direction={"column"}>
-          <FormControl>
-            <FormLabel>Price </FormLabel>
-            <NumberInput value={price} onChange={setPrice}>
-              <NumberInputField defaultValue={price} placeholder="Price" />
-            </NumberInput>
-          </FormControl>
-        </Flex>
-        <Flex>
-          <FormControl>
-            <FormLabel>Price Unit</FormLabel>
-            <Select
-              value={selectedUnit}
-              onChange={(valueSelected) => {
-                setSelectedUnit(valueSelected);
-              }}
-              options={[
-                { label: "KG", value: "kg" },
-                { label: "GRAM", value: "g" },
-              ]}
-            />
-          </FormControl>
-        </Flex>
-
-        {/*<Flex gap="20px">*/}
-        {/*<FormControl>*/}
-        {/*<FormLabel>Currency {currency}</FormLabel>*/}
-        {/*<Input*/}
-        {/*type="text"*/}
-        {/*placeholder="Currency"*/}
-        {/*defaultValue={currency}*/}
-        {/*disabled={true}*/}
-        {/*/>*/}
-        {/*</FormControl>*/}
-        {/*</Flex>*/}
-        <IngredientAmount
-          selectedIngredients={selectedInventory}
-          setIngredientsAmount={(amounts: {
-            [key: number | string]: {
-              amount: number | string;
-              unit: string;
-            };
-          }) => {
-            setIngredientAmounts(amounts);
-          }}
-          inventoryAmounts={ingredientsDefaultAmount}
-        />
-      </Flex>
-      <Box mt={5}>
-        <Button colorScheme="teal" onClick={() => saveProduct()}>
-          Save
-        </Button>
-
-        {params.productId ? (
-          <Button
-            ml={4}
-            colorScheme="red"
-            onClick={() => setIsDeleteDialogOpened(true)}
-          >
-            Delete
-          </Button>
-        ) : null}
-      </Box>
+    <Flex>
+      <Formik
+        initialValues={{ ...initialValues }}
+        onSubmit={async (values) => {
+          console.log("values", values);
+          const postData = {
+            ...values,
+            price: Number(values.price),
+            ingredients: values.ingredients.map((ing) => ({
+              ...ing,
+              amount: Number(ing.amount),
+              amountUnit: ing.amountUnit,
+              reactKey: undefined,
+            })),
+          };
+          console.log("postdata", postData);
+          if (params.productId) {
+            await updateProduct({
+              ...postData,
+              id: params.productId,
+            });
+          } else {
+            await createProduct({ ...postData });
+          }
+          history.push(links.product);
+        }}
+      >
+        {({
+          values,
+          setFieldValue,
+          touched,
+          errors,
+          handleSubmit,
+          isSubmitting,
+        }) => {
+          return (
+            <Box>
+              <Form onSubmit={handleSubmit}>
+                <Box gap="20px">
+                  <Flex gap="20px">
+                    <FormControl>
+                      <FormLabel>Name</FormLabel>
+                      <Input
+                        type="text"
+                        placeholder="Name"
+                        value={values.name}
+                        onChange={(e) => setFieldValue("name", e.target.value)}
+                      />
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel>Price </FormLabel>
+                      <NumberInput value={values?.price || 0}>
+                        <NumberInputField
+                          placeholder="Price"
+                          onChange={(e) =>
+                            setFieldValue("price", e.target.value)
+                          }
+                        />
+                      </NumberInput>
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel>Price Unit</FormLabel>
+                      <Select
+                        value={{
+                          label: values.priceUnit,
+                          value: values.priceUnit,
+                        }}
+                        onChange={(valueSelected) => {
+                          setFieldValue("priceUnit", valueSelected.value);
+                        }}
+                        options={unitOptions}
+                      />
+                    </FormControl>
+                  </Flex>
+                  <Box>
+                    <FieldArray name="ingredients">
+                      {({ push, remove }) => {
+                        return values.ingredients.map((ing, ingIndex) => {
+                          const selectedInventory = inventoryData.find(
+                            (inv) => inv.id === ing.inventoryId,
+                          );
+                          return (
+                            <Flex
+                              gap={"20px"}
+                              marginTop="20px"
+                              key={ing.reactKey}
+                            >
+                              <FormControl>
+                                <FormLabel>Ingredients</FormLabel>
+                                <Select
+                                  value={{
+                                    label: selectedInventory?.name ?? "",
+                                    value: selectedInventory?.id ?? "",
+                                  }}
+                                  onChange={(valueSelected) => {
+                                    setFieldValue(
+                                      `ingredients[${ingIndex}].inventoryId`,
+                                      valueSelected.value,
+                                    );
+                                  }}
+                                  options={inventoryData.map((inv) => ({
+                                    label: inv.name,
+                                    value: inv.id,
+                                  }))}
+                                />
+                              </FormControl>
+                              <FormControl>
+                                <FormLabel colorScheme="black">
+                                  Amount
+                                </FormLabel>
+                                <NumberInput value={ing.amount}>
+                                  <NumberInputField
+                                    placeholder={"amount"}
+                                    onChange={(e) => {
+                                      setFieldValue(
+                                        `ingredients[${ingIndex}].amount`,
+                                        e.target.value,
+                                      );
+                                    }}
+                                  />
+                                </NumberInput>
+                              </FormControl>
+                              <FormControl>
+                                <FormLabel>Amount Unit</FormLabel>
+                                <Select
+                                  value={{
+                                    label: ing.amountUnit,
+                                    value: ing.amountUnit,
+                                  }}
+                                  onChange={(valueSelected) => {
+                                    setFieldValue(
+                                      `ingredients[${ingIndex}].amountUnit`,
+                                      valueSelected.value,
+                                    );
+                                  }}
+                                  options={[...unitOptions]}
+                                />
+                              </FormControl>
+                              <FormControl
+                                width={"auto"}
+                                alignItems="flex-end"
+                                display={"flex"}
+                                marginBottom={1}
+                              >
+                                <Button
+                                  background="teal.500"
+                                  onClick={() => {
+                                    push({
+                                      amount: 0,
+                                      amountUnit: "item",
+                                      inventoryId: 0,
+                                      reactKey: generateKey("product"),
+                                    });
+                                  }}
+                                >
+                                  <FontAwesomeIcon icon={faPlus} />
+                                </Button>
+                              </FormControl>
+                              <FormControl
+                                width="auto"
+                                alignItems="flex-end"
+                                display={"flex"}
+                                marginBottom={1}
+                              >
+                                <Button
+                                  isDisabled={ingIndex === 0}
+                                  background="red.500"
+                                  onClick={() => remove(ingIndex)}
+                                >
+                                  <FontAwesomeIcon icon={faTrash} />
+                                </Button>
+                              </FormControl>
+                            </Flex>
+                          );
+                        });
+                      }}
+                    </FieldArray>
+                  </Box>
+                </Box>
+                <Box marginTop={"20px"}>
+                  <Button
+                    colorScheme="teal"
+                    type="submit"
+                    disabled={isSubmitting}
+                  >
+                    Save
+                  </Button>
+                </Box>
+              </Form>
+              <Box mt={5}>
+                {params.productId ? (
+                  <Button
+                    ml={4}
+                    colorScheme="red"
+                    onClick={() => setIsDeleteDialogOpened(true)}
+                  >
+                    Delete
+                  </Button>
+                ) : null}
+              </Box>
+            </Box>
+          );
+        }}
+      </Formik>
       {isDeleteDialogOpened ? (
         <AlertDialog
           handleConfirm={async () => {

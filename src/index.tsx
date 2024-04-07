@@ -1,4 +1,4 @@
-import React, { ReactPortal, useEffect } from "react";
+import React, { ReactPortal, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import "./assets/css/App.css";
 import { Route, Switch, Redirect, BrowserRouter } from "react-router-dom";
@@ -18,6 +18,7 @@ import { I18nextProvider } from "react-i18next";
 import i18next from "i18next";
 import common_am from "./translations/am/common.json";
 import common_en from "./translations/en/common.json";
+import FullPageLoader from "components/fullPageLoader/FullPageLoader";
 
 i18next.init(
   {
@@ -58,16 +59,21 @@ Amplify.configure({
 });
 
 function App() {
-  const [getUser, { data, status: resStatus }] = useGetUserMutation();
+  const [isAmplifyLoading, setIsAmplifyLoading] = useState(false);
+  const [getUser, { data, status: resStatus, isLoading }] =
+    useGetUserMutation();
   const dispatch = useDispatch();
   const userEmail = useSelector((state: RootState) => state.user.email);
+  console.log("cache check");
   useEffect(() => {
     (async () => {
       //if user data already persist exit out of the function
       if (userEmail) return;
       try {
+        setIsAmplifyLoading(true);
         const res = await fetchAuthSession({ forceRefresh: true });
         const email = res?.tokens?.idToken?.payload?.email || "";
+        setIsAmplifyLoading(false);
         if (email) {
           getUser(email as string);
         }
@@ -82,23 +88,26 @@ function App() {
     }
   }, [resStatus, data, dispatch]);
   return (
-    <BrowserRouter>
-      <Switch>
-        <Route
-          path={`/auth`}
-          component={() => <AuthLayout userEmail={data?.email || ""} />}
-        />
-        <Route
-          path={`/admin`}
-          component={() => (
-            <AdminLayout userEmail={data?.email || userEmail || ""} />
-          )}
-        />
+    <>
+      <BrowserRouter>
+        <Switch>
+          <Route
+            path={`/auth`}
+            component={() => <AuthLayout userEmail={data?.email || ""} />}
+          />
+          <Route
+            path={`/admin`}
+            component={() => (
+              <AdminLayout userEmail={data?.email || userEmail || ""} />
+            )}
+          />
 
-        <Route path={`/rtl`} component={RTLLayout} />
-        <Redirect from="/" to="/admin" />
-      </Switch>
-    </BrowserRouter>
+          <Route path={`/rtl`} component={RTLLayout} />
+          <Redirect from="/" to="/admin" />
+        </Switch>
+      </BrowserRouter>
+      {isAmplifyLoading || isLoading ? <FullPageLoader /> : null}
+    </>
   );
 }
 

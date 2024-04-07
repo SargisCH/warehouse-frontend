@@ -27,6 +27,7 @@ import { useGetStockProductQuery } from "api/product";
 import { Form, Formik, FieldArray, getIn } from "formik";
 import * as Yup from "yup";
 import SaleForm from "./SaleForm";
+import { generateKey } from "helpers/generateKey";
 
 const paymentTypeOptions = [
   {
@@ -46,10 +47,6 @@ const paymentTypeOptions = [
     value: PaymentType.PARTIAL_CREDIT,
   },
 ];
-
-const generateKey = (pre: string) => {
-  return `${pre}_${new Date().getTime()}`;
-};
 
 const SaleSchema = Yup.object().shape({
   clientId: Yup.number().required("Required"),

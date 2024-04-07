@@ -18,17 +18,17 @@ export default function SupplyOrder() {
           path={`${match.path}/upsert/:inventorySupplierId/order`}
           exact={true}
         >
-          <UpsertSupplyOrder create={true} />
+          <UpsertSupplyOrder />
         </Route>
         {/* same component with specifying the supplier durin creating */}
         <Route path={`${match.path}/create-order`} exact={true}>
-          <UpsertSupplyOrder create={true} />
+          <UpsertSupplyOrder />
         </Route>
         <Route
           path={`${match.path}/upsert/:inventorySupplierId/order/:inventorySupplierOrderId`}
           exact={true}
         >
-          <UpsertSupplyOrder create={false} />
+          <UpsertSupplyOrder />
         </Route>
       </Switch>
     </Box>
