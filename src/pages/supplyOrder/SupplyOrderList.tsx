@@ -10,6 +10,7 @@ import {
   Thead,
   Tr,
   useColorModeValue,
+  useQuery,
 } from "@chakra-ui/react";
 import {
   createColumnHelper,
@@ -26,9 +27,12 @@ import Menu from "components/menu/MainMenu";
 import * as React from "react";
 import dayjs from "dayjs";
 import "./supplyOrder.css";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
+import { useGetInventoryQuery } from "api/inventory";
+import ReactSelect from "react-select";
+import { setQuery } from "helpers/queryParams";
 // Assets
 
 type RowObj = {
@@ -45,14 +49,23 @@ const columnHelper = createColumnHelper<RowObj>();
 
 // const columns = columnsDataCheck;
 function SupplierOrderList() {
-  const { data: ordersArray = [], refetch } = useGetSupplierOrdersQuery();
+  const history = useHistory();
+  const location = useLocation();
+  const { data: ordersArray = [], refetch } = useGetSupplierOrdersQuery({
+    query: location.search,
+  });
   useEffect(() => {
     refetch();
   }, []);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
-  const history = useHistory();
+
+  const { data: inventoryData } = useGetInventoryQuery();
+  const inventoryOptions = inventoryData?.inventories?.map((inv: any) => ({
+    label: inv.name,
+    value: inv.id,
+  }));
   const columns = [
     columnHelper.accessor("inventorySupplier.name", {
       id: "inventorySupplier",
@@ -181,10 +194,22 @@ function SupplierOrderList() {
         >
           Inventory Supplier Order List
         </Text>
-        <TableAddButton
-          label="Creat Order"
-          link={links.createSupplyOrderNoSupplier}
-        />
+        <Flex justifyContent={"flex-end"} gap="20px">
+          <ReactSelect
+            isMulti
+            options={inventoryOptions}
+            onChange={(op) => {
+              setQuery(location, history, {
+                name: "inventory[]",
+                value: op.map((op) => op.value),
+              });
+            }}
+          />
+          <TableAddButton
+            label="Create Order"
+            link={links.createSupplyOrderNoSupplier}
+          />
+        </Flex>
       </Flex>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">

@@ -13,6 +13,28 @@ import { useHistory } from "react-router-dom";
 import Select from "react-select";
 import { links } from "routes";
 
+function getQueryParamBoolean(url: string, param: string) {
+  // Create a URL object
+  const urlObject = new URL(url);
+
+  // Get the value of the query parameter
+  const paramValue = urlObject.searchParams.get(param);
+
+  // Check if the parameter value is a boolean
+  if (paramValue !== null) {
+    if (paramValue.toLowerCase() === "true") {
+      return true;
+    } else if (paramValue.toLowerCase() === "false") {
+      return false;
+    } else {
+      // If the parameter value is not 'true' or 'false', return null
+      return null;
+    }
+  } else {
+    // If the parameter is not found in the URL, return null
+    return null;
+  }
+}
 const AddInStock = () => {
   const [selectedProduct, setSelectedProduct] = useState<{
     label: string;
@@ -26,12 +48,13 @@ const AddInStock = () => {
 
   const [createStockProduct, { isError, error }] = useAddInStockMutation();
   const history = useHistory();
-  const { data: products } = useGetProductQuery();
+  const { data: products = [] } = useGetProductQuery();
   const saveStockProduct = async () => {
     const data = {
       productId: Number(selectedProduct.value),
       inStock: Number(inStock),
       inStockUnit: selectedInStockUnit.value,
+      manualAdd: getQueryParamBoolean(window.location.toString(), "manualAdd"),
     };
 
     createStockProduct(data);

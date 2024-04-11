@@ -26,6 +26,7 @@ export type StockProductItem = {
   productId: number;
   inStock: number;
   inStockUnit?: string;
+  manualAdd?: boolean;
 };
 
 const productApi = api.injectEndpoints({

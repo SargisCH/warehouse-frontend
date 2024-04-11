@@ -121,28 +121,6 @@ function ClientList() {
         );
       },
     }),
-    columnHelper.accessor("companyCode", {
-      id: "companyCode",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Code
-        </Text>
-      ),
-      cell: (info: any) => {
-        return (
-          <Flex align="center">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              {info.getValue()}
-            </Text>
-          </Flex>
-        );
-      },
-    }),
     columnHelper.accessor("email", {
       id: "email",
       header: () => (

@@ -17,6 +17,7 @@ import {
 import { useGetManagerQuery, useLazyGetClientScheduleQuery } from "api/manager";
 import AlertDialog from "components/alertDialog/AlertDialog";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
 import Select from "react-select";
 import { links } from "routes";
@@ -36,10 +37,7 @@ type OptionType = {
   label: string;
   value: string;
 };
-const options: OptionType[] = [
-  { label: "Limited Company", value: "lts" },
-  { label: "PE", value: "pe" },
-];
+
 type WeekdayOptionArray = Array<{
   label: Weekday;
   value: Weekday;
@@ -47,18 +45,14 @@ type WeekdayOptionArray = Array<{
 
 const UpsertClient = () => {
   const [name, setName] = useState("");
-  const [companyCode, setCompanyCode] = useState("");
+  const [legalName, setLegalname] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otherPhoneNumber, setOtherPhoneNumber] = useState("");
-  const [companyId, setCompanyId] = useState("");
   const [taxId, setTaxId] = useState("");
-  const [bankAccountNumber, setBankAccountNumber] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [legalAddress, setLegalAddress] = useState("");
   const [address, setAddress] = useState("");
-  const [selectedCompanyType, setSelectedCompanyType] = useState<OptionType>();
-  const [contactPerson, setContactPerson] = useState("");
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [manager, setManager] = useState<OptionType>();
@@ -73,6 +67,7 @@ const UpsertClient = () => {
   const { data: managersArray = [] } = useGetManagerQuery();
   const history = useHistory();
   const [getClientById] = useLazyGetClientByIdQuery();
+  const { t } = useTranslation();
   useEffect(() => {
     (async () => {
       if (params.clientId) {
@@ -81,20 +76,14 @@ const UpsertClient = () => {
           clientId: params.clientId,
         });
         setName(res.data.name);
-        setCompanyCode(res.data.companyCode);
-        setCompanyId(res.data.companyId);
+        setLegalname(res.data.legalName);
         setTaxId(res.data.taxId);
-        setSelectedCompanyType(
-          options.find((op) => op.value === res.data.companyType),
-        );
         setEmail(res.data.email);
         setPhoneNumber(res.data.phoneNumber);
         setOtherPhoneNumber(res.data.otherPhoneNumber);
         setLegalAddress(res.data.legalAddress);
         setAddress(res.data.address);
-        setContactPerson(res.data.contactPerson);
         setAccountNumber(res.data.accountNumber);
-        setBankAccountNumber(res.data.bankAccountNumber);
 
         const managerFound = managersArray.find(
           (m: Partial<{ id: number }>) => {
@@ -127,22 +116,18 @@ const UpsertClient = () => {
         //setCurrency(productItemRes.data.currency);
       }
     })();
-  }, [params.clientId, getClientById, managersArray]);
+  }, [params.clientId, getClientById, managersArray, getClientSchedule]);
 
   const saveClient = async () => {
     const data: ClientType = {
       name,
-      companyId,
-      companyCode,
-      companyType: selectedCompanyType.value,
+      legalName,
       taxId: taxId,
       email,
       phoneNumber,
       otherPhoneNumber,
       legalAddress,
       address,
-      contactPerson,
-      bankAccountNumber,
       accountNumber,
       managerId: Number(manager.value),
       dayPlan: selectedWeekdays.map((d) => d.value),
@@ -173,7 +158,7 @@ const UpsertClient = () => {
       <Flex direction="column" gap="20px">
         <Flex gap="20px">
           <FormControl>
-            <FormLabel>Name</FormLabel>
+            <FormLabel>{t("common.client.name")}</FormLabel>
             <Input
               type="text"
               placeholder="Name"
@@ -182,27 +167,18 @@ const UpsertClient = () => {
             />
           </FormControl>
           <FormControl>
-            <FormLabel>Code</FormLabel>
+            <FormLabel>{t("common.client.legalName")}</FormLabel>
             <Input
               type="text"
-              placeholder="Company Code"
-              value={companyCode}
-              onChange={(e) => setCompanyCode(e.target.value)}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Id</FormLabel>
-            <Input
-              type="text"
-              placeholder="Id"
-              value={companyId}
-              onChange={(e) => setCompanyId(e.target.value)}
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </FormControl>
         </Flex>
         <Flex gap="20px">
           <FormControl>
-            <FormLabel>Email</FormLabel>
+            <FormLabel>{t("common.client.email")}</FormLabel>
             <Input
               type="text"
               placeholder="Email"
@@ -210,27 +186,10 @@ const UpsertClient = () => {
               onChange={(e) => setEmail(e.target.value)}
             />
           </FormControl>
-          <FormControl>
-            <FormLabel>Company Type</FormLabel>
-            <Select
-              value={selectedCompanyType}
-              onChange={setSelectedCompanyType}
-              options={options}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Bank Account</FormLabel>
-            <Input
-              type="text"
-              placeholder="Bank Account"
-              value={bankAccountNumber}
-              onChange={(e) => setBankAccountNumber(e.target.value)}
-            />
-          </FormControl>
         </Flex>
         <Flex gap="20px">
           <FormControl>
-            <FormLabel>Account Number</FormLabel>
+            <FormLabel>{t("common.client.accountNumber")}</FormLabel>
             <Input
               type="text"
               placeholder="Bank Account"
@@ -239,7 +198,7 @@ const UpsertClient = () => {
             />
           </FormControl>
           <FormControl>
-            <FormLabel>Tax Id</FormLabel>
+            <FormLabel>{t("common.client.legalId")}</FormLabel>
             <Input
               type="text"
               placeholder="Tax Id"
@@ -248,7 +207,7 @@ const UpsertClient = () => {
             />
           </FormControl>
           <FormControl>
-            <FormLabel>Legal Address</FormLabel>
+            <FormLabel>{t("common.client.legalAddress")}</FormLabel>
             <Input
               type="text"
               placeholder="Legal Address"
@@ -259,7 +218,7 @@ const UpsertClient = () => {
         </Flex>
         <Flex gap="20px">
           <FormControl>
-            <FormLabel>Address</FormLabel>
+            <FormLabel>{t("common.client.address")}</FormLabel>
             <Input
               type="text"
               placeholder="Address"
@@ -268,7 +227,7 @@ const UpsertClient = () => {
             />
           </FormControl>
           <FormControl>
-            <FormLabel>Phone Number</FormLabel>
+            <FormLabel>{t("common.client.phoneNumber")}</FormLabel>
             <Input
               type="text"
               placeholder="Phone Number"
@@ -277,7 +236,7 @@ const UpsertClient = () => {
             />
           </FormControl>
           <FormControl>
-            <FormLabel>Other Phone Number</FormLabel>
+            <FormLabel>{t("common.client.otherPhoneNumber")}</FormLabel>
             <Input
               type="text"
               placeholder="Other Phone Number"
@@ -289,16 +248,7 @@ const UpsertClient = () => {
       </Flex>
       <Flex gap="20px" mt="10px">
         <FormControl>
-          <FormLabel>Contact Person</FormLabel>
-          <Input
-            type="text"
-            placeholder="Contact Person"
-            value={contactPerson}
-            onChange={(e) => setContactPerson(e.target.value)}
-          />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Assign Manager</FormLabel>
+          <FormLabel>{t("common.client.assignManager")}</FormLabel>
           <Select
             value={manager}
             onChange={setManager}
@@ -309,7 +259,7 @@ const UpsertClient = () => {
           />
         </FormControl>
         <FormControl>
-          <FormLabel>Day plan</FormLabel>
+          <FormLabel>{t("common.client.dayPlan")}</FormLabel>
           <Select
             value={selectedWeekdays}
             onChange={(newValue) =>

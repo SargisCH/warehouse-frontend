@@ -7,6 +7,7 @@ export type InventoryItem = {
   id: number;
   name: string;
   price: number;
+  avg?: number;
   currency?: string;
   product_id?: string;
   updated_at: string;

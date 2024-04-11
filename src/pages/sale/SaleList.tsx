@@ -42,7 +42,6 @@ type Option = { label: string; value: number };
 type RowObj = {
   id: number;
   clientName: string;
-  clientCode: string;
   products: string[];
   totalPrice: number;
   cash?: number;
@@ -111,7 +110,6 @@ function SaleList() {
       return {
         id,
         clientName: client.name,
-        clientCode: client.companyCode,
         products: saleItems.map(
           ({ stockProduct }) => stockProduct?.product.name,
         ),

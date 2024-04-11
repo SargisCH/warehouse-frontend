@@ -76,11 +76,13 @@ const inventorySupplierApi = api.injectEndpoints({
         body: newSupplierOrder,
       }),
     }),
-    getSupplierOrders: builder.query<SupplierOrder[], void>({
-      query: () => ({
-        url: "inventorySupplier/order",
-        method: "GET",
-      }),
+    getSupplierOrders: builder.query<SupplierOrder[], { query: string }>({
+      query: ({ query }: { query: string }) => {
+        return {
+          url: `inventorySupplier/order${query}`,
+          method: "GET",
+        };
+      },
     }),
     getInventorySupplierOrderById: builder.query<
       SupplierOrder,

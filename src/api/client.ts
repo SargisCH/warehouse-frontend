@@ -12,18 +12,14 @@ export enum PaymentType {
 export type ClientType = {
   id?: number;
   name: string;
-  companyCode: string;
-  companyType: string;
-  companyId: string;
+  legalName: string;
   taxId?: string;
   accountNumber: string;
-  bankAccountNumber: string;
   legalAddress: string;
   address: string;
   phoneNumber: string;
   otherPhoneNumber: string;
   email: string;
-  contactPerson: string;
   managerId?: number;
   manager?: Partial<{ name: string; id: number }>;
   dayPlan?: Weekday[];

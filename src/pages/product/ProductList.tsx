@@ -229,6 +229,10 @@ function ProductList() {
             link={`${links.addInStock}`}
             label={"Integrade product"}
           />
+          <TableAddButton
+            link={`${links.addInStock}?manualAdd=true`}
+            label={"Manual Integrade product"}
+          />
           <Menu />
         </Flex>
       </Flex>

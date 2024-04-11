@@ -11,5 +11,17 @@
   "inventory": "Հումք",
   "products": "Ապրանքնեև",
   "stockProducts": "Պատրաստի ապրանքներ",
-  "categories": "Կատեգորիաներ"
+  "categories": "Կատեգորիաներ",
+  "client": {
+    "name": "Անուն",
+    "legalName": "Իրավաբանական անուն",
+    "legalId": "ՀՎՀՀ",
+    "legalAddress": "Իրավաբանական հասցե",
+    "address": "Փաստացի հասցե",
+    "accountNumber": "Հաշվեհամար",
+    "phoneNumber": "Հեռախոսահամար",
+    "otherPhoneNumber": "Այլ հեռախոսահամար",
+    "assignManager": "Կցել Մենեջեր",
+    "dayPlan": "Օրվա պլան"
+  }
 }

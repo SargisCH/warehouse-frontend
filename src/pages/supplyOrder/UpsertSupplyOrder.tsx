@@ -30,11 +30,33 @@ import { useFormik } from "formik";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { generateKey } from "helpers/generateKey";
+import { PaymentType } from "api/client";
+
+const paymentTypeOptions = [
+  {
+    label: PaymentType.CASH,
+    value: PaymentType.CASH,
+  },
+  {
+    label: PaymentType.TRANSFER,
+    value: PaymentType.TRANSFER,
+  },
+  {
+    label: PaymentType.CREDIT,
+    value: PaymentType.CREDIT,
+  },
+  {
+    label: PaymentType.PARTIAL_CREDIT,
+    value: PaymentType.PARTIAL_CREDIT,
+  },
+];
 
 type OrderType = {
   orderId?: number;
   supplierId: number;
   orderDate: Date;
+  paymentType: string;
+  partialCreditAmount?: number;
   orderItems: Array<{
     inventoryId: number;
     amount: number;
@@ -51,17 +73,9 @@ const unitOptions = [
 ];
 const intialValues: OrderType = {
   supplierId: null,
+  paymentType: "",
   orderDate: dayjs().toDate(),
-  orderItems: [
-    {
-      inventoryId: null,
-      amount: 0,
-      amountUnit: "",
-      price: 0,
-      priceUnit: "",
-      reactKey: generateKey("orderItem"),
-    },
-  ],
+  orderItems: [],
 };
 const UpsertSupplierOrder = () => {
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
@@ -91,6 +105,7 @@ const UpsertSupplierOrder = () => {
     onSubmit: async (values) => {
       const data: OrderType = {
         ...values,
+        paymentType: values.paymentType as PaymentType,
         orderItems: values.orderItems.map((oi) => ({
           ...oi,
           amount: Number(oi.amount),
@@ -151,7 +166,6 @@ const UpsertSupplierOrder = () => {
     params.inventorySupplierOrderId,
   ]);
 
-  console.log("values outside", values);
   useEffect(() => {
     (async () => {
       if (params.inventorySupplierOrderId) return;
@@ -235,6 +249,48 @@ const UpsertSupplierOrder = () => {
               isDisabled={params.inventorySupplierId}
             />
           </FormControl>
+          <FormControl>
+            <FormLabel>Payment Type</FormLabel>
+            <Select
+              options={paymentTypeOptions}
+              value={paymentTypeOptions.find(
+                (op) => op.value === values.paymentType,
+              )}
+              onChange={(op) => {
+                setFieldValue("paymentType", op.value);
+
+                console.log("set field", values.orderItems.length);
+                if (!values.orderItems.length) {
+                  console.log("set field 2", values.orderItems.length);
+                  setFieldValue("orderItems", [
+                    ...values.orderItems,
+                    {
+                      inventoryId: null,
+                      amount: 0,
+                      amountUnit: "",
+                      price: 0,
+                      priceUnit: "",
+                      reactKey: generateKey("orderItem"),
+                    },
+                  ]);
+                }
+              }}
+            />
+          </FormControl>
+          {values.paymentType === PaymentType.PARTIAL_CREDIT ? (
+            <FormControl>
+              <FormLabel>Partial credit amount</FormLabel>
+              <NumberInput value={values.partialCreditAmount}>
+                <NumberInputField
+                  name={"partialCreditAmount"}
+                  placeholder="How is paid right now"
+                  onChange={(e) => {
+                    setFieldValue("partialCreditAmount", e.target.value);
+                  }}
+                />
+              </NumberInput>
+            </FormControl>
+          ) : null}
         </Flex>
         {values.orderItems.map((oi, oiIndex) => {
           const selectedAmountUnit = unitOptions.find(

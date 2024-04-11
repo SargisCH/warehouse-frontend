@@ -30,6 +30,7 @@ import dayjs from "dayjs";
 import "./inventory.css";
 import { useHistory } from "react-router-dom";
 import { links } from "routes";
+import ReactSelect from "react-select";
 // Assets
 
 type RowObj = {
@@ -56,6 +57,7 @@ function InventoryList() {
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
+
   const columns = [
     columnHelper.accessor("name", {
       id: "name",
@@ -140,6 +142,7 @@ function InventoryList() {
     }),
     columnHelper.accessor("created_at", {
       id: "created_at",
+
       header: () => (
         <Text
           justifyContent="space-between"

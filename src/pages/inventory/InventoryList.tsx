@@ -42,6 +42,7 @@ type RowObj = {
   amountUnit: string;
   price: number;
   currency: string;
+  avg: number;
   created_at: string;
   updated_at: string;
 };
@@ -138,6 +139,27 @@ function InventoryList() {
         return (
           <Text color={textColor} fontSize="sm" fontWeight="700">
             {info.getValue() + " " + info.row.original.currency}
+          </Text>
+        );
+      },
+    }),
+    columnHelper.accessor("avg", {
+      id: "avg",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Average Spent
+        </Text>
+      ),
+      cell: (info) => {
+        const val = info.getValue();
+        return (
+          <Text color={textColor} fontSize="sm" fontWeight="700">
+            {val > 0 ? val.toFixed(2) : null}
           </Text>
         );
       },

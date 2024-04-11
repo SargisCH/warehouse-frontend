@@ -32,7 +32,6 @@ import "./inventorySupplier.css";
 import { useHistory } from "react-router-dom";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
-// Assets
 
 type RowObj = {
   id: number | string;
@@ -50,6 +49,7 @@ function InventorySupplerList() {
   useEffect(() => {
     refetch();
   }, [refetch]);
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
