@@ -29,6 +29,7 @@ import Credit from "pages/credit/Credit";
 import VerifyEmail from "views/auth/verifyEmail";
 import TransactionHistory from "pages/transactionHistory/TransactionHistory";
 import StockProductList from "pages/product/StockProductList";
+import BalanceHistory from "pages/balanceHistory/BalanceHistory";
 import Manager from "pages/manager/Manager";
 import ChangePassword from "views/auth/changePassword";
 
@@ -40,6 +41,14 @@ const routes: RouteTypeExtended[] = [
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: MainDashboard,
     role: [Role.ADMIN, Role.MANAGER],
+  },
+  {
+    name: "Balance History",
+    layout: "/admin",
+    path: "/balance-history",
+    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+    component: BalanceHistory,
+    role: [Role.ADMIN],
   },
   // {
   //   name: "NFT Marketplace",
