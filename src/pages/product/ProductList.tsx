@@ -225,14 +225,7 @@ function ProductList() {
         </Text>
         <Flex>
           <TableAddButton link={links.createProduct} label={"Add Product"} />
-          <TableAddButton
-            link={`${links.addInStock}`}
-            label={"Integrade product"}
-          />
-          <TableAddButton
-            link={`${links.addInStock}?manualAdd=true`}
-            label={"Manual Integrade product"}
-          />
+
           <Menu />
         </Flex>
       </Flex>

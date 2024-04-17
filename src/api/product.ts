@@ -26,7 +26,7 @@ export type StockProductItem = {
   productId: number;
   inStock: number;
   inStockUnit?: string;
-  manualAdd?: boolean;
+  noCalculation?: boolean;
 };
 
 const productApi = api.injectEndpoints({
@@ -84,6 +84,22 @@ const productApi = api.injectEndpoints({
         method: "GET",
       }),
     }),
+    getStockProductById: builder.query<
+      StockProductItem,
+      { stockProductId: string | number }
+    >({
+      query: (arg: { stockProductId: string | number }) => ({
+        url: `product/stockProduct/${arg.stockProductId}`,
+        method: "GET",
+      }),
+    }),
+    updateStockProductById: builder.mutation({
+      query: (newStockProduct) => ({
+        url: `product/stockProduct/${newStockProduct.id}`,
+        method: "PUT",
+        body: newStockProduct,
+      }),
+    }),
   }),
 });
 
@@ -96,4 +112,7 @@ export const {
   useUpdateProductMutation,
   useDeleteProductMutation,
   useAddInStockMutation,
+  useGetStockProductByIdQuery,
+  useUpdateStockProductByIdMutation,
+  useLazyGetStockProductByIdQuery,
 } = productApi;

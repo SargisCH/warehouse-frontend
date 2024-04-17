@@ -1,7 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import { Switch, useRouteMatch } from "react-router-dom";
 import { Route } from "react-router-dom";
-import AddInStock from "./AddInStock";
+import StockProductForm from "./StockProductForm";
 import ProductList from "./ProductList";
 import StockProductList from "./StockProductList";
 import UpsertProduct from "./UpsertProduct";
@@ -22,7 +22,10 @@ export default function Product() {
           <UpsertProduct create={true} />
         </Route>
         <Route path={`${match.path}/addInStock`}>
-          <AddInStock />
+          <StockProductForm />
+        </Route>
+        <Route path={`${match.path}/stockProduct/:stockProductId`}>
+          <StockProductForm />
         </Route>
         <Route path={`${match.path}/stockProducts`} exact={true}>
           <StockProductList />

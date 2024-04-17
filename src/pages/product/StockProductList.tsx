@@ -163,6 +163,10 @@ function StockProductList() {
         >
           Stock Product List
         </Text>
+        <TableAddButton
+          link={`${links.addInStock}`}
+          label={"Integrade product"}
+        />
       </Flex>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -210,7 +214,7 @@ function StockProductList() {
                     key={row.id}
                     cursor="pointer"
                     onClick={() => {
-                      history.push(links.productItem(row.original.product.id));
+                      history.push(links.updateStock(row.original.id));
                     }}
                   >
                     {row.getVisibleCells().map((cell) => {

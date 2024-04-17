@@ -268,6 +268,7 @@ export const links = {
     `/admin/products/upsert/${productId}`,
   createProduct: "/admin/products/upsert/",
   addInStock: "/admin/products/addInStock/",
+  updateStock: (id: number) => `/admin/products/stockProduct/${id}/`,
   suppliers: "/admin/suppliers",
   supplier: (supplierId: string | number) =>
     `/admin/suppliers/upsert/${supplierId}`,
