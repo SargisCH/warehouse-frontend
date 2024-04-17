@@ -37,3 +37,8 @@ export enum TransactionStatus {
   FAILED = "FAILED",
   FINISHED = "FINISHED",
 }
+
+export enum CreditType {
+  TO_PAY = "TO_PAY",
+  TO_RECEIVE = "TO_RECEIVE",
+}

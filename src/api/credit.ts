@@ -1,3 +1,4 @@
+import { CreditType, TransactionStatus } from "types";
 import { api } from "./api";
 import { SaleType } from "./client";
 
@@ -10,8 +11,15 @@ export type CreditItem = {
     id: number;
   };
   clientId?: number;
+  inventorySupplier: {
+    name: string;
+    id: number;
+  };
+  inventorySupplierId?: number;
   amount: number;
   date?: Date;
+  status: TransactionStatus;
+  type: CreditType;
   updated_at: string;
   created_at: string;
 };
