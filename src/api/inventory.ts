@@ -12,6 +12,29 @@ export type InventoryItem = {
   product_id?: string;
   updated_at: string;
 };
+
+export type InventoryEntry = {
+  id?: number;
+  date?: Date;
+  inventorySupplierId: number;
+  inventorySupplier?: {
+    name: string;
+    id: number;
+  };
+  inventoryEntryItems: InventoryEntryItem[];
+};
+
+export type InventoryEntryItem = {
+  amount: number;
+  amountUnit: string;
+  id?: number;
+  price: number;
+  inventoryId: number;
+  inventory?: {
+    name: string;
+    id: number;
+  };
+};
 export const inventoryApi = api.injectEndpoints({
   endpoints: (builder) => ({
     createInventory: builder.mutation({
@@ -48,6 +71,43 @@ export const inventoryApi = api.injectEndpoints({
         method: "GET",
       }),
     }),
+    getInventoryEntries: builder.query<
+      { inventoryEntries: InventoryEntry[]; totalWorth: number },
+      void
+    >({
+      query: () => ({
+        url: "inventory/entry",
+        method: "GET",
+      }),
+    }),
+    createInventoryEntry: builder.mutation({
+      query: (newInventoryEntry) => ({
+        url: "inventory/entry/create",
+        method: "POST",
+        body: newInventoryEntry,
+      }),
+    }),
+    updateInventoryEntry: builder.mutation({
+      query: (newInventoryEntry) => {
+        const id = newInventoryEntry.id;
+        const updatedInventoryEntry = { ...newInventoryEntry };
+        delete updatedInventoryEntry.id;
+        return {
+          url: `inventory/entry/${id}`,
+          method: "PUT",
+          body: updatedInventoryEntry,
+        };
+      },
+    }),
+    getInventoryEntryById: builder.query<
+      InventoryEntry,
+      { inventoryEntryId: string | number }
+    >({
+      query: (arg: { inventoryEntryId: string | number }) => ({
+        url: `inventoryEntry/${arg.inventoryEntryId}`,
+        method: "GET",
+      }),
+    }),
     getInventoryById: builder.query<
       InventoryItem,
       { inventoryId: string | number }
@@ -67,4 +127,10 @@ export const {
   useLazyGetInventoryByIdQuery,
   useUpdateInventoryMutation,
   useDeleteInventoryMutation,
+  useGetInventoryEntriesQuery,
+  useCreateInventoryEntryMutation,
+  useUpdateInventoryEntryMutation,
+  useLazyGetInventoryEntryByIdQuery,
+  useGetInventoryEntryByIdQuery,
+  useLazyGetInventoryEntriesQuery,
 } = inventoryApi;

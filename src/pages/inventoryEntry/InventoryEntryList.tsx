@@ -2,8 +2,6 @@ import { useEffect } from "react";
 import {
   Box,
   Flex,
-  Icon,
-  Progress,
   Table,
   Tbody,
   Td,
@@ -22,34 +20,57 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useGetInventoryQuery } from "api/inventory";
+import { useGetInventoryEntriesQuery } from "api/inventory";
 // Custom components
 import Card from "components/card/Card";
 import Menu from "components/menu/MainMenu";
 import * as React from "react";
 import dayjs from "dayjs";
-import "./inventory.css";
+import "./inventoryEntry.css";
 import { useHistory, Link as ReactRouterLink } from "react-router-dom";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
 
 // Assets
-
 type RowObj = {
   id: number | string;
-  name: string;
+  date?: Date;
+  inventorySupplier?: string;
+  amount: number;
   price: number;
-  created_at: string;
-  updated_at: string;
+  amountUnit: string;
+  inventory: string;
 };
 
 const columnHelper = createColumnHelper<RowObj>();
 
-// const columns = columnsDataCheck;
-function InventoryList() {
-  const { data, refetch } = useGetInventoryQuery();
-  const inventoryArray = data?.inventories || [];
+function InventoryEntryList() {
+  const { data, refetch } = useGetInventoryEntriesQuery();
   const totalWorth = data?.totalWorth;
+  const inventoryEntriesTransformed = React.useMemo(() => {
+    const rows: RowObj[] = [];
+    data?.inventoryEntries?.forEach((invEn) => {
+      const row: RowObj = {
+        date: invEn.date,
+        id: invEn.id,
+        inventorySupplier: invEn.inventorySupplier?.name,
+        amount: 0,
+        amountUnit: "",
+        price: 0,
+        inventory: null,
+      };
+      invEn.inventoryEntryItems.forEach((enItem) => {
+        row.amount = enItem.amount;
+        row.amountUnit = enItem.amountUnit;
+        row.price = enItem.price;
+        row.inventory = enItem.inventory?.name;
+        rows.push(row);
+      });
+    });
+    return rows;
+  }, [data]);
+  console.log("inventory transformed", inventoryEntriesTransformed);
+
   useEffect(() => {
     refetch();
   }, []);
@@ -58,8 +79,8 @@ function InventoryList() {
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
   const columns = [
-    columnHelper.accessor("name", {
-      id: "name",
+    columnHelper.accessor("date", {
+      id: "date",
       header: () => (
         <Text
           justifyContent="space-between"
@@ -67,7 +88,7 @@ function InventoryList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          NAME
+          Date
         </Text>
       ),
       cell: (info: any) => {
@@ -79,6 +100,88 @@ function InventoryList() {
           </Flex>
         );
       },
+    }),
+    columnHelper.accessor("inventorySupplier", {
+      id: "inventorySupplier",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Inventory Supplier
+        </Text>
+      ),
+      cell: (info: any) => {
+        return (
+          <Flex align="center">
+            <Text color={textColor} fontSize="sm" fontWeight="700">
+              {info.getValue()}
+            </Text>
+          </Flex>
+        );
+      },
+    }),
+    columnHelper.accessor("inventory", {
+      id: "inventory",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Inventory Name
+        </Text>
+      ),
+      cell: (info: any) => {
+        return (
+          <Flex align="center">
+            <Text color={textColor} fontSize="sm" fontWeight="700">
+              {info.getValue()}
+            </Text>
+          </Flex>
+        );
+      },
+    }),
+    columnHelper.accessor("amount", {
+      id: "amount",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          AMOUNT
+        </Text>
+      ),
+      cell: (info) => (
+        <Flex align="center">
+          <Text color={textColor} fontSize="sm" fontWeight="700">
+            {info.getValue()}
+          </Text>
+        </Flex>
+      ),
+    }),
+    columnHelper.accessor("amountUnit", {
+      id: "amountUnit",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          AMOUNT UNIT
+        </Text>
+      ),
+      cell: (info) => (
+        <Text color={textColor} fontSize="sm" fontWeight="700">
+          {info.getValue()}
+        </Text>
+      ),
     }),
     columnHelper.accessor("price", {
       id: "price",
@@ -93,7 +196,6 @@ function InventoryList() {
         </Text>
       ),
       cell: (info) => {
-        console.log(info);
         return (
           <Text color={textColor} fontSize="sm" fontWeight="700">
             {info.getValue()}
@@ -101,45 +203,9 @@ function InventoryList() {
         );
       },
     }),
-    columnHelper.accessor("created_at", {
-      id: "created_at",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Created at
-        </Text>
-      ),
-      cell: (info) => (
-        <Text color={textColor} fontSize="sm" fontWeight="700">
-          {dayjs(info.getValue()).format("DD/MM/YYYY")}
-        </Text>
-      ),
-    }),
-    columnHelper.accessor("updated_at", {
-      id: "updated_at",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Updated at
-        </Text>
-      ),
-      cell: (info) => (
-        <Text color={textColor} fontSize="sm" fontWeight="700">
-          {dayjs(info.getValue()).format("DD/MM/YYYY")}
-        </Text>
-      ),
-    }),
   ];
   const table = useReactTable({
-    data: inventoryArray,
+    data: inventoryEntriesTransformed || [],
     columns: columns as any,
     state: {
       sorting,
@@ -164,9 +230,12 @@ function InventoryList() {
           fontWeight="700"
           lineHeight="100%"
         >
-          Inventory List
+          Inventory Entry List
         </Text>
-        <TableAddButton link={links.createInventory} label="Add Inventory" />
+        <TableAddButton
+          link={links.createInventoryEntry}
+          label="Add Inventory Entry"
+        />
       </Flex>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -245,4 +314,4 @@ function InventoryList() {
   );
 }
 
-export default InventoryList;
+export default InventoryEntryList;

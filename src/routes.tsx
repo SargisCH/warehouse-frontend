@@ -14,6 +14,7 @@ import Profile from "views/admin/profile";
 import DataTables from "views/admin/dataTables";
 import RTL from "views/admin/rtl";
 import Inventory from "pages/inventory/Inventory";
+import InventoryEntry from "pages/inventoryEntry/InventoryEntry";
 import Product from "pages/product/Product";
 import InventorySupplier from "pages/inventorySupplier/InventorySupplier";
 import InventorySupplierOrder from "pages/supplyOrder/SupplyOrder";
@@ -48,6 +49,14 @@ const routes: RouteTypeExtended[] = [
     path: "/balance-history",
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: BalanceHistory,
+    role: [Role.ADMIN],
+  },
+  {
+    name: "Inventory Entries",
+    layout: "/admin",
+    path: "/inventoryEntry",
+    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+    component: InventoryEntry,
     role: [Role.ADMIN],
   },
   // {
@@ -299,5 +308,9 @@ export const links = {
   createTransactionHistory: "/admin/transactionHistory/upsert/",
   transactionHistory: (transactionHistoryId: string | number) =>
     `/admin/transactionHistory/upsert/${transactionHistoryId}`,
+  inventoryEntry: "/admin/inventoryEntry",
+  createInventoryEntry: "/admin/inventoryEntry/upsert",
+  updateInventoryEntry: (entryId: number) =>
+    `/admin/inventoryEntry/upsert${entryId}`,
 };
 export default routes;
