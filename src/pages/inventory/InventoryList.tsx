@@ -38,6 +38,8 @@ import { TableAddButton } from "components/tableAddButton/TableAddButton";
 type RowObj = {
   id: number | string;
   name: string;
+  amount: number;
+  avg: number;
   price: number;
   created_at: string;
   updated_at: string;
@@ -90,6 +92,49 @@ function InventoryList() {
           color="gray.400"
         >
           Price
+        </Text>
+      ),
+      cell: (info) => {
+        console.log(info);
+        return (
+          <Text color={textColor} fontSize="sm" fontWeight="700">
+            {info.getValue()}
+          </Text>
+        );
+      },
+    }),
+
+    columnHelper.accessor("amount", {
+      id: "amount",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Amount
+        </Text>
+      ),
+      cell: (info) => {
+        console.log(info);
+        return (
+          <Text color={textColor} fontSize="sm" fontWeight="700">
+            {info.getValue()}
+          </Text>
+        );
+      },
+    }),
+    columnHelper.accessor("avg", {
+      id: "avg",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Average
         </Text>
       ),
       cell: (info) => {
