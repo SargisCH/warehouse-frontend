@@ -35,6 +35,7 @@ type RowObj = {
   product: Partial<{ name: string; id: number; price: number }>;
   inStock: number;
   inStockUnit: string;
+  costPrice: number;
   created_at: string;
   updated_at: string;
 };
@@ -126,6 +127,24 @@ function StockProductList() {
           color="gray.400"
         >
           In Stock Unit
+        </Text>
+      ),
+      cell: (info) => (
+        <Text color={textColor} fontSize="sm" fontWeight="700">
+          {info.getValue()}
+        </Text>
+      ),
+    }),
+    columnHelper.accessor("costPrice", {
+      id: "costPrice",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Cost Price
         </Text>
       ),
       cell: (info) => (

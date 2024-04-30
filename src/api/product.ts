@@ -23,6 +23,7 @@ export type StockProductItem = {
     priceUnit: string;
     amountUnit: string;
   }>;
+  costPrice: number;
   productId: number;
   inStock: number;
   inStockUnit?: string;
