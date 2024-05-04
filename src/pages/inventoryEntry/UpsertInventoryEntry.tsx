@@ -3,34 +3,75 @@ import {
   Flex,
   FormControl,
   FormLabel,
-  Input,
   Box,
   NumberInput,
   NumberInputField,
+  Text,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   InventoryEntry,
-  InventoryItem,
   useCreateInventoryEntryMutation,
-  useGetInventoryEntryByIdQuery,
   useGetInventoryQuery,
   useLazyGetInventoryEntryByIdQuery,
   useUpdateInventoryEntryMutation,
 } from "api/inventory";
 import { useGetInventorySupplierQuery } from "api/inventorySupplier";
-import AlertDialog from "components/alertDialog/AlertDialog";
 import { useFormik } from "formik";
 import withAdminRoute from "hocs/withAdminRoute";
 import { useEffect, useState } from "react";
 import ReactDatePicker from "react-datepicker";
+import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
-import Select from "react-select";
+import Select, { components, MenuProps } from "react-select";
 import { links } from "routes";
+import InventoryCreateModal from "./InventoryCreateModal";
+
+interface CustomOptionType {
+  label: string;
+  value: string | number;
+}
+
+const CustomMenu = (
+  props: MenuProps<{ label: string; value: string | number }>,
+) => {
+  const { t } = useTranslation();
+  return (
+    <components.Menu {...props}>
+      <Box>
+        <Box>{props.children}</Box>
+        <Box borderTop={"1px solid grey"} padding="10px 5px">
+          <Flex
+            justifyContent={"center"}
+            _hover={{
+              cursor: "pointer",
+            }}
+          >
+            <Text
+              onClick={() =>
+                props.selectOption({ label: "", value: "newInventory" })
+              }
+              color={"blue.500"}
+              _hover={{
+                textDecoration: "underline",
+              }}
+            >
+              {t("common.inventory.createNewInventory")}
+            </Text>
+          </Flex>
+        </Box>
+      </Box>
+    </components.Menu>
+  );
+};
 
 const UpsertInventory = (props: { create: boolean }) => {
+  const { t } = useTranslation();
   const params = useParams() as any;
+  const [inventoryIndexToCreate, setInventoryIndexToCreate] =
+    useState<number>();
   const [initialValues, setInitialValues] = useState<InventoryEntry>({
     date: new Date(),
     inventorySupplierId: null,
@@ -40,12 +81,17 @@ const UpsertInventory = (props: { create: boolean }) => {
     useCreateInventoryEntryMutation();
   const [updateInventoryEntry] = useUpdateInventoryEntryMutation();
   const { data: inventorySuppliers } = useGetInventorySupplierQuery();
-  const { data } = useGetInventoryQuery();
-  const supplierOptions =
+  const { data, refetch } = useGetInventoryQuery();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const supplierOptions: { label: string; value: number | "noSupplier" }[] =
     inventorySuppliers?.map((sup) => ({
       label: sup.name,
       value: sup.id,
     })) ?? [];
+  supplierOptions.push({
+    label: t("common.inventory.noSupplier"),
+    value: "noSupplier",
+  });
   const history = useHistory();
   const [getInventoryEntryById] = useLazyGetInventoryEntryByIdQuery();
   useEffect(() => {
@@ -66,12 +112,17 @@ const UpsertInventory = (props: { create: boolean }) => {
   const { values, handleSubmit, setFieldValue } = useFormik<InventoryEntry>({
     initialValues,
     onSubmit: async (values) => {
+      const inventorySupplierId =
+        values.inventorySupplierId === "noSupplier"
+          ? undefined
+          : values.inventorySupplierId;
       if (params.inventoryEntryId) {
         await updateInventoryEntry({
           ...values,
+          inventorySupplierId,
         });
       } else {
-        await createInventoryEntry({ ...values });
+        await createInventoryEntry({ ...values, inventorySupplierId });
       }
       history.push(links.inventoryEntry);
     },
@@ -89,7 +140,7 @@ const UpsertInventory = (props: { create: boolean }) => {
       value: "g",
     },
   ];
-  const inventoryOptions =
+  const inventoryOptions: CustomOptionType[] =
     data?.inventories?.map((inv) => ({
       label: inv.name,
       value: inv.id,
@@ -108,8 +159,10 @@ const UpsertInventory = (props: { create: boolean }) => {
                   onChange={(date: Date) => setFieldValue("date", date)}
                 />
               </FormControl>
+
               <FormControl>
                 <FormLabel>Inventory Supplier</FormLabel>
+
                 <Select
                   value={selectedSupplier}
                   onChange={(valueSelected) => {
@@ -147,12 +200,17 @@ const UpsertInventory = (props: { create: boolean }) => {
                     <FormControl>
                       <FormLabel>Inventory</FormLabel>
                       <Select
+                        components={{ Menu: CustomMenu }}
                         value={selectedInventory}
                         onChange={(valueSelected) => {
+                          const value = (valueSelected as CustomOptionType)
+                            .value;
+                          if (value === "newInventory") onOpen();
                           setFieldValue(
                             `inventoryEntryItems.${index}.inventoryId`,
-                            valueSelected.value,
+                            value,
                           );
+                          setInventoryIndexToCreate(index);
                         }}
                         options={inventoryOptions}
                       />
@@ -251,6 +309,16 @@ const UpsertInventory = (props: { create: boolean }) => {
           </Button>
         </Box>
       </form>
+      <InventoryCreateModal
+        isOpen={isOpen}
+        onClose={onClose}
+        index={inventoryIndexToCreate}
+        setInventoryId={(index, id) => {
+          setFieldValue(`inventoryEntryItems.${index}.inventoryId`, id);
+          setInventoryIndexToCreate(null);
+          refetch();
+        }}
+      />
     </Box>
   );
 };

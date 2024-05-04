@@ -25,13 +25,13 @@ import {
 import { useGetInventoryQuery } from "api/inventory";
 // Custom components
 import Card from "components/card/Card";
-import Menu from "components/menu/MainMenu";
 import * as React from "react";
 import dayjs from "dayjs";
 import "./inventory.css";
-import { useHistory, Link as ReactRouterLink } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
+import { useTranslation } from "react-i18next";
 
 // Assets
 
@@ -41,13 +41,13 @@ type RowObj = {
   amount: number;
   avg: number;
   price: number;
+  amountUnit: string;
   created_at: string;
   updated_at: string;
 };
 
 const columnHelper = createColumnHelper<RowObj>();
 
-// const columns = columnsDataCheck;
 function InventoryList() {
   const { data, refetch } = useGetInventoryQuery();
   const inventoryArray = data?.inventories || [];
@@ -59,6 +59,7 @@ function InventoryList() {
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
+  const { t } = useTranslation();
   const columns = [
     columnHelper.accessor("name", {
       id: "name",
@@ -69,7 +70,7 @@ function InventoryList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          NAME
+          {t("common.name")}
         </Text>
       ),
       cell: (info: any) => {
@@ -91,11 +92,10 @@ function InventoryList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Price
+          {t("common.price")}
         </Text>
       ),
       cell: (info) => {
-        console.log(info);
         return (
           <Text color={textColor} fontSize="sm" fontWeight="700">
             {info.getValue()}
@@ -113,14 +113,14 @@ function InventoryList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Amount
+          {t("common.amount")}
         </Text>
       ),
       cell: (info) => {
-        console.log(info);
+        const unit = info.row.original.amountUnit;
         return (
           <Text color={textColor} fontSize="sm" fontWeight="700">
-            {info.getValue()}
+            {`${info.getValue()} ${unit ? t("common." + unit) : ""}`}
           </Text>
         );
       },
@@ -134,11 +134,10 @@ function InventoryList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Average
+          {t("common.average")}
         </Text>
       ),
       cell: (info) => {
-        console.log(info);
         return (
           <Text color={textColor} fontSize="sm" fontWeight="700">
             {info.getValue()}
@@ -155,7 +154,7 @@ function InventoryList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Created at
+          {t("common.createdAt")}
         </Text>
       ),
       cell: (info) => (
@@ -173,7 +172,7 @@ function InventoryList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Updated at
+          {t("common.updatedAt")}
         </Text>
       ),
       cell: (info) => (
@@ -203,15 +202,26 @@ function InventoryList() {
       overflowX={{ sm: "scroll", lg: "hidden" }}
     >
       <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
-        <Text
-          color={textColor}
-          fontSize="22px"
-          fontWeight="700"
-          lineHeight="100%"
-        >
-          Inventory List
-        </Text>
-        <TableAddButton link={links.createInventory} label="Add Inventory" />
+        <Box>
+          <Text
+            color={textColor}
+            fontSize="22px"
+            fontWeight="700"
+            lineHeight="100%"
+          >
+            {t("common.inventories")}
+          </Text>
+        </Box>
+        <Flex>
+          <TableAddButton
+            link={links.createInventory}
+            label={t("common.inventory.createNewInventory")}
+          />
+          <TableAddButton
+            link={links.createInventoryEntry}
+            label={t("common.inventory.addNewEntry")}
+          />
+        </Flex>
       </Flex>
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -283,7 +293,7 @@ function InventoryList() {
           </Tbody>
         </Table>
         <Text align={"right"} paddingRight="20">
-          Total Worth: {totalWorth}
+          {t("common.totalWorth")}: {totalWorth}
         </Text>
       </Box>
     </Card>

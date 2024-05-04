@@ -1,7 +1,9 @@
 {
   "creditList": "Կրեդիտների լիստ",
   "supplyOrders": "Մատակարարման պատվերներ",
+  "inventories": "Հումքեր",
   "inventorySuppliers": "Մատակարարողներ",
+  "inventorySupplier": "Մատակարար",
   "managers": "Մենեջերներ",
   "transactionHistoryList": "Տրանզակցիաների պատմություն",
   "sales": "Վաճառք",
@@ -12,6 +14,21 @@
   "products": "Ապրանքնեև",
   "stockProducts": "Պատրաստի ապրանքներ",
   "categories": "Կատեգորիաներ",
+  "balanceHistory": "Բալանսի պատմություն",
+  "inventoryEntries": "Հումքերի մուտքեր",
+  "mainDashboard": "Գլխավոր մենյու",
+  "saveAndSelect": "Ստեղծել և ընտրել",
+  "totalWorth": "Ընդհանուր արժեք",
+  "name": "Անուն",
+  "price": "Գին",
+  "date": "Ամսաթիվ",
+  "amount": "Քանակ",
+  "unit": "Միավոր",
+  "average": "Միջին գին",
+  "createdAt": "Ստեղծված",
+  "updatedAt": "Թարմացված",
+  "kg": "Կգ",
+  "g": "Գ",
   "client": {
     "name": "Անուն",
     "legalName": "Իրավաբանական անուն",
@@ -23,5 +40,13 @@
     "otherPhoneNumber": "Այլ հեռախոսահամար",
     "assignManager": "Կցել Մենեջեր",
     "dayPlan": "Օրվա պլան"
+  },
+  "inventory": {
+    "entries": "Մուտքեր",
+    "inventory": "Հումք",
+    "supplier": "Մատակարար",
+    "noSupplier": "Առանց մատակարար",
+    "createNewInventory": "Ստեղծել նոր հումք",
+    "addNewEntry": "Գրանցել նոր մուտք"
   }
 }

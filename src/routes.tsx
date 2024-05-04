@@ -40,6 +40,7 @@ const routes: RouteTypeExtended[] = [
     layout: "/admin",
     path: "/default",
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+    translationKey: "mainDashboard",
     component: MainDashboard,
     role: [Role.ADMIN, Role.MANAGER],
   },
@@ -47,18 +48,12 @@ const routes: RouteTypeExtended[] = [
     name: "Balance History",
     layout: "/admin",
     path: "/balance-history",
+    translationKey: "balanceHistory",
     icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: BalanceHistory,
     role: [Role.ADMIN],
   },
-  {
-    name: "Inventory Entries",
-    layout: "/admin",
-    path: "/inventoryEntry",
-    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
-    component: InventoryEntry,
-    role: [Role.ADMIN],
-  },
+
   // {
   //   name: "NFT Marketplace",
   //   layout: "/admin",
@@ -141,12 +136,22 @@ const routes: RouteTypeExtended[] = [
     nestedRoutes: [
       {
         name: "Humq",
-        translationKey: "inventory",
+        translationKey: "inventory.inventory",
         layout: "/admin",
         path: "/inventory",
         exact: true,
         icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
         component: Inventory,
+        role: [Role.ADMIN],
+      },
+      {
+        name: "Entries",
+        translationKey: "inventory.entries",
+        layout: "/admin",
+        path: "/inventoryEntry",
+        exact: true,
+        icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+        component: InventoryEntry,
         role: [Role.ADMIN],
       },
       {

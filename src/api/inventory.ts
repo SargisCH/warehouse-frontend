@@ -16,7 +16,7 @@ export type InventoryItem = {
 export type InventoryEntry = {
   id?: number;
   date?: Date;
-  inventorySupplierId: number;
+  inventorySupplierId: number | "noSupplier";
   inventorySupplier?: {
     name: string;
     id: number;
