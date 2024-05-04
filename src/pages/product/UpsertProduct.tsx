@@ -8,6 +8,8 @@ import {
   Spinner,
   NumberInput,
   NumberInputField,
+  Checkbox,
+  CheckboxGroup,
 } from "@chakra-ui/react";
 import {
   useDeleteProductMutation,
@@ -17,7 +19,7 @@ import {
 } from "api/product";
 import { useGetInventoryQuery } from "api/inventory";
 import AlertDialog from "components/alertDialog/AlertDialog";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useHistory, useParams, useLocation } from "react-router-dom";
 import Select from "react-select";
 import { links } from "routes";
@@ -26,6 +28,7 @@ import { FieldArray, Form, Formik } from "formik";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { generateKey } from "helpers/generateKey";
+import { useTranslation } from "react-i18next";
 
 const unitOptions = [
   { label: "KG", value: "kg" },
@@ -37,6 +40,9 @@ const UpsertProduct = (props: { create: boolean }) => {
     name: "",
     price: null,
     priceUnit: "",
+    noCalculation: false,
+    inStock: 0,
+    inStockUnit: "kg",
     ingredients: [
       {
         reactKey: generateKey("ingredient"),
@@ -57,6 +63,7 @@ const UpsertProduct = (props: { create: boolean }) => {
   const [updateProduct] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
   const history = useHistory();
+  const { t } = useTranslation();
 
   const [getProductById] = useLazyGetProductByIdQuery();
   useEffect(() => {
@@ -66,10 +73,14 @@ const UpsertProduct = (props: { create: boolean }) => {
         const productItemRes = await getProductById({
           productId: params.productId,
         });
+        if (!productItemRes.data) return;
         setInitialValues({
           name: productItemRes.data.name,
           price: productItemRes.data.price,
           priceUnit: productItemRes.data.priceUnit,
+          inStockUnit: productItemRes.data.inStockUnit,
+          inStock: productItemRes.data.inStock,
+          noCalculation: false,
           ingredients:
             productItemRes.data.ingredients.map((ing) => ({
               ...ing,
@@ -102,10 +113,12 @@ const UpsertProduct = (props: { create: boolean }) => {
       <Formik
         initialValues={{ ...initialValues }}
         onSubmit={async (values) => {
-          console.log("values", values);
           const postData = {
             ...values,
             price: Number(values.price),
+            noCalculation: values.noCalculation,
+            inStock: Number(values.inStock),
+            inStockUnit: values.inStockUnit,
             ingredients: values.ingredients.map((ing) => ({
               ...ing,
               amount: Number(ing.amount),
@@ -113,7 +126,6 @@ const UpsertProduct = (props: { create: boolean }) => {
               reactKey: undefined,
             })),
           };
-          console.log("postdata", postData);
           if (params.productId) {
             await updateProduct({
               ...postData,
@@ -139,16 +151,16 @@ const UpsertProduct = (props: { create: boolean }) => {
                 <Box gap="20px">
                   <Flex gap="20px">
                     <FormControl>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel>{t("common.name")}</FormLabel>
                       <Input
                         type="text"
-                        placeholder="Name"
+                        placeholder={t("common.name")}
                         value={values.name}
                         onChange={(e) => setFieldValue("name", e.target.value)}
                       />
                     </FormControl>
                     <FormControl>
-                      <FormLabel>Price </FormLabel>
+                      <FormLabel> {t("common.price")} </FormLabel>
                       <NumberInput value={values?.price || 0}>
                         <NumberInputField
                           placeholder="Price"
@@ -159,7 +171,7 @@ const UpsertProduct = (props: { create: boolean }) => {
                       </NumberInput>
                     </FormControl>
                     <FormControl>
-                      <FormLabel>Price Unit</FormLabel>
+                      <FormLabel>{t("common.unit")}</FormLabel>
                       <Select
                         value={{
                           label: values.priceUnit,
@@ -186,7 +198,7 @@ const UpsertProduct = (props: { create: boolean }) => {
                               key={ing.reactKey}
                             >
                               <FormControl>
-                                <FormLabel>Ingredients</FormLabel>
+                                <FormLabel>{t("common.ingredients")}</FormLabel>
                                 <Select
                                   value={{
                                     label: selectedInventory?.name ?? "",
@@ -206,7 +218,7 @@ const UpsertProduct = (props: { create: boolean }) => {
                               </FormControl>
                               <FormControl>
                                 <FormLabel colorScheme="black">
-                                  Amount
+                                  {t("common.amount")}
                                 </FormLabel>
                                 <NumberInput value={ing.amount}>
                                   <NumberInputField
@@ -221,7 +233,7 @@ const UpsertProduct = (props: { create: boolean }) => {
                                 </NumberInput>
                               </FormControl>
                               <FormControl>
-                                <FormLabel>Amount Unit</FormLabel>
+                                <FormLabel>{t("common.unit")}</FormLabel>
                                 <Select
                                   value={{
                                     label: ing.amountUnit,
@@ -275,15 +287,56 @@ const UpsertProduct = (props: { create: boolean }) => {
                         });
                       }}
                     </FieldArray>
+                    <Box>
+                      <Flex gap="20px">
+                        <FormControl>
+                          <FormLabel> {t("common.product.inStock")} </FormLabel>
+                          <NumberInput value={values?.inStock || 0}>
+                            <NumberInputField
+                              placeholder="inStock"
+                              onChange={(e) =>
+                                setFieldValue("inStock", e.target.value)
+                              }
+                            />
+                          </NumberInput>
+                        </FormControl>
+                        <FormControl>
+                          <FormLabel>{t("common.unit")}</FormLabel>
+                          <Select
+                            value={{
+                              label: values.priceUnit,
+                              value: values.priceUnit,
+                            }}
+                            onChange={(valueSelected) => {
+                              setFieldValue("inStockUnit", valueSelected.value);
+                            }}
+                            options={unitOptions}
+                          />
+                        </FormControl>
+                      </Flex>
+                    </Box>
+                    <Box mt="20px">
+                      <FormControl>
+                        <Checkbox
+                          colorScheme="green"
+                          onChange={() => {
+                            setFieldValue(`noCalculation`, true);
+                          }}
+                        >
+                          {t("common.product.createWithoutCalculation")}
+                        </Checkbox>
+                      </FormControl>
+                    </Box>
                   </Box>
                 </Box>
+
                 <Box marginTop={"20px"}>
                   <Button
                     colorScheme="teal"
                     type="submit"
                     disabled={isSubmitting}
                   >
-                    Save
+                    {t("common.save")}
                   </Button>
                 </Box>
               </Form>

@@ -6,6 +6,9 @@ export type ProductItem = {
   created_at: string;
   id: number;
   name: string;
+  noCalculation?: boolean;
+  inStock?: number;
+  inStockUnit?: string;
   ingredients?: Array<{
     inventoryId: number;
     amount: number;

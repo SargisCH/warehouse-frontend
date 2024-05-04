@@ -2,8 +2,6 @@ import { useEffect } from "react";
 import {
   Box,
   Flex,
-  Icon,
-  Progress,
   Table,
   Tbody,
   Td,
@@ -12,7 +10,6 @@ import {
   Thead,
   Tr,
   useColorModeValue,
-  Link as ChakraLink,
 } from "@chakra-ui/react";
 import {
   createColumnHelper,
@@ -29,7 +26,7 @@ import Menu from "components/menu/MainMenu";
 import * as React from "react";
 import dayjs from "dayjs";
 import "./product.css";
-import { useHistory, Link as ReactRouterLink } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
 // Assets
@@ -133,27 +130,7 @@ function ProductList() {
       cell: (info) => {
         return (
           <Text color={textColor} fontSize="sm" fontWeight="700">
-            {info.getValue()}
-          </Text>
-        );
-      },
-    }),
-    columnHelper.accessor("inStockUnit", {
-      id: "inStockUnit",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          In Stock Unit
-        </Text>
-      ),
-      cell: (info) => {
-        return (
-          <Text color={textColor} fontSize="sm" fontWeight="700">
-            {info.getValue()}
+            {`${info.getValue()} ${" "} ${info.row.original.inStockUnit}`}
           </Text>
         );
       },
