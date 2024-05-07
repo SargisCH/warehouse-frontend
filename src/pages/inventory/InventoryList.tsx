@@ -13,6 +13,8 @@ import {
   Tr,
   useColorModeValue,
   Link as ChakraLink,
+  Button,
+  useDisclosure,
 } from "@chakra-ui/react";
 import {
   createColumnHelper,
@@ -32,6 +34,7 @@ import { useHistory } from "react-router-dom";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
 import { useTranslation } from "react-i18next";
+import InventoryAmountModal from "./InventoryPriceModal";
 
 // Assets
 
@@ -50,6 +53,7 @@ const columnHelper = createColumnHelper<RowObj>();
 
 function InventoryList() {
   const { data, refetch } = useGetInventoryQuery();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const inventoryArray = data?.inventories || [];
   const totalWorth = data?.totalWorth;
   useEffect(() => {
@@ -60,6 +64,7 @@ function InventoryList() {
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
   const { t } = useTranslation();
+  const [updateAmountId, setUpdateAmountId] = React.useState(null);
   const columns = [
     columnHelper.accessor("name", {
       id: "name",
@@ -145,40 +150,27 @@ function InventoryList() {
         );
       },
     }),
-    columnHelper.accessor("created_at", {
-      id: "created_at",
+    columnHelper.display({
+      id: "actions",
       header: () => (
         <Text
           justifyContent="space-between"
           align="center"
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
-        >
-          {t("common.createdAt")}
-        </Text>
+        ></Text>
       ),
       cell: (info) => (
-        <Text color={textColor} fontSize="sm" fontWeight="700">
-          {dayjs(info.getValue()).format("DD/MM/YYYY")}
-        </Text>
-      ),
-    }),
-    columnHelper.accessor("updated_at", {
-      id: "updated_at",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
+        <Button
+          colorScheme={"teal"}
+          onClick={(e) => {
+            e.stopPropagation();
+            setUpdateAmountId(info.row.original.id);
+            onOpen();
+          }}
         >
-          {t("common.updatedAt")}
-        </Text>
-      ),
-      cell: (info) => (
-        <Text color={textColor} fontSize="sm" fontWeight="700">
-          {dayjs(info.getValue()).format("DD/MM/YYYY")}
-        </Text>
+          {t("common.declareAmount")}
+        </Button>
       ),
     }),
   ];
@@ -218,7 +210,7 @@ function InventoryList() {
             label={t("common.inventory.createNewInventory")}
           />
           <TableAddButton
-            link={links.createInventoryEntry}
+            link={links.createSupplyOrderNoSupplier}
             label={t("common.inventory.addNewEntry")}
           />
         </Flex>
@@ -295,6 +287,14 @@ function InventoryList() {
         <Text align={"right"} paddingRight="20">
           {t("common.totalWorth")}: {totalWorth}
         </Text>
+        <InventoryAmountModal
+          isOpen={isOpen}
+          onClose={() => {
+            setUpdateAmountId(null);
+            onClose();
+          }}
+          inventoryId={updateAmountId}
+        />
       </Box>
     </Card>
   );

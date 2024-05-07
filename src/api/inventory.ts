@@ -44,6 +44,13 @@ export const inventoryApi = api.injectEndpoints({
         body: newInventory,
       }),
     }),
+    updateAmount: builder.mutation({
+      query: (newAmountPayload) => ({
+        url: `inventory/updateAmount/${newAmountPayload.id}`,
+        method: "POST",
+        body: newAmountPayload,
+      }),
+    }),
     deleteInventory: builder.mutation({
       query: (id) => ({
         url: `inventory/${id}`,
@@ -133,4 +140,5 @@ export const {
   useLazyGetInventoryEntryByIdQuery,
   useGetInventoryEntryByIdQuery,
   useLazyGetInventoryEntriesQuery,
+  useUpdateAmountMutation,
 } = inventoryApi;

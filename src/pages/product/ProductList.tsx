@@ -29,6 +29,7 @@ import "./product.css";
 import { useHistory } from "react-router-dom";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
+import { useTranslation } from "react-i18next";
 // Assets
 
 type RowObj = {
@@ -38,6 +39,7 @@ type RowObj = {
   priceUnit: string;
   inStock: number;
   inStockUnit: string;
+  costPrice: number;
   created_at: string;
   updated_at: string;
 };
@@ -54,6 +56,7 @@ function ProductList() {
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
+  const { t } = useTranslation();
   const columns = [
     columnHelper.accessor("name", {
       id: "name",
@@ -64,7 +67,7 @@ function ProductList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          NAME
+          {t("common.name")}
         </Text>
       ),
       cell: (info: any) => {
@@ -86,33 +89,15 @@ function ProductList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Price
+          {t("common.price")}
         </Text>
       ),
       cell: (info) => (
         <Flex align="center">
           <Text color={textColor} fontSize="sm" fontWeight="700">
-            {info.getValue()}
+            {`${info.getValue()} / ${info.row.original.priceUnit}`}
           </Text>
         </Flex>
-      ),
-    }),
-    columnHelper.accessor("priceUnit", {
-      id: "priceUnit",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Price unit
-        </Text>
-      ),
-      cell: (info) => (
-        <Text color={textColor} fontSize="sm" fontWeight="700">
-          {info.getValue()}
-        </Text>
       ),
     }),
     columnHelper.accessor("inStock", {
@@ -124,7 +109,7 @@ function ProductList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          In Stock
+          {t("common.product.inStock")}
         </Text>
       ),
       cell: (info) => {
@@ -135,6 +120,24 @@ function ProductList() {
         );
       },
     }),
+    columnHelper.accessor("costPrice", {
+      id: "costPrice",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          {t("common.product.costPrice")}
+        </Text>
+      ),
+      cell: (info) => (
+        <Text color={textColor} fontSize="sm" fontWeight="700">
+          {info.getValue()}
+        </Text>
+      ),
+    }),
     columnHelper.accessor("created_at", {
       id: "created_at",
       header: () => (
@@ -144,7 +147,7 @@ function ProductList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Created at
+          {t("common.createdAt")}
         </Text>
       ),
       cell: (info) => (
@@ -162,7 +165,7 @@ function ProductList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Updated at
+          {t("common.updatedAt")}
         </Text>
       ),
       cell: (info) => (
@@ -198,11 +201,13 @@ function ProductList() {
           fontWeight="700"
           lineHeight="100%"
         >
-          Product List
+          {t("common.products")}
         </Text>
         <Flex>
-          <TableAddButton link={links.createProduct} label={"Add Product"} />
-
+          <TableAddButton
+            link={links.createProduct}
+            label={t("common.product.addProduct")}
+          />
           <Menu />
         </Flex>
       </Flex>
