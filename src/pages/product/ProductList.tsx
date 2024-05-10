@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import {
   Box,
+  Button,
   Flex,
   Table,
   Tbody,
@@ -10,6 +11,7 @@ import {
   Thead,
   Tr,
   useColorModeValue,
+  useDisclosure,
 } from "@chakra-ui/react";
 import {
   createColumnHelper,
@@ -19,7 +21,7 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useGetProductQuery } from "api/product";
+import { useGetProductQuery, useMakeProductMutation } from "api/product";
 // Custom components
 import Card from "components/card/Card";
 import Menu from "components/menu/MainMenu";
@@ -30,6 +32,8 @@ import { useHistory } from "react-router-dom";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
 import { useTranslation } from "react-i18next";
+import ProductMakeModal from "./ProductMakeModal";
+import ProductAmountModal from "./ProductPriceModal";
 // Assets
 
 type RowObj = {
@@ -40,8 +44,6 @@ type RowObj = {
   inStock: number;
   inStockUnit: string;
   costPrice: number;
-  created_at: string;
-  updated_at: string;
 };
 
 const columnHelper = createColumnHelper<RowObj>();
@@ -49,14 +51,25 @@ const columnHelper = createColumnHelper<RowObj>();
 // const columns = columnsDataCheck;
 function ProductList() {
   const { data: productArray = [], refetch } = useGetProductQuery();
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
   const { t } = useTranslation();
+  const [makeId, setMakeId] = React.useState<number>();
+  const [amountUpdateId, setAmountUpdateId] = React.useState<number>();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const amountUpdateModalActions = useDisclosure();
+  const makeModalOnClose = React.useCallback(() => {
+    onClose();
+    setMakeId(null);
+    refetch();
+  }, [onClose, setMakeId, refetch]);
+  const amountModalOnClose = React.useCallback(() => {
+    amountUpdateModalActions.onClose();
+    setAmountUpdateId(null);
+    refetch();
+  }, [amountUpdateModalActions.onClose, setAmountUpdateId, refetch]);
   const columns = [
     columnHelper.accessor("name", {
       id: "name",
@@ -138,8 +151,8 @@ function ProductList() {
         </Text>
       ),
     }),
-    columnHelper.accessor("created_at", {
-      id: "created_at",
+    columnHelper.display({
+      id: "actions",
       header: () => (
         <Text
           justifyContent="space-between"
@@ -147,17 +160,24 @@ function ProductList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          {t("common.createdAt")}
+          {t("common.actions")}
         </Text>
       ),
       cell: (info) => (
-        <Text color={textColor} fontSize="sm" fontWeight="700">
-          {dayjs(info.getValue()).format("DD/MM/YYYY")}
-        </Text>
+        <Button
+          colorScheme={"green"}
+          onClick={(e) => {
+            e.stopPropagation();
+            setMakeId(Number(info.row.original.id));
+            onOpen();
+          }}
+        >
+          {t("common.product.make")}
+        </Button>
       ),
     }),
-    columnHelper.accessor("updated_at", {
-      id: "updated_at",
+    columnHelper.display({
+      id: "actions2",
       header: () => (
         <Text
           justifyContent="space-between"
@@ -165,13 +185,20 @@ function ProductList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          {t("common.updatedAt")}
+          {t("common.actions")}
         </Text>
       ),
       cell: (info) => (
-        <Text color={textColor} fontSize="sm" fontWeight="700">
-          {dayjs(info.getValue()).format("DD/MM/YYYY")}
-        </Text>
+        <Button
+          colorScheme={"green"}
+          onClick={(e) => {
+            e.stopPropagation();
+            setAmountUpdateId(Number(info.row.original.id));
+            amountUpdateModalActions.onOpen();
+          }}
+        >
+          {t("common.declareAmount")}
+        </Button>
       ),
     }),
   ];
@@ -257,7 +284,6 @@ function ProductList() {
                     key={row.id}
                     cursor="pointer"
                     onClick={() => {
-                      console.log(links.productItem(row.original.id));
                       history.push(links.productItem(row.original.id));
                     }}
                   >
@@ -281,6 +307,16 @@ function ProductList() {
               })}
           </Tbody>
         </Table>
+        <ProductMakeModal
+          isOpen={isOpen}
+          onClose={makeModalOnClose}
+          productId={makeId}
+        />
+        <ProductAmountModal
+          isOpen={amountUpdateModalActions.isOpen}
+          onClose={amountModalOnClose}
+          productId={amountUpdateId}
+        />
       </Box>
     </Card>
   );

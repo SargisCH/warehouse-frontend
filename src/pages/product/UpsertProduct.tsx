@@ -40,9 +40,6 @@ const UpsertProduct = (props: { create: boolean }) => {
     name: "",
     price: null,
     priceUnit: "",
-    noCalculation: false,
-    inStock: 0,
-    inStockUnit: "kg",
     ingredients: [
       {
         reactKey: generateKey("ingredient"),
@@ -78,9 +75,6 @@ const UpsertProduct = (props: { create: boolean }) => {
           name: productItemRes.data.name,
           price: productItemRes.data.price,
           priceUnit: productItemRes.data.priceUnit,
-          inStockUnit: productItemRes.data.inStockUnit,
-          inStock: productItemRes.data.inStock,
-          noCalculation: false,
           ingredients:
             productItemRes.data.ingredients.map((ing) => ({
               ...ing,
@@ -116,9 +110,6 @@ const UpsertProduct = (props: { create: boolean }) => {
           const postData = {
             ...values,
             price: Number(values.price),
-            noCalculation: values.noCalculation,
-            inStock: Number(values.inStock),
-            inStockUnit: values.inStockUnit,
             ingredients: values.ingredients.map((ing) => ({
               ...ing,
               amount: Number(ing.amount),
@@ -287,46 +278,6 @@ const UpsertProduct = (props: { create: boolean }) => {
                         });
                       }}
                     </FieldArray>
-                    <Box>
-                      <Flex gap="20px">
-                        <FormControl>
-                          <FormLabel> {t("common.product.inStock")} </FormLabel>
-                          <NumberInput value={values?.inStock || 0}>
-                            <NumberInputField
-                              placeholder="inStock"
-                              onChange={(e) =>
-                                setFieldValue("inStock", e.target.value)
-                              }
-                            />
-                          </NumberInput>
-                        </FormControl>
-                        <FormControl>
-                          <FormLabel>{t("common.unit")}</FormLabel>
-                          <Select
-                            value={{
-                              label: values.priceUnit,
-                              value: values.priceUnit,
-                            }}
-                            onChange={(valueSelected) => {
-                              setFieldValue("inStockUnit", valueSelected.value);
-                            }}
-                            options={unitOptions}
-                          />
-                        </FormControl>
-                      </Flex>
-                    </Box>
-                    <Box mt="20px">
-                      <FormControl>
-                        <Checkbox
-                          colorScheme="green"
-                          onChange={() => {
-                            setFieldValue(`noCalculation`, true);
-                          }}
-                        >
-                          {t("common.product.createWithoutCalculation")}
-                        </Checkbox>
-                      </FormControl>
-                    </Box>
                   </Box>
                 </Box>
 

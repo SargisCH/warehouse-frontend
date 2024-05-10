@@ -67,6 +67,13 @@ const productApi = api.injectEndpoints({
         };
       },
     }),
+    updateProductAmount: builder.mutation({
+      query: (newAmountPayload) => ({
+        url: `product/updateAmount/${newAmountPayload.id}`,
+        method: "PUT",
+        body: newAmountPayload,
+      }),
+    }),
     getProduct: builder.query<ProductItem[], void>({
       query: () => ({
         url: "product",
@@ -104,6 +111,13 @@ const productApi = api.injectEndpoints({
         body: newStockProduct,
       }),
     }),
+    makeProduct: builder.mutation({
+      query: (newStockProduct: { id: number; amount: number }) => ({
+        url: `product/makeProduct/${newStockProduct.id}`,
+        method: "PUT",
+        body: newStockProduct,
+      }),
+    }),
   }),
 });
 
@@ -119,4 +133,6 @@ export const {
   useGetStockProductByIdQuery,
   useUpdateStockProductByIdMutation,
   useLazyGetStockProductByIdQuery,
+  useMakeProductMutation,
+  useUpdateProductAmountMutation,
 } = productApi;
