@@ -32,8 +32,19 @@ export const authApi = api.injectEndpoints({
         body: { email },
       }),
     }),
+    updateSettings: builder.mutation({
+      query: (body: { name: string; logo?: string; fileType: string }) => ({
+        url: "auth/settings",
+        method: "PUT",
+        body,
+      }),
+    }),
   }),
 });
 
-export const { useSignUpMutation, useVerifyEmailMutation, useGetUserMutation } =
-  authApi;
+export const {
+  useSignUpMutation,
+  useVerifyEmailMutation,
+  useGetUserMutation,
+  useUpdateSettingsMutation,
+} = authApi;

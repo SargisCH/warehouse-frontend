@@ -12,6 +12,7 @@ export interface User {
   tenant: {
     id: number;
     name: string;
+    logo: string;
   };
   role: Role;
 }

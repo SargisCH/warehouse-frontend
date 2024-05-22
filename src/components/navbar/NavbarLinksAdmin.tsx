@@ -26,11 +26,12 @@ import navImage from "assets/img/layout/Navbar.png";
 import { MdNotificationsNone, MdInfoOutline } from "react-icons/md";
 import { IoMdMoon, IoMdSunny } from "react-icons/io";
 import { FaEthereum } from "react-icons/fa";
-import routes from "routes";
+import routes, { links } from "routes";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@reduxjs/toolkit/query";
 import { logout } from "store/slices/userSlice";
 import { useHistory } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 export default function HeaderLinks(props: { secondary: boolean }) {
   const { secondary } = props;
   const { colorMode, toggleColorMode } = useColorMode();
@@ -52,16 +53,17 @@ export default function HeaderLinks(props: { secondary: boolean }) {
   interface RootState {
     user: {
       tenant: {
+        name?: string;
+        logo?: string;
         currency: string;
       };
     };
   }
   const dispatch = useDispatch();
   const history = useHistory();
-  const currencyType = useSelector(
-    (state: RootState) => state.user?.tenant?.currency || "",
-  );
-  const [currency] = useState(currencyType);
+  const user = useSelector((state: RootState) => state.user);
+  const currency = user?.tenant?.currency;
+  const { t } = useTranslation();
 
   return (
     <Flex
@@ -268,7 +270,7 @@ export default function HeaderLinks(props: { secondary: boolean }) {
           <Avatar
             _hover={{ cursor: "pointer" }}
             color="white"
-            name="Adela Parkson"
+            name={user?.tenant?.name}
             bg="#11047A"
             size="sm"
             w="40px"
@@ -295,17 +297,19 @@ export default function HeaderLinks(props: { secondary: boolean }) {
               fontWeight="700"
               color={textColor}
             >
-              👋&nbsp; Hey, Adela
+              👋&nbsp; Hey, {user?.tenant?.name}
             </Text>
           </Flex>
           <Flex flexDirection="column" p="10px">
             <MenuItem
-              _hover={{ bg: "none" }}
               _focus={{ bg: "none" }}
               borderRadius="8px"
               px="14px"
+              onClick={() => {
+                history.push(links.settings);
+              }}
             >
-              <Text fontSize="sm">Profile Settings</Text>
+              <Text fontSize="sm">{t("common.profileSettings")}</Text>
             </MenuItem>
             <MenuItem
               _hover={{ bg: "none" }}

@@ -7,7 +7,7 @@ const initialState = {
   id: null,
   companyName: "",
   tenantId: null,
-  tenant: { id: null, name: "" },
+  tenant: { id: null, name: "", logo: "" },
   role: Role.USER,
 } as User;
 

@@ -21,6 +21,7 @@ export function SidebarLinks(props: {
       if (
         route.path.includes("sign-in") ||
         route.path.includes("verify") ||
+        route.path.includes("settings") ||
         route.path.includes("sign-up")
       )
         return null;
