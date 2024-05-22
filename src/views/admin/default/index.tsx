@@ -145,8 +145,8 @@ export default function UserReports() {
         <MiniStatistics
           endContent={
             <Flex me="-16px" mt="10px">
-              <FormLabel htmlFor="balance">
-                <Avatar src={Usa} />
+              <FormLabel htmlFor="balance" position={"static"}>
+                <Avatar src={Usa} position={"static"} />
               </FormLabel>
               <Select
                 id="balance"

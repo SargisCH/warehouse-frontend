@@ -60,6 +60,9 @@ function ProductList() {
   const [amountUpdateId, setAmountUpdateId] = React.useState<number>();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const amountUpdateModalActions = useDisclosure();
+  useEffect(() => {
+    refetch();
+  }, []);
   const makeModalOnClose = React.useCallback(() => {
     onClose();
     setMakeId(null);
@@ -108,7 +111,9 @@ function ProductList() {
       cell: (info) => (
         <Flex align="center">
           <Text color={textColor} fontSize="sm" fontWeight="700">
-            {`${info.getValue()} / ${info.row.original.priceUnit}`}
+            {`${Number(info.getValue()).toFixed(2)} / ${
+              info.row.original.priceUnit
+            }`}
           </Text>
         </Flex>
       ),
@@ -128,7 +133,9 @@ function ProductList() {
       cell: (info) => {
         return (
           <Text color={textColor} fontSize="sm" fontWeight="700">
-            {`${info.getValue()} ${" "} ${info.row.original.inStockUnit}`}
+            {`${Number(info.getValue()).toFixed(2)} ${" "} ${
+              info.row.original.inStockUnit
+            }`}
           </Text>
         );
       },
@@ -147,7 +154,7 @@ function ProductList() {
       ),
       cell: (info) => (
         <Text color={textColor} fontSize="sm" fontWeight="700">
-          {info.getValue()}
+          {Number(info.getValue()).toFixed(2)}
         </Text>
       ),
     }),

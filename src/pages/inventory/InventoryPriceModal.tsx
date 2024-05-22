@@ -10,6 +10,8 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  NumberInput,
+  NumberInputField,
   Spinner,
 } from "@chakra-ui/react";
 import { useUpdateAmountMutation } from "api/inventory";
@@ -32,14 +34,18 @@ export default function InventoryAmountModal({
       avg: 0,
     },
     onSubmit: (values) => {
-      updateAmount({ amount: values.amount, id: inventoryId, avg: values.avg });
+      updateAmount({
+        amount: Number(values.amount),
+        id: inventoryId,
+        avg: Number(values.avg),
+      });
     },
   });
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && isOpen) {
       onClose();
     }
-  }, [isSuccess, onClose]);
+  }, [isSuccess, onClose, isOpen]);
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -56,21 +62,27 @@ export default function InventoryAmountModal({
               <form onSubmit={handleSubmit}>
                 <FormControl>
                   <FormLabel>{t("common.amount")}</FormLabel>
-                  <Input
+                  <NumberInput
+                    precision={2}
                     value={values.amount}
-                    onChange={(e) => {
-                      setFieldValue("amount", Number(e.target.value));
+                    onChange={(v) => {
+                      setFieldValue("amount", v);
                     }}
-                  />
+                  >
+                    <NumberInputField placeholder="Price" />
+                  </NumberInput>
                 </FormControl>
                 <FormControl mt={"20px"}>
                   <FormLabel>{t("common.average")}</FormLabel>
-                  <Input
+                  <NumberInput
+                    precision={2}
                     value={values.avg}
-                    onChange={(e) => {
-                      setFieldValue("avg", Number(e.target.value));
+                    onChange={(v) => {
+                      setFieldValue("avg", v);
                     }}
-                  />
+                  >
+                    <NumberInputField placeholder="Price" />
+                  </NumberInput>
                 </FormControl>
                 <Button mt={"20px"} colorScheme={"teal"} type="submit">
                   {t("common.save")}

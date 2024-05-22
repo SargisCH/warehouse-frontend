@@ -35,6 +35,9 @@ import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
 import { useTranslation } from "react-i18next";
 import InventoryAmountModal from "./InventoryPriceModal";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import InventoryDeleteModal from "./InventoryDeleteModal";
 
 // Assets
 
@@ -53,18 +56,24 @@ const columnHelper = createColumnHelper<RowObj>();
 
 function InventoryList() {
   const { data, refetch } = useGetInventoryQuery();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const inventoryArray = data?.inventories || [];
-  const totalWorth = data?.totalWorth;
   useEffect(() => {
     refetch();
   }, []);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const inventoryArray = data?.inventories || [];
+  const totalWorth = data?.totalWorth;
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
   const { t } = useTranslation();
   const [updateAmountId, setUpdateAmountId] = React.useState(null);
+  const [inventoryIdToDelete, setInventoryIdToDelete] = React.useState(null);
+  const {
+    isOpen: deleteModalIsOpen,
+    onOpen: deleteModalOnOpen,
+    onClose: deleteModalOnClose,
+  } = useDisclosure();
   const columns = [
     columnHelper.accessor("name", {
       id: "name",
@@ -103,7 +112,7 @@ function InventoryList() {
       cell: (info) => {
         return (
           <Text color={textColor} fontSize="sm" fontWeight="700">
-            {info.getValue()}
+            {Number(info.getValue()).toFixed(2)}
           </Text>
         );
       },
@@ -145,7 +154,7 @@ function InventoryList() {
       cell: (info) => {
         return (
           <Text color={textColor} fontSize="sm" fontWeight="700">
-            {info.getValue()}
+            {Number(info.getValue()).toFixed(2)}
           </Text>
         );
       },
@@ -162,6 +171,7 @@ function InventoryList() {
       ),
       cell: (info) => (
         <Button
+          position={"static"}
           colorScheme={"teal"}
           onClick={(e) => {
             e.stopPropagation();
@@ -170,6 +180,29 @@ function InventoryList() {
           }}
         >
           {t("common.declareAmount")}
+        </Button>
+      ),
+    }),
+    columnHelper.display({
+      id: "delete",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        ></Text>
+      ),
+      cell: (info) => (
+        <Button
+          position={"static"}
+          onClick={(e) => {
+            e.stopPropagation();
+            setInventoryIdToDelete(info.row.original.id);
+            deleteModalOnOpen();
+          }}
+        >
+          <FontAwesomeIcon icon={faTrash} color="red" />
         </Button>
       ),
     }),
@@ -292,8 +325,18 @@ function InventoryList() {
           onClose={() => {
             setUpdateAmountId(null);
             onClose();
+            refetch();
           }}
           inventoryId={updateAmountId}
+        />
+        <InventoryDeleteModal
+          onClose={() => {
+            console.log("sdasd");
+            deleteModalOnClose();
+            refetch();
+          }}
+          isOpen={deleteModalIsOpen}
+          inventoryId={inventoryIdToDelete}
         />
       </Box>
     </Card>

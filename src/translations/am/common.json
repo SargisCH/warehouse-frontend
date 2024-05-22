@@ -33,6 +33,9 @@
   "save": "Պահպանել",
   "declareAmount": "Հայտարարել քանակ",
   "actions": "Գործողություններ",
+  "sureToDelete": "Վստահ եք որ ուզում եք ջնջել",
+  "cancel": "Չեղարկել",
+  "yes": "Այո",
   "client": {
     "name": "Անուն",
     "legalName": "Իրավաբանական անուն",
@@ -51,7 +54,8 @@
     "supplier": "Մատակարար",
     "noSupplier": "Առանց մատակարար",
     "createNewInventory": "Ստեղծել նոր հումք",
-    "addNewEntry": "Գրանցել նոր մուտք"
+    "addNewEntry": "Գրանցել նոր մուտք",
+    "deleteInventory": "Ջնջել հումք"
   },
   "product": {
     "createWithoutCalculation": "Պահպանել ապրանքը առանց հումքերի վերահաշվարկի",
