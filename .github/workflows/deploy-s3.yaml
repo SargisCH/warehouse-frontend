@@ -34,4 +34,4 @@ jobs:
           S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           S3_KEY: ${{ secrets.S3_KEY }}
           FILE: "./build"
-          REACT_API_URL: ${{ secrets.REACT_API_URL }}
+          REACT_APP_API_URL: ${{ secrets.REACT_API_URL }}
