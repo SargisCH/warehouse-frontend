@@ -15,14 +15,17 @@ import {
   Link as ChakraLink,
   Button,
   useDisclosure,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
+  RowData,
   SortingState,
   useReactTable,
+  ColumnDef,
 } from "@tanstack/react-table";
 import { useGetInventoryQuery } from "api/inventory";
 // Custom components
@@ -74,6 +77,8 @@ function InventoryList() {
     onOpen: deleteModalOnOpen,
     onClose: deleteModalOnClose,
   } = useDisclosure();
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
   const columns = [
     columnHelper.accessor("name", {
       id: "name",
@@ -202,11 +207,40 @@ function InventoryList() {
             deleteModalOnOpen();
           }}
         >
-          <FontAwesomeIcon icon={faTrash} color="red" />
+          {isMobile ? (
+            t("common.delete")
+          ) : (
+            <FontAwesomeIcon icon={faTrash} color="red" />
+          )}
         </Button>
       ),
     }),
   ];
+  if (isMobile) {
+    columns.push(
+      columnHelper.display({
+        id: "edit",
+        header: () => (
+          <Text
+            justifyContent="space-between"
+            align="center"
+            fontSize={{ sm: "10px", lg: "12px" }}
+            color="gray.400"
+          ></Text>
+        ),
+        cell: (info) => (
+          <Button
+            position={"static"}
+            onClick={() => {
+              history.push(links.inventoryItem(info.row.original.id));
+            }}
+          >
+            {t("common.edit")}
+          </Button>
+        ),
+      }),
+    );
+  }
   const table = useReactTable({
     data: inventoryArray,
     columns: columns as any,
@@ -218,6 +252,73 @@ function InventoryList() {
     getSortedRowModel: getSortedRowModel(),
     debugTable: true,
   });
+
+  const sharedElements = (
+    <>
+      <Text align={"right"} paddingRight="20">
+        {t("common.totalWorth")}: {totalWorth}
+      </Text>
+      <InventoryAmountModal
+        isOpen={isOpen}
+        onClose={() => {
+          setUpdateAmountId(null);
+          onClose();
+          refetch();
+        }}
+        inventoryId={updateAmountId}
+      />
+      <InventoryDeleteModal
+        onClose={() => {
+          deleteModalOnClose();
+          refetch();
+        }}
+        isOpen={deleteModalIsOpen}
+        inventoryId={inventoryIdToDelete}
+      />
+    </>
+  );
+  if (isMobile) {
+    return (
+      <Box>
+        {table.getRowModel().rows.map((row) => (
+          <Box
+            key={row.id}
+            borderWidth="1px"
+            borderRadius="lg"
+            overflow="hidden"
+            p="4"
+            mb="4"
+          >
+            {row.getVisibleCells().map((cell) => {
+              return (
+                <Box
+                  key={cell.id}
+                  display="flex"
+                  justifyContent="space-between"
+                  py="2"
+                >
+                  <Box
+                    as="span"
+                    fontSize={"16px"}
+                    css={{ p: { fontSize: "14px" } }}
+                  >
+                    {flexRender(
+                      cell.column.columnDef.header,
+                      cell.getContext() as any,
+                    )}
+                  </Box>
+                  <Box as="span">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        ))}
+        {sharedElements}
+      </Box>
+    );
+  }
   return (
     <Card
       position={"static"}
@@ -317,27 +418,7 @@ function InventoryList() {
               })}
           </Tbody>
         </Table>
-        <Text align={"right"} paddingRight="20">
-          {t("common.totalWorth")}: {totalWorth}
-        </Text>
-        <InventoryAmountModal
-          isOpen={isOpen}
-          onClose={() => {
-            setUpdateAmountId(null);
-            onClose();
-            refetch();
-          }}
-          inventoryId={updateAmountId}
-        />
-        <InventoryDeleteModal
-          onClose={() => {
-            console.log("sdasd");
-            deleteModalOnClose();
-            refetch();
-          }}
-          isOpen={deleteModalIsOpen}
-          inventoryId={inventoryIdToDelete}
-        />
+        {sharedElements}
       </Box>
     </Card>
   );

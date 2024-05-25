@@ -7,6 +7,7 @@ import {
   Box,
   NumberInput,
   NumberInputField,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import {
   useCreateInventoryMutation,
@@ -26,6 +27,8 @@ const UpsertInventory = () => {
   const [updateInventory] = useUpdateInventoryMutation();
   const history = useHistory();
   const [getInventoryById] = useLazyGetInventoryByIdQuery();
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
   useEffect(() => {
     (async () => {
       if (params.inventoryId) {
@@ -57,7 +60,7 @@ const UpsertInventory = () => {
 
   return (
     <Flex direction="column">
-      <Flex gap="20px">
+      <Flex gap="20px" direction={isMobile ? "column" : "row"}>
         <Flex direction={"column"} gap="20px">
           <FormControl>
             <FormLabel>Name</FormLabel>

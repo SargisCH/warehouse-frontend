@@ -13,6 +13,7 @@ import {
   NumberInput,
   NumberInputField,
   Spinner,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import { useUpdateAmountMutation } from "api/inventory";
 import { useFormik } from "formik";
@@ -28,6 +29,7 @@ export default function InventoryAmountModal({
 }: Props) {
   const { t } = useTranslation();
   const [updateAmount, { isSuccess, isLoading }] = useUpdateAmountMutation();
+  const isMobile = useBreakpointValue({ base: true, md: false });
   const { values, setFieldValue, handleSubmit } = useFormik({
     initialValues: {
       amount: 0,
@@ -47,7 +49,7 @@ export default function InventoryAmountModal({
     }
   }, [isSuccess, onClose, isOpen]);
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size={isMobile ? "full" : "md"}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>{t("common.declareAmount")}</ModalHeader>

@@ -36,6 +36,12 @@
   "sureToDelete": "Վստահ եք որ ուզում եք ջնջել",
   "cancel": "Չեղարկել",
   "yes": "Այո",
+  "profileSettings": "Կարգավորումներ",
+  "companyName": "Անվանում",
+  "fileUpload": "Վերբեռնել լոգո",
+  "preview": "Օրինակ",
+  "delete": "Ջնջել",
+  "edit": "Խմբագրել",
   "client": {
     "name": "Անուն",
     "legalName": "Իրավաբանական անուն",

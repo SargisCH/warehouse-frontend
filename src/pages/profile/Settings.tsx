@@ -6,6 +6,7 @@ import {
   Input,
   Image,
   VStack,
+  Heading,
 } from "@chakra-ui/react";
 import { useGetUserMutation, useUpdateSettingsMutation } from "api/auth";
 import { Field, Form, Formik } from "formik";
@@ -52,54 +53,67 @@ export default function Manager() {
       history.push("/");
     }
   }, [isSuccess, setImageSrc, dispatch, history, data]);
+  const logo = imageSrc || tenant?.logo;
   return (
-    <Box display={"flex"} justifyContent="center">
-      <h1>{t("common.profileSettings")}</h1>
-      <Formik
-        initialValues={{ name: tenant.name, logo: "" }}
-        onSubmit={(values) => {
-          updateSettings({ ...values, logo: imageSrc, fileType });
-        }}
-      >
-        {({ setFieldValue }) => (
-          <Form>
-            <VStack spacing={4} justifyContent={"center"} display="flex">
-              <FormControl>
-                <FormLabel htmlFor="name">{t("common.companyName")}</FormLabel>
-                <Field as={Input} id="name" name="name" />
-              </FormControl>
+    <Box
+      display={"flex"}
+      justifyContent="center"
+      flexDirection={"column"}
+      alignItems="center"
+    >
+      <Box>
+        <Heading>{t("common.profileSettings")}</Heading>
+      </Box>
+      <Box mt="10">
+        <Formik
+          initialValues={{ name: tenant.name, logo: "" }}
+          onSubmit={(values) => {
+            updateSettings({ ...values, logo: imageSrc, fileType });
+          }}
+        >
+          {({ setFieldValue }) => (
+            <Form>
+              <VStack spacing={4} justifyContent={"center"} display="flex">
+                <FormControl>
+                  <FormLabel htmlFor="name">
+                    {t("common.companyName")}
+                  </FormLabel>
+                  <Field as={Input} id="name" name="name" />
+                </FormControl>
 
-              <FormControl>
-                <FormLabel htmlFor="file">{t("common.fileUpload")}</FormLabel>
-                <Input
-                  id="file"
-                  name="logo"
-                  type="file"
-                  onChange={(event) => handleFileChange(event, setFieldValue)}
-                />
-              </FormControl>
+                <FormControl>
+                  <FormLabel htmlFor="file">{t("common.fileUpload")}</FormLabel>
+                  <Input
+                    id="file"
+                    name="logo"
+                    type="file"
+                    onChange={(event) => handleFileChange(event, setFieldValue)}
+                  />
+                </FormControl>
+                {logo ? (
+                  <Box>
+                    <Image
+                      src={logo}
+                      alt="preview"
+                      boxSize="200px"
+                      objectFit="contain"
+                    />
+                  </Box>
+                ) : null}
 
-              <Box>
-                <Image
-                  src={imageSrc || tenant?.logo}
-                  alt="Uploaded Preview"
-                  boxSize="200px"
-                  objectFit="contain"
-                />
-              </Box>
-
-              <Button
-                type="submit"
-                colorScheme="blue"
-                isLoading={isLoading}
-                isDisabled={isLoading}
-              >
-                {t("common.save")}
-              </Button>
-            </VStack>
-          </Form>
-        )}
-      </Formik>
+                <Button
+                  type="submit"
+                  colorScheme="blue"
+                  isLoading={isLoading}
+                  isDisabled={isLoading}
+                >
+                  {t("common.save")}
+                </Button>
+              </VStack>
+            </Form>
+          )}
+        </Formik>
+      </Box>
     </Box>
   );
 }
