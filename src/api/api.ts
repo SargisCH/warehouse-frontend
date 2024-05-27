@@ -21,6 +21,7 @@ const baseQueryAuthorized: BaseQueryFn<
   ) {
     headers.Authorization = "Bearer " + authRes.tokens.accessToken.toString();
   }
+  console.log("base url", API_BASE_URL);
   const res = await fetchBaseQuery({
     baseUrl: API_BASE_URL,
     headers,
