@@ -22,6 +22,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          REACT_APP_API_URL: ${{ secrets.API_URL }}
 
       - name: Upload folder to bucket
         uses: a-sync/s3-uploader@master
@@ -34,4 +36,3 @@ jobs:
           S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           S3_KEY: ${{ secrets.S3_KEY }}
           FILE: "./build"
-          REACT_APP_API_URL: ${{ secrets.API_URL }}
