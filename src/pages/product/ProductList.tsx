@@ -161,18 +161,20 @@ function ProductList() {
     }),
     columnHelper.display({
       id: "actions",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          {t("common.actions")}
-        </Text>
-      ),
+      header: () =>
+        isMobile ? null : (
+          <Text
+            justifyContent="space-between"
+            align="center"
+            fontSize={{ sm: "10px", lg: "12px" }}
+            color="gray.400"
+          >
+            {t("common.actions")}
+          </Text>
+        ),
       cell: (info) => (
         <Button
+          fontSize={isMobile ? "14px" : ""}
           colorScheme={"green"}
           onClick={(e) => {
             e.stopPropagation();
@@ -186,18 +188,20 @@ function ProductList() {
     }),
     columnHelper.display({
       id: "actions2",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          {t("common.actions")}
-        </Text>
-      ),
+      header: () =>
+        isMobile ? null : (
+          <Text
+            justifyContent="space-between"
+            align="center"
+            fontSize={{ sm: "10px", lg: "12px" }}
+            color="gray.400"
+          >
+            {t("common.actions")}
+          </Text>
+        ),
       cell: (info) => (
         <Button
+          fontSize={isMobile ? "14px" : ""}
           colorScheme={"green"}
           onClick={(e) => {
             e.stopPropagation();
