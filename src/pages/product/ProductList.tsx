@@ -10,6 +10,7 @@ import {
   Th,
   Thead,
   Tr,
+  useBreakpointValue,
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -209,6 +210,8 @@ function ProductList() {
       ),
     }),
   ];
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
   const table = useReactTable({
     data: productArray,
     columns: columns as any,
@@ -220,6 +223,69 @@ function ProductList() {
     getSortedRowModel: getSortedRowModel(),
     debugTable: true,
   });
+  const sharedElements = (
+    <>
+      <ProductMakeModal
+        isOpen={isOpen}
+        onClose={makeModalOnClose}
+        productId={makeId}
+      />
+      <ProductAmountModal
+        isOpen={amountUpdateModalActions.isOpen}
+        onClose={amountModalOnClose}
+        productId={amountUpdateId}
+      />
+    </>
+  );
+  if (isMobile) {
+    return (
+      <Box>
+        <Flex justifyContent={"flex-end"} mt="20px" mb="20px">
+          <TableAddButton
+            link={links.createProduct}
+            label={t("common.product.addProduct")}
+          />
+        </Flex>
+
+        {table.getRowModel().rows.map((row) => (
+          <Box
+            key={row.id}
+            borderWidth="1px"
+            borderRadius="lg"
+            overflow="hidden"
+            p="4"
+            mb="4"
+          >
+            {row.getVisibleCells().map((cell) => {
+              return (
+                <Box
+                  key={cell.id}
+                  display="flex"
+                  justifyContent="space-between"
+                  py="2"
+                >
+                  <Box
+                    as="span"
+                    fontSize={"16px"}
+                    css={{ p: { fontSize: "14px" } }}
+                  >
+                    {flexRender(
+                      cell.column.columnDef.header,
+                      cell.getContext() as any,
+                    )}
+                  </Box>
+                  <Box as="span">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        ))}
+        {sharedElements}
+      </Box>
+    );
+  }
   return (
     <Card
       flexDirection="column"
@@ -314,16 +380,7 @@ function ProductList() {
               })}
           </Tbody>
         </Table>
-        <ProductMakeModal
-          isOpen={isOpen}
-          onClose={makeModalOnClose}
-          productId={makeId}
-        />
-        <ProductAmountModal
-          isOpen={amountUpdateModalActions.isOpen}
-          onClose={amountModalOnClose}
-          productId={amountUpdateId}
-        />
+        {sharedElements}
       </Box>
     </Card>
   );

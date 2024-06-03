@@ -11,6 +11,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Spinner,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import { useUpdateProductAmountMutation } from "api/product";
 import { useFormik } from "formik";
@@ -32,6 +33,8 @@ export default function ProductAmountModal({
   const { t } = useTranslation();
   const [updateAmount, { isSuccess, isLoading }] =
     useUpdateProductAmountMutation();
+  const isMobile = useBreakpointValue({ base: true, md: false });
+
   const { values, setFieldValue, handleSubmit } = useFormik({
     initialValues: {
       amount: 0,
@@ -53,7 +56,7 @@ export default function ProductAmountModal({
     }
   }, [isSuccess, onClose]);
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size={isMobile ? "full" : "md"}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>{t("common.declareAmount")}</ModalHeader>

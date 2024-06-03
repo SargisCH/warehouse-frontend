@@ -280,6 +280,17 @@ function InventoryList() {
   if (isMobile) {
     return (
       <Box>
+        <Flex justifyContent={"flex-end"} mt="20px" mb="20px">
+          <TableAddButton
+            link={links.createInventory}
+            label={t("common.inventory.createNewInventory")}
+          />
+          <TableAddButton
+            link={links.createSupplyOrderNoSupplier}
+            label={t("common.inventory.addNewEntry")}
+          />
+        </Flex>
+
         {table.getRowModel().rows.map((row) => (
           <Box
             key={row.id}

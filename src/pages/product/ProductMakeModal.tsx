@@ -17,6 +17,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Spinner,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import { useMakeProductMutation } from "api/product";
 import { useFormik } from "formik";
@@ -32,6 +33,8 @@ export default function ProductMakeModal({
 }: Props) {
   const { t } = useTranslation();
   const cancelRef = React.useRef();
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
   const [makeProduct, { isLoading, isSuccess }] = useMakeProductMutation();
   useEffect(() => {
     if (isSuccess) {
@@ -47,7 +50,7 @@ export default function ProductMakeModal({
     },
   });
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size={isMobile ? "full" : "md"}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>{t("common.product.make")}</ModalHeader>
