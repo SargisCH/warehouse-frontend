@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 // Chakra imports
 import {
   Box,
@@ -14,11 +14,18 @@ import {
 import { Field, Form, Formik } from "formik"; // Custom components
 // Assets
 import { useVerifyEmailMutation } from "api/auth";
-import { useParams } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 export default function VerifyEmail() {
+  const history = useHistory();
   // Chakra color mode
-  const [verifyEmailRequest] = useVerifyEmailMutation();
+  const [verifyEmailRequest, { data = {} }] = useVerifyEmailMutation();
   const params = useParams<{ email: string }>();
+  console.log("data verified", data);
+  useEffect(() => {
+    if (data.verified) {
+      history.push("/auth/");
+    }
+  }, [data.verified, history]);
   if (!params.email) return null;
   return (
     <Formik

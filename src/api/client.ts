@@ -70,7 +70,7 @@ const clientApi = api.injectEndpoints({
         const updatedClient = { ...newClient };
         delete updatedClient.id;
         return {
-          url: `product/${id}`,
+          url: `client/${id}`,
           method: "PUT",
           body: updatedClient,
         };
