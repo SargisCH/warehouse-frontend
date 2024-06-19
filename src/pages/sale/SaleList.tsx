@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import {
   Box,
+  Button,
   Flex,
   Table,
   Tbody,
@@ -37,6 +38,7 @@ import Pagination from "../../components/pagination/Pagination";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { setQuery } from "helpers/queryParams";
+import { useTranslation } from "react-i18next";
 type Option = { label: string; value: number };
 
 type RowObj = {
@@ -68,6 +70,7 @@ function SaleList() {
   }>({
     query: location.search,
   });
+  const { t } = useTranslation();
   const { data: clientData = [] } = useGetClientQuery();
   const [selectedClients, setSelectedClients] = React.useState<Array<Option>>(
     [],
@@ -357,6 +360,29 @@ function SaleList() {
           </Flex>
         );
       },
+    }),
+    columnHelper.display({
+      id: "actions",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        ></Text>
+      ),
+      cell: (info) => (
+        <Button
+          position={"static"}
+          colorScheme={"teal"}
+          onClick={(e) => {
+            e.stopPropagation();
+            history.push(links.returnSale(info.row.original.id));
+          }}
+        >
+          {t("common.return")}
+        </Button>
+      ),
     }),
   ];
 

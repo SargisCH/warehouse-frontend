@@ -345,5 +345,6 @@ export const links = {
   updateInventoryEntry: (entryId: number) =>
     `/admin/inventoryEntry/upsert${entryId}`,
   settings: "/admin/settings",
+  returnSale: (saleId: number) => `/admin/sale/return/${saleId}`,
 };
 export default routes;

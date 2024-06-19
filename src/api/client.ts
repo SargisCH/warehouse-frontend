@@ -32,6 +32,7 @@ export interface SaleType {
   client?: ClientType;
   partialCreditAmount?: number;
   saleItems: Array<{
+    id?: number;
     stockProductId: number;
     stockProduct?: StockProductItem;
     price: number;
@@ -118,6 +119,15 @@ const clientApi = api.injectEndpoints({
         body: newSale,
       }),
     }),
+    returnSale: builder.mutation({
+      query: (
+        returnData: Array<{ stockProductId: number; amount: number }>,
+      ) => ({
+        url: "sale/return",
+        method: "POST",
+        body: returnData,
+      }),
+    }),
     getSaleById: builder.query<SaleType, { id: string | number }>({
       query: (arg: { id: string | number }) => ({
         url: `sale/${arg.id}`,
@@ -148,4 +158,5 @@ export const {
   useLazyGetSaleByIdQuery,
   useGetSaleByIdQuery,
   useGetSaleQuery,
+  useReturnSaleMutation,
 } = clientApi;
