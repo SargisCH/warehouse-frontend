@@ -316,10 +316,20 @@ function ProductList() {
         </Flex>
       </Flex>
       <Box>
-        <Table variant="simple" color="gray.500" mb="24px" mt="12px">
-          <Thead>
+        <Table
+          variant="simple"
+          color="gray.500"
+          mb="24px"
+          mt="12px"
+          display={"block"}
+        >
+          <Thead display={"block"} width="100%">
             {table.getHeaderGroups().map((headerGroup) => (
-              <Tr key={headerGroup.id}>
+              <Tr
+                key={headerGroup.id}
+                display="flex"
+                justifyContent={"space-between"}
+              >
                 {headerGroup.headers.map((header) => {
                   return (
                     <Th
@@ -329,6 +339,7 @@ function ProductList() {
                       borderColor={borderColor}
                       cursor="pointer"
                       onClick={header.column.getToggleSortingHandler()}
+                      width={{ sm: "150px", md: "200px", lg: "auto" }}
                     >
                       <Flex
                         justifyContent="space-between"
@@ -351,10 +362,17 @@ function ProductList() {
               </Tr>
             ))}
           </Thead>
-          <Tbody>
+          <Tbody
+            display={"block"}
+            width="100%"
+            maxHeight="700px"
+            overflowY="auto"
+          >
             {table.getRowModel().rows.map((row) => {
               return (
                 <Tr
+                  display={"flex"}
+                  justifyContent="space-between"
                   key={row.id}
                   cursor="pointer"
                   onClick={() => {
@@ -366,7 +384,7 @@ function ProductList() {
                       <Td
                         key={cell.id}
                         fontSize={{ sm: "14px" }}
-                        minW={{ sm: "150px", md: "200px", lg: "auto" }}
+                        width={{ sm: "150px", md: "200px", lg: "auto" }}
                         borderColor="transparent"
                       >
                         {flexRender(

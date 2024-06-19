@@ -361,13 +361,25 @@ function InventoryList() {
         </Flex>
       </Flex>
       <Box>
-        <Table variant="simple" color="gray.500" mb="24px" mt="12px">
-          <Thead>
+        <Table
+          display={"block"}
+          width="100%"
+          variant="simple"
+          color="gray.500"
+          mb="24px"
+          mt="12px"
+        >
+          <Thead display={"block"} width="100%">
             {table.getHeaderGroups().map((headerGroup) => (
-              <Tr key={headerGroup.id}>
+              <Tr
+                key={headerGroup.id}
+                display="flex"
+                justifyContent={"space-between"}
+              >
                 {headerGroup.headers.map((header) => {
                   return (
                     <Th
+                      width="150px"
                       key={header.id}
                       colSpan={header.colSpan}
                       pe="10px"
@@ -396,37 +408,43 @@ function InventoryList() {
               </Tr>
             ))}
           </Thead>
-          <Tbody>
-            {table
-              .getRowModel()
-              .rows.slice(0, 11)
-              .map((row) => {
-                return (
-                  <Tr
-                    key={row.id}
-                    cursor="pointer"
-                    onClick={() => {
-                      history.push(links.inventoryItem(row.original.id));
-                    }}
-                  >
-                    {row.getVisibleCells().map((cell) => {
-                      return (
-                        <Td
-                          key={cell.id}
-                          fontSize={{ sm: "14px" }}
-                          minW={{ sm: "150px", md: "200px", lg: "auto" }}
-                          borderColor="transparent"
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </Td>
-                      );
-                    })}
-                  </Tr>
-                );
-              })}
+          <Tbody
+            display="block"
+            maxHeight={"700px"}
+            width="100%"
+            overflowY="auto"
+          >
+            {table.getRowModel().rows.map((row) => {
+              return (
+                <Tr
+                  display={"flex"}
+                  width="100%"
+                  key={row.id}
+                  cursor="pointer"
+                  justifyContent={"space-between"}
+                  onClick={() => {
+                    history.push(links.inventoryItem(row.original.id));
+                  }}
+                >
+                  {row.getVisibleCells().map((cell) => {
+                    return (
+                      <Td
+                        width="150px"
+                        key={cell.id}
+                        fontSize={{ sm: "14px" }}
+                        minW={{ sm: "150px", md: "200px", lg: "auto" }}
+                        borderColor="transparent"
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </Td>
+                    );
+                  })}
+                </Tr>
+              );
+            })}
           </Tbody>
         </Table>
         {sharedElements}

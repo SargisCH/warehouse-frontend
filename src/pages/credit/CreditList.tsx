@@ -290,7 +290,7 @@ function CreditList() {
             ))}
           </Thead>
           <Tbody>
-            {table.getRowModel().row.map((row) => {
+            {table.getRowModel().rows.map((row) => {
               return (
                 <Tr
                   key={row.id}
