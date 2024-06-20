@@ -10,6 +10,8 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  NumberInput,
+  NumberInputField,
   Spinner,
   useBreakpointValue,
 } from "@chakra-ui/react";
@@ -71,21 +73,21 @@ export default function ProductAmountModal({
               <form onSubmit={handleSubmit}>
                 <FormControl>
                   <FormLabel>{t("common.amount")}</FormLabel>
-                  <Input
+                  <NumberInput
                     value={values.amount}
-                    onChange={(e) => {
-                      setFieldValue("amount", Number(e.target.value));
-                    }}
-                  />
+                    onChange={(v) => setFieldValue("amount", Number(v))}
+                  >
+                    <NumberInputField placeholder="Amount" />
+                  </NumberInput>
                 </FormControl>
                 <FormControl mt={"20px"}>
                   <FormLabel>{t("common.product.costPrice")}</FormLabel>
-                  <Input
+                  <NumberInput
                     value={values.costPrice}
-                    onChange={(e) => {
-                      setFieldValue("costPrice", Number(e.target.value));
-                    }}
-                  />
+                    onChange={(v) => setFieldValue("costPrice", Number(v))}
+                  >
+                    <NumberInputField placeholder="Amount" />
+                  </NumberInput>
                 </FormControl>
                 <FormControl mt={"20px"}>
                   <FormLabel>{t("common.unit")}</FormLabel>
