@@ -45,9 +45,9 @@ export default function ProductAmountModal({
     },
     onSubmit: (values) => {
       updateAmount({
-        amount: values.amount,
+        amount: Number(values.amount),
         id: productId,
-        costPrice: values.costPrice,
+        costPrice: Number(values.costPrice),
         amountUnit: values.amountUnit,
       });
     },
@@ -74,8 +74,9 @@ export default function ProductAmountModal({
                 <FormControl>
                   <FormLabel>{t("common.amount")}</FormLabel>
                   <NumberInput
+                    precision={2}
                     value={values.amount}
-                    onChange={(v) => setFieldValue("amount", Number(v))}
+                    onChange={(v) => setFieldValue("amount", v)}
                   >
                     <NumberInputField placeholder="Amount" />
                   </NumberInput>
@@ -84,7 +85,7 @@ export default function ProductAmountModal({
                   <FormLabel>{t("common.product.costPrice")}</FormLabel>
                   <NumberInput
                     value={values.costPrice}
-                    onChange={(v) => setFieldValue("costPrice", Number(v))}
+                    onChange={(v) => setFieldValue("costPrice", v)}
                   >
                     <NumberInputField placeholder="Amount" />
                   </NumberInput>
