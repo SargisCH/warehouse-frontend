@@ -52,7 +52,13 @@ const columnHelper = createColumnHelper<RowObj>();
 
 // const columns = columnsDataCheck;
 function ProductList() {
-  const { data: productArray = [], refetch } = useGetProductQuery();
+  const {
+    data: { products: productArray = [], totalWorth = 0 } = {
+      products: [],
+      totalWorth: 0,
+    },
+    refetch,
+  } = useGetProductQuery();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
@@ -64,7 +70,7 @@ function ProductList() {
   const amountUpdateModalActions = useDisclosure();
   useEffect(() => {
     refetch();
-  }, []);
+  }, [refetch]);
   const makeModalOnClose = React.useCallback(() => {
     onClose();
     setMakeId(null);
@@ -74,7 +80,7 @@ function ProductList() {
     amountUpdateModalActions.onClose();
     setAmountUpdateId(null);
     refetch();
-  }, [amountUpdateModalActions.onClose, setAmountUpdateId, refetch]);
+  }, [amountUpdateModalActions, setAmountUpdateId, refetch]);
   const columns = [
     columnHelper.accessor("name", {
       id: "name",
@@ -230,6 +236,9 @@ function ProductList() {
   });
   const sharedElements = (
     <>
+      <Text align={"right"} paddingRight="20">
+        {t("common.totalWorth")}: {totalWorth}
+      </Text>
       <ProductMakeModal
         isOpen={isOpen}
         onClose={makeModalOnClose}
