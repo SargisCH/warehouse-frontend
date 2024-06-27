@@ -88,7 +88,7 @@ const UpsertProduct = (props: { create: boolean }) => {
         }, 100);
       }
     })();
-  }, [params.productId, getProductById, inventoryData]);
+  }, [params.productId, getProductById, setIsLoading, setInitialValues]);
 
   if (isLoading) {
     return (
