@@ -74,7 +74,10 @@ const productApi = api.injectEndpoints({
         body: newAmountPayload,
       }),
     }),
-    getProduct: builder.query<ProductItem[], void>({
+    getProduct: builder.query<
+      { products: ProductItem[]; totalWorth: number },
+      void
+    >({
       query: () => ({
         url: "product",
         method: "GET",

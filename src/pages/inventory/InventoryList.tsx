@@ -16,6 +16,7 @@ import {
   Button,
   useDisclosure,
   useBreakpointValue,
+  TableContainer,
 } from "@chakra-ui/react";
 import {
   createColumnHelper,
@@ -361,92 +362,81 @@ function InventoryList() {
         </Flex>
       </Flex>
       <Box>
-        <Table
-          display={"block"}
-          width="100%"
-          variant="simple"
-          color="gray.500"
-          mb="24px"
-          mt="12px"
-        >
-          <Thead display={"block"} width="100%">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <Tr
-                key={headerGroup.id}
-                display="flex"
-                justifyContent={"space-between"}
-              >
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <Th
-                      width="150px"
-                      key={header.id}
-                      colSpan={header.colSpan}
-                      pe="10px"
-                      borderColor={borderColor}
-                      cursor="pointer"
-                      onClick={header.column.getToggleSortingHandler()}
-                    >
-                      <Flex
-                        justifyContent="space-between"
-                        align="center"
-                        fontSize={{ sm: "10px", lg: "12px" }}
-                        color="gray.400"
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                        {{
-                          asc: "",
-                          desc: "",
-                        }[header.column.getIsSorted() as string] ?? null}
-                      </Flex>
-                    </Th>
-                  );
-                })}
-              </Tr>
-            ))}
-          </Thead>
-          <Tbody
-            display="block"
-            maxHeight={"700px"}
+        <TableContainer max-height="700px" overflowY={"auto"}>
+          <Table
             width="100%"
-            overflowY="auto"
+            variant="simple"
+            color="gray.500"
+            mb="24px"
+            mt="12px"
           >
-            {table.getRowModel().rows.map((row) => {
-              return (
-                <Tr
-                  display={"flex"}
-                  width="100%"
-                  key={row.id}
-                  cursor="pointer"
-                  justifyContent={"space-between"}
-                  onClick={() => {
-                    history.push(links.inventoryItem(row.original.id));
-                  }}
-                >
-                  {row.getVisibleCells().map((cell) => {
+            <Thead>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <Tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
                     return (
-                      <Td
+                      <Th
                         width="150px"
-                        key={cell.id}
-                        fontSize={{ sm: "14px" }}
-                        minW={{ sm: "150px", md: "200px", lg: "auto" }}
-                        borderColor="transparent"
+                        key={header.id}
+                        colSpan={header.colSpan}
+                        pe="10px"
+                        borderColor={borderColor}
+                        cursor="pointer"
+                        onClick={header.column.getToggleSortingHandler()}
                       >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </Td>
+                        <Flex
+                          justifyContent="space-between"
+                          align="center"
+                          fontSize={{ sm: "10px", lg: "12px" }}
+                          color="gray.400"
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                          {{
+                            asc: "",
+                            desc: "",
+                          }[header.column.getIsSorted() as string] ?? null}
+                        </Flex>
+                      </Th>
                     );
                   })}
                 </Tr>
-              );
-            })}
-          </Tbody>
-        </Table>
+              ))}
+            </Thead>
+            <Tbody>
+              {table.getRowModel().rows.map((row) => {
+                return (
+                  <Tr
+                    key={row.id}
+                    cursor="pointer"
+                    onClick={() => {
+                      history.push(links.inventoryItem(row.original.id));
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell) => {
+                      return (
+                        <Td
+                          width="150px"
+                          key={cell.id}
+                          fontSize={{ sm: "14px" }}
+                          minW={{ sm: "150px", md: "200px", lg: "auto" }}
+                          borderColor="transparent"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </Td>
+                      );
+                    })}
+                  </Tr>
+                );
+              })}
+            </Tbody>
+          </Table>
+        </TableContainer>
         {sharedElements}
       </Box>
     </Card>

@@ -65,7 +65,7 @@ const StockProductForm = () => {
   const [createStockProduct, { isError, error }] = useAddInStockMutation();
   const [updateStockProductById] = useUpdateStockProductByIdMutation();
   const history = useHistory();
-  const { data: products = [] } = useGetProductQuery();
+  const { data: { products = [] } = { products: [] } } = useGetProductQuery();
   const [getStockProduct] = useLazyGetStockProductByIdQuery();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const saveStockProduct = async (noCalculationArg?: boolean) => {
@@ -85,7 +85,6 @@ const StockProductForm = () => {
   };
   useEffect(() => {
     (async () => {
-      console.log(params.stockProductId);
       if (!params.stockProductId) return;
       const stockProductRes = await getStockProduct({
         stockProductId: params.stockProductId,

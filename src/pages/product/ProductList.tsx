@@ -4,6 +4,7 @@ import {
   Button,
   Flex,
   Table,
+  TableContainer,
   Tbody,
   Td,
   Text,
@@ -51,7 +52,13 @@ const columnHelper = createColumnHelper<RowObj>();
 
 // const columns = columnsDataCheck;
 function ProductList() {
-  const { data: productArray = [], refetch } = useGetProductQuery();
+  const {
+    data: { products: productArray = [], totalWorth = 0 } = {
+      products: [],
+      totalWorth: 0,
+    },
+    refetch,
+  } = useGetProductQuery();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
@@ -63,7 +70,7 @@ function ProductList() {
   const amountUpdateModalActions = useDisclosure();
   useEffect(() => {
     refetch();
-  }, []);
+  }, [refetch]);
   const makeModalOnClose = React.useCallback(() => {
     onClose();
     setMakeId(null);
@@ -73,7 +80,7 @@ function ProductList() {
     amountUpdateModalActions.onClose();
     setAmountUpdateId(null);
     refetch();
-  }, [amountUpdateModalActions.onClose, setAmountUpdateId, refetch]);
+  }, [amountUpdateModalActions, setAmountUpdateId, refetch]);
   const columns = [
     columnHelper.accessor("name", {
       id: "name",
@@ -229,6 +236,9 @@ function ProductList() {
   });
   const sharedElements = (
     <>
+      <Text align={"right"} paddingRight="20">
+        {t("common.totalWorth")}: {totalWorth}
+      </Text>
       <ProductMakeModal
         isOpen={isOpen}
         onClose={makeModalOnClose}
@@ -316,89 +326,81 @@ function ProductList() {
         </Flex>
       </Flex>
       <Box>
-        <Table
-          variant="simple"
-          color="gray.500"
-          mb="24px"
-          mt="12px"
-          display={"block"}
-        >
-          <Thead display={"block"} width="100%">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <Tr
-                key={headerGroup.id}
-                display="flex"
-                justifyContent={"space-between"}
-              >
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <Th
-                      key={header.id}
-                      colSpan={header.colSpan}
-                      pe="10px"
-                      borderColor={borderColor}
-                      cursor="pointer"
-                      onClick={header.column.getToggleSortingHandler()}
-                      width={{ sm: "150px", md: "200px", lg: "auto" }}
-                    >
-                      <Flex
-                        justifyContent="space-between"
-                        align="center"
-                        fontSize={{ sm: "10px", lg: "12px" }}
-                        color="gray.400"
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                        {{
-                          asc: "",
-                          desc: "",
-                        }[header.column.getIsSorted() as string] ?? null}
-                      </Flex>
-                    </Th>
-                  );
-                })}
-              </Tr>
-            ))}
-          </Thead>
-          <Tbody
-            display={"block"}
-            width="100%"
-            maxHeight="700px"
-            overflowY="auto"
+        <TableContainer maxHeight={"700px"} overflowY="auto">
+          <Table
+            size="md"
+            variant="striped"
+            color="gray.500"
+            mb="24px"
+            mt="12px"
+            colorScheme="lightgrey"
           >
-            {table.getRowModel().rows.map((row) => {
-              return (
-                <Tr
-                  display={"flex"}
-                  justifyContent="space-between"
-                  key={row.id}
-                  cursor="pointer"
-                  onClick={() => {
-                    history.push(links.productItem(row.original.id));
-                  }}
-                >
-                  {row.getVisibleCells().map((cell) => {
+            <Thead>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <Tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
                     return (
-                      <Td
-                        key={cell.id}
-                        fontSize={{ sm: "14px" }}
+                      <Th
+                        key={header.id}
+                        colSpan={header.colSpan}
+                        pe="10px"
+                        borderColor={borderColor}
+                        cursor="pointer"
+                        onClick={header.column.getToggleSortingHandler()}
                         width={{ sm: "150px", md: "200px", lg: "auto" }}
-                        borderColor="transparent"
                       >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </Td>
+                        <Flex
+                          justifyContent="space-between"
+                          align="center"
+                          fontSize={{ sm: "10px", lg: "12px" }}
+                          color="gray.400"
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                          {{
+                            asc: "",
+                            desc: "",
+                          }[header.column.getIsSorted() as string] ?? null}
+                        </Flex>
+                      </Th>
                     );
                   })}
                 </Tr>
-              );
-            })}
-          </Tbody>
-        </Table>
+              ))}
+            </Thead>
+            <Tbody>
+              {table.getRowModel().rows.map((row) => {
+                return (
+                  <Tr
+                    key={row.id}
+                    cursor="pointer"
+                    onClick={() => {
+                      history.push(links.productItem(row.original.id));
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell) => {
+                      return (
+                        <Td
+                          key={cell.id}
+                          fontSize={{ sm: "14px" }}
+                          width={{ sm: "150px", md: "200px", lg: "auto" }}
+                          borderColor="transparent"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </Td>
+                      );
+                    })}
+                  </Tr>
+                );
+              })}
+            </Tbody>
+          </Table>
+        </TableContainer>
         {sharedElements}
       </Box>
     </Card>
