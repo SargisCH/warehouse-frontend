@@ -7,15 +7,30 @@ import {
   Image,
   VStack,
   Heading,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+  Flex,
 } from "@chakra-ui/react";
 import { useGetUserMutation, useUpdateSettingsMutation } from "api/auth";
-import { Field, Form, Formik } from "formik";
-import { useState, ChangeEvent, useEffect } from "react";
+import {
+  useCreatePayoutTypeMutation,
+  useGetPayoutTypesQuery,
+} from "api/payout";
+import { useState, ChangeEvent, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { setUserData } from "store/slices/userSlice";
 import { RootState } from "store/store";
+import Select, { components } from "react-select";
+import { Formik, Form, Field } from "formik";
+import "./settings.css";
 
 export default function Manager() {
   const { t } = useTranslation();
@@ -29,6 +44,18 @@ export default function Manager() {
   const dispatch = useDispatch();
   const [updateSettings, { data, isLoading, isSuccess }] =
     useUpdateSettingsMutation();
+  const [createPaymenyType, { isSuccess: isSuccessCreateType }] =
+    useCreatePayoutTypeMutation();
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const { data: payoutTypes = [], refetch } = useGetPayoutTypesQuery();
+  useEffect(() => {
+    if (isSuccessCreateType) {
+      onClose();
+      refetch();
+    }
+  }, [onClose, isSuccessCreateType, refetch]);
   const handleFileChange = (
     event: ChangeEvent<HTMLInputElement>,
     setFieldValue: (
@@ -54,6 +81,7 @@ export default function Manager() {
     }
   }, [isSuccess, setImageSrc, dispatch, history, data]);
   const logo = imageSrc || tenant?.logo;
+
   return (
     <Box
       display={"flex"}
@@ -64,6 +92,7 @@ export default function Manager() {
       <Box>
         <Heading>{t("common.profileSettings")}</Heading>
       </Box>
+
       <Box mt="10">
         <Formik
           initialValues={{ name: tenant.name, logo: "" }}
@@ -100,7 +129,6 @@ export default function Manager() {
                     />
                   </Box>
                 ) : null}
-
                 <Button
                   type="submit"
                   colorScheme="blue"
@@ -113,6 +141,68 @@ export default function Manager() {
             </Form>
           )}
         </Formik>
+        <Box>
+          <table>
+            <tr>
+              <th>Name</th>
+            </tr>
+            {payoutTypes
+              .filter(
+                (payoutType) => payoutType.name !== "other" && payoutType.name,
+              )
+              .map((payoutType) => (
+                <tr>
+                  <td>{payoutType.name}</td>
+                </tr>
+              ))}
+          </table>
+          <Button colorScheme={"green"} onClick={onOpen} fontSize="14px">
+            {t("common.createNewPayoutType")}
+          </Button>
+        </Box>
+        <Modal isOpen={isOpen} onClose={onClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Create new type</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Formik
+                initialValues={{ name: "" }}
+                onSubmit={(values) => {
+                  createPaymenyType({ name: values.name });
+                }}
+              >
+                {({ isSubmitting }) => (
+                  <Form>
+                    <Flex alignItems={"center"}>
+                      <label htmlFor="name">Name:</label>
+                      <Field type="text" id="name" name="name">
+                        {({ field }: { field: any }) => (
+                          <Input id="name" name="name" {...field} ml={2} />
+                        )}
+                      </Field>
+                    </Flex>
+                    <Button
+                      mt={2}
+                      ml={0}
+                      colorScheme={"green"}
+                      type="submit"
+                      disabled={isSubmitting}
+                    >
+                      Submit
+                    </Button>
+                  </Form>
+                )}
+              </Formik>
+            </ModalBody>
+
+            <ModalFooter>
+              <Button colorScheme="blue" mr={3} onClick={onClose}>
+                Close
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       </Box>
     </Box>
   );

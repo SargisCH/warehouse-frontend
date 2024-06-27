@@ -51,6 +51,7 @@ import {
   faUpload,
   faWarehouse,
 } from "@fortawesome/free-solid-svg-icons";
+import ReturnSaleList from "pages/sale/ReturnSaleList";
 const routes: RouteTypeExtended[] = [
   {
     name: "Main Dashboard",
@@ -226,6 +227,16 @@ const routes: RouteTypeExtended[] = [
         role: [Role.ADMIN, Role.MANAGER],
       },
       {
+        name: "return",
+        layout: "/admin",
+        path: "/return",
+        translationKey: "returnHistory",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faHistory} />,
+        component: ReturnSaleList,
+        role: [Role.ADMIN, Role.MANAGER],
+      },
+      {
         name: "vacharaketer",
         layout: "/admin",
         path: "/client",
@@ -345,5 +356,7 @@ export const links = {
   updateInventoryEntry: (entryId: number) =>
     `/admin/inventoryEntry/upsert${entryId}`,
   settings: "/admin/settings",
+  returnSale: (saleId: number) => `/admin/sale/return/${saleId}`,
+  returnSaleList: "/admin/sale/return/",
 };
 export default routes;

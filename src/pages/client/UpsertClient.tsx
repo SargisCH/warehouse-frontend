@@ -129,9 +129,14 @@ const UpsertClient = () => {
       legalAddress,
       address,
       accountNumber,
-      managerId: Number(manager.value),
-      dayPlan: selectedWeekdays.map((d) => d.value),
     };
+    if (manager?.value) {
+      data.managerId = Number(manager.value);
+    }
+    if (selectedWeekdays?.length > 0) {
+      data.dayPlan = selectedWeekdays.map((d) => d.value);
+    }
+
     if (params.clientId) {
       await updateClient({
         ...data,

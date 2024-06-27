@@ -30,11 +30,6 @@ import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { generateKey } from "helpers/generateKey";
 import { useTranslation } from "react-i18next";
 
-const unitOptions = [
-  { label: "KG", value: "kg" },
-  { label: "GRAM", value: "g" },
-];
-
 const UpsertProduct = (props: { create: boolean }) => {
   const [initialValues, setInitialValues] = useState({
     name: "",
@@ -61,7 +56,11 @@ const UpsertProduct = (props: { create: boolean }) => {
   const [deleteProduct] = useDeleteProductMutation();
   const history = useHistory();
   const { t } = useTranslation();
-
+  const unitOptions = [
+    { label: "KG", value: "kg" },
+    { label: "GRAM", value: "g" },
+    { label: t("common.piece"), value: "piece" },
+  ];
   const [getProductById] = useLazyGetProductByIdQuery();
   useEffect(() => {
     (async () => {

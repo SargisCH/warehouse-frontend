@@ -31,7 +31,9 @@ export interface SaleType {
   clientId: number;
   client?: ClientType;
   partialCreditAmount?: number;
+  canceled?: boolean;
   saleItems: Array<{
+    id?: number;
     stockProductId: number;
     stockProduct?: StockProductItem;
     price: number;
@@ -118,6 +120,22 @@ const clientApi = api.injectEndpoints({
         body: newSale,
       }),
     }),
+    returnSale: builder.mutation({
+      query: (args: {
+        saleId: number;
+        returnData: Array<{ stockProductId: number; amount: number }>;
+      }) => ({
+        url: `sale/${args.saleId}/return`,
+        method: "POST",
+        body: args.returnData,
+      }),
+    }),
+    cancelSale: builder.mutation({
+      query: (args: { saleId: number }) => ({
+        url: `sale/${args.saleId}/cancel`,
+        method: "POST",
+      }),
+    }),
     getSaleById: builder.query<SaleType, { id: string | number }>({
       query: (arg: { id: string | number }) => ({
         url: `sale/${arg.id}`,
@@ -130,6 +148,19 @@ const clientApi = api.injectEndpoints({
     >({
       query: ({ query }: { query: string }) => ({
         url: `sale/${query}`,
+        method: "GET",
+      }),
+    }),
+    getReturnSale: builder.query<
+      {
+        returnDaleList: {
+          stockProduct: { product: { name: string; id: number }; id: number };
+        }[];
+      },
+      { query: string }
+    >({
+      query: ({ query }: { query: string }) => ({
+        url: `sale/return${query}`,
         method: "GET",
       }),
     }),
@@ -148,4 +179,7 @@ export const {
   useLazyGetSaleByIdQuery,
   useGetSaleByIdQuery,
   useGetSaleQuery,
+  useGetReturnSaleQuery,
+  useReturnSaleMutation,
+  useCancelSaleMutation,
 } = clientApi;

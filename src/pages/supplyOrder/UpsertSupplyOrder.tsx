@@ -31,6 +31,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { generateKey } from "helpers/generateKey";
 import { PaymentType } from "api/client";
+import { useTranslation } from "react-i18next";
 
 const paymentTypeOptions = [
   {
@@ -67,10 +68,6 @@ type OrderType = {
   }>;
 };
 
-const unitOptions = [
-  { label: "kg", value: "kg" },
-  { label: "gram", value: "g" },
-];
 const intialValues: OrderType = {
   supplierId: null,
   paymentType: "",
@@ -99,7 +96,12 @@ const UpsertSupplierOrder = () => {
   );
   const [getSuppliers] = useLazyGetInventorySupplierQuery();
   const [getSupplierById] = useLazyGetInventorySupplierByIdQuery();
-
+  const { t } = useTranslation();
+  const unitOptions = [
+    { label: "kg", value: "kg" },
+    { label: "gram", value: "g" },
+    { label: t("common.piece"), value: "piece" },
+  ];
   const { values, setFieldValue, handleSubmit, isSubmitting } = useFormik({
     initialValues: { ...intialValues },
     onSubmit: async (values) => {

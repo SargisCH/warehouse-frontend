@@ -1,10 +1,7 @@
 import { Card } from "@aws-amplify/ui-react";
 import {
   Box,
-  Flex,
-  Stat,
-  StatLabel,
-  StatNumber,
+  Button,
   Table,
   Tbody,
   Td,
@@ -12,17 +9,26 @@ import {
   Thead,
   Tr,
   useColorModeValue,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { faArrowDown, faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { TransactionType, useGetBalanceHistoryQuery } from "api/balanceHistory";
+import { useGetPayoutQuery } from "api/payout";
+import { useTranslation } from "react-i18next";
 import { Link, useRouteMatch } from "react-router-dom";
 import { links } from "routes";
+import PayoutCreateModal from "./PayoutCreateModal";
+import dayjs from "dayjs";
 
 export default function Manager() {
-  const { data = [], isLoading } = useGetBalanceHistoryQuery();
+  const { data = [], refetch: refetchBalanceHistory } =
+    useGetBalanceHistoryQuery();
+  const { data: payouts = [], refetch: refetchPayout } = useGetPayoutQuery();
+  const { t } = useTranslation();
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const textColorSecondary = "secondaryGray.600";
+  const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <Box>
       <h1>Balance History</h1>
@@ -33,6 +39,7 @@ export default function Manager() {
             <Tr>
               <Td>Client name </Td>
               <Td>Supplier name </Td>
+              <Td>Payout id </Td>
               <Td>Direction </Td>
               <Td>Sale </Td>
               <Td>Order </Td>
@@ -47,6 +54,7 @@ export default function Manager() {
                 <Tr key={index}>
                   <Td>{balance.client?.name}</Td>
                   <Td>{balance.inventorySupplier?.name}</Td>
+                  <Td>{balance.payoutId}</Td>
                   <Td>{balance.direction}</Td>
                   <Td>
                     {balance.saleId && (
@@ -111,6 +119,47 @@ export default function Manager() {
             })}
           </Tbody>
         </Table>
+      </Box>
+      <Box mt="20px">
+        <Button onClick={onOpen} colorScheme={"green"}>
+          {t("common.makeNewPayout")}
+        </Button>
+        <Table>
+          <Thead>
+            <Tr>
+              <Td>Payout id </Td>
+              <Td>Created At </Td>
+              <Td>Amount </Td>
+              <Td>Payout type </Td>
+              <Td>Other </Td>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {payouts.map((payout, index) => {
+              return (
+                <Tr key={index}>
+                  <Td>{payout.id}</Td>
+                  <Td>{dayjs(payout.created_at).format("DD/MM/YYYY")}</Td>
+                  <Td>{payout.amount}</Td>
+                  <Td>{payout.type.name}</Td>
+                  {payout.type.name === "other" ? (
+                    <Td>{payout.otherPayoutType}</Td>
+                  ) : null}
+                </Tr>
+              );
+            })}
+          </Tbody>
+        </Table>
+        <PayoutCreateModal
+          isOpen={isOpen}
+          onClose={(isCreated) => {
+            if (isCreated) {
+              refetchPayout();
+              refetchBalanceHistory();
+            }
+            onClose();
+          }}
+        />
       </Box>
     </Box>
   );
