@@ -19,6 +19,7 @@ export type BalanceHistoryItem = {
   clientId?: number;
   inventorySupplier?: { id: number; name: string };
   inventorySupplierId?: number;
+  payoutId?: number;
   amount: number;
   direction: TransactionType;
   date?: Date;

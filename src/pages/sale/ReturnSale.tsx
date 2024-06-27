@@ -44,6 +44,7 @@ const ReturnSale = () => {
     useReturnSaleMutation();
   const history = useHistory();
   const params: any = useParams();
+  console.log("params sale id", params);
   const { data: saleData = {} as SaleType } = useGetSaleByIdQuery({
     id: params.saleId,
   });
@@ -79,7 +80,7 @@ const ReturnSale = () => {
         };
       });
       try {
-        await returnSale(itemsToSend);
+        await returnSale({ saleId: params.saleId, returnData: itemsToSend });
       } catch (e: any) {
         alert(e.message || e);
       }

@@ -11,6 +11,7 @@ import {
   Thead,
   Tr,
   useColorModeValue,
+  useDisclosure,
 } from "@chakra-ui/react";
 import {
   createColumnHelper,
@@ -39,6 +40,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { setQuery } from "helpers/queryParams";
 import { useTranslation } from "react-i18next";
+import CancelDialog from "./CancelDialog";
 type Option = { label: string; value: number };
 
 type RowObj = {
@@ -54,6 +56,7 @@ type RowObj = {
   updated_at: string;
   priceChanged?: boolean;
   partialCreditAmount?: number;
+  canceled?: boolean;
 };
 
 const columnHelper = createColumnHelper<RowObj>();
@@ -77,6 +80,7 @@ function SaleList() {
   );
   const [currentPage, setCurrentPage] = React.useState(1);
   const [selectedDate, setSelectedDate] = React.useState(new Date());
+  const [cancelId, setCancelId] = React.useState(null);
   const handlePageChange = (page: number) => {
     setTimeout(() => {
       setQuery(location, history, { name: "page", value: 1 });
@@ -109,6 +113,7 @@ function SaleList() {
       updated_at,
       paymentType,
       partialCreditAmount,
+      canceled,
     }) => {
       return {
         id,
@@ -126,6 +131,7 @@ function SaleList() {
         partialCreditAmount,
         created_at,
         updated_at,
+        canceled,
       };
     },
   );
@@ -144,6 +150,11 @@ function SaleList() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
+  const {
+    onOpen: onCancelOpen,
+    onClose: onCancelClose,
+    isOpen: isCancelOpen,
+  } = useDisclosure();
   const columns = [
     columnHelper.accessor("clientName", {
       id: "clientName",
@@ -361,6 +372,33 @@ function SaleList() {
         );
       },
     }),
+    columnHelper.accessor("canceled", {
+      id: "canceled",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        >
+          Status
+        </Text>
+      ),
+      cell: (info: any) => {
+        return (
+          <Flex align="center">
+            <Text
+              title="Original price has been changed"
+              color={textColor}
+              fontSize="sm"
+              fontWeight="700"
+            >
+              {info.getValue() ? "Canceled" : ""}
+            </Text>
+          </Flex>
+        );
+      },
+    }),
     columnHelper.display({
       id: "actions",
       header: () => (
@@ -371,18 +409,44 @@ function SaleList() {
           color="gray.400"
         ></Text>
       ),
-      cell: (info) => (
-        <Button
-          position={"static"}
-          colorScheme={"teal"}
-          onClick={(e) => {
-            e.stopPropagation();
-            history.push(links.returnSale(info.row.original.id));
-          }}
-        >
-          {t("common.return")}
-        </Button>
+      cell: (info) =>
+        info.row.original.canceled ? null : (
+          <Button
+            position={"static"}
+            colorScheme={"teal"}
+            onClick={(e) => {
+              e.stopPropagation();
+              history.push(links.returnSale(info.row.original.id));
+            }}
+          >
+            {t("common.return")}
+          </Button>
+        ),
+    }),
+    columnHelper.display({
+      id: "actions",
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: "10px", lg: "12px" }}
+          color="gray.400"
+        ></Text>
       ),
+      cell: (info) =>
+        info.row.original.canceled ? null : (
+          <Button
+            position={"static"}
+            colorScheme={"teal"}
+            onClick={(e) => {
+              e.stopPropagation();
+              setCancelId(info.row.original.id);
+              onCancelOpen();
+            }}
+          >
+            {t("common.cancel")}
+          </Button>
+        ),
     }),
   ];
 
@@ -561,6 +625,11 @@ function SaleList() {
           />
         </Flex>
       </Box>
+      <CancelDialog
+        isOpen={isCancelOpen}
+        onClose={onCancelClose}
+        saleCancelId={cancelId}
+      />
     </Card>
   );
 }

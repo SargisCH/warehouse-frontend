@@ -139,6 +139,10 @@ const UpsertInventory = (props: { create: boolean }) => {
       label: "G",
       value: "g",
     },
+    {
+      label: t("common.piece"),
+      value: "g",
+    },
   ];
   const inventoryOptions: CustomOptionType[] =
     data?.inventories?.map((inv) => ({

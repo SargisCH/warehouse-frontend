@@ -5,6 +5,7 @@ import SaleList from "./SaleList";
 import UpsertSale from "./UpsertSale";
 import SaleInfo from "./SaleInfo";
 import ReturnSale from "./ReturnSale";
+import ReturnSaleList from "./ReturnSaleList";
 
 export default function Sale() {
   const match = useRouteMatch();
@@ -15,10 +16,13 @@ export default function Sale() {
         <Route path={`${match.path}`} exact={true}>
           <SaleList />
         </Route>
-        <Route path={`${match.path}/create/:clientId`}>
+        <Route exact path={`${match.path}/create/:clientId`}>
           <UpsertSale />
         </Route>
-        <Route path={`${match.path}/return/:saleId`}>
+        <Route exact path={`${match.path}/return`}>
+          <ReturnSaleList />
+        </Route>
+        <Route exact path={`${match.path}/return/:saleId`}>
           <ReturnSale />
         </Route>
         <Route path={`${match.path}/info/:saleId`}>

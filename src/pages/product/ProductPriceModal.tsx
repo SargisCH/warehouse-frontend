@@ -20,10 +20,6 @@ import { useTranslation } from "react-i18next";
 import ReactSelect from "react-select";
 
 type Props = { isOpen: boolean; onClose: () => void; productId: number };
-const unitOptions = [
-  { label: "KG", value: "kg" },
-  { label: "G", value: "g" },
-];
 
 export default function ProductAmountModal({
   isOpen,
@@ -31,6 +27,11 @@ export default function ProductAmountModal({
   productId,
 }: Props) {
   const { t } = useTranslation();
+  const unitOptions = [
+    { label: "KG", value: "kg" },
+    { label: "G", value: "g" },
+    { label: t("common.piece"), value: "piece" },
+  ];
   const [updateAmount, { isSuccess, isLoading }] =
     useUpdateProductAmountMutation();
   const isMobile = useBreakpointValue({ base: true, md: false });
