@@ -223,6 +223,25 @@ function ProductList() {
   ];
 
   const isMobile = useBreakpointValue({ base: true, md: false });
+  if (isMobile) {
+    columns.push(
+      columnHelper.display({
+        id: "actions3",
+        header: () => "",
+        cell: (info) => (
+          <Button
+            fontSize={isMobile ? "14px" : ""}
+            colorScheme={"green"}
+            onClick={(e) => {
+              history.push(links.productItem(info.row.original.id));
+            }}
+          >
+            {t("common.edit")}
+          </Button>
+        ),
+      }),
+    );
+  }
   const table = useReactTable({
     data: productArray,
     columns: columns as any,

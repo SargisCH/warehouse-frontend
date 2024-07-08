@@ -11,8 +11,11 @@ import {
   Tr,
   Link,
   useColorModeValue,
+  useBreakpointValue,
+  Button,
 } from "@chakra-ui/react";
 import {
+  ColumnDef,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
@@ -34,7 +37,7 @@ import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import ReactSelect from "react-select";
 import { Weekday } from "types";
 import { useGetClientQuery } from "api/client";
-import { Trans } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 // Assets
 
 type RowObj = {
@@ -81,7 +84,9 @@ function CreditList() {
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
-  const columns = [
+  const { t } = useTranslation();
+  const isMobile = useBreakpointValue({ base: true, md: false });
+  const columns: ColumnDef<RowObj, any>[] = [
     columnHelper.accessor("client.name", {
       id: "client_name",
       header: () => (
@@ -206,6 +211,24 @@ function CreditList() {
       ),
     }),
   ];
+  if (isMobile) {
+    columns.push(
+      columnHelper.display({
+        id: "edit_action",
+        header: () => null,
+        cell: (info) => (
+          <Button
+            colorScheme={"teal"}
+            onClick={() => {
+              history.push(links.credit(info.row.original.id));
+            }}
+          >
+            {t("common.edit")}
+          </Button>
+        ),
+      }),
+    );
+  }
   const table = useReactTable({
     data: creditArray,
     columns: columns as any,
@@ -217,6 +240,54 @@ function CreditList() {
     getSortedRowModel: getSortedRowModel(),
     debugTable: true,
   });
+  if (isMobile) {
+    return (
+      <Box>
+        <Flex justifyContent={"flex-end"} mt="20px" mb="20px">
+          <TableAddButton
+            link={links.createCredit}
+            label={t("common.credit.addCredit")}
+          />
+        </Flex>
+
+        {table.getRowModel().rows.map((row) => (
+          <Box
+            key={row.id}
+            borderWidth="1px"
+            borderRadius="lg"
+            overflow="hidden"
+            p="4"
+            mb="4"
+          >
+            {row.getVisibleCells().map((cell) => {
+              return (
+                <Box
+                  key={cell.id}
+                  display="flex"
+                  justifyContent="space-between"
+                  py="2"
+                >
+                  <Box
+                    as="span"
+                    fontSize={"16px"}
+                    css={{ p: { fontSize: "14px" } }}
+                  >
+                    {flexRender(
+                      cell.column.columnDef.header,
+                      cell.getContext() as any,
+                    )}
+                  </Box>
+                  <Box as="span">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        ))}
+      </Box>
+    );
+  }
   return (
     <Card
       flexDirection="column"
@@ -226,33 +297,71 @@ function CreditList() {
       minHeight="500px"
       position={"static"}
     >
-      <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
-        <Text
-          color={textColor}
-          fontSize="22px"
-          fontWeight="700"
-          lineHeight="100%"
-        >
-          Credit List
-        </Text>
-        <Box marginRight={10} width={"200px"}>
-          <ReactSelect
-            placeholder="Day plan"
-            options={weekDayOptions}
-            value={selectedDay}
-            onChange={setSelectedDay}
-          />
+      {!isMobile ? (
+        <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
+          <Text
+            color={textColor}
+            fontSize="22px"
+            fontWeight="700"
+            lineHeight="100%"
+          >
+            Credit List
+          </Text>
+          <Box marginRight={10} width={"200px"}>
+            <ReactSelect
+              placeholder="Day plan"
+              options={weekDayOptions}
+              value={selectedDay}
+              onChange={setSelectedDay}
+            />
+          </Box>
+          <Box marginRight={10} width={"200px"}>
+            <ReactSelect
+              placeholder="choose a clients"
+              options={clients?.map((cl) => ({ label: cl.name, value: cl.id }))}
+              value={selectedClient}
+              onChange={setSelectedClient}
+            />
+          </Box>
+          <TableAddButton label="Add Credit" link={links.createCredit} />
+        </Flex>
+      ) : (
+        <Box mb="8px">
+          <Flex justifyContent={"space-between"}>
+            <Text
+              color={textColor}
+              fontSize="22px"
+              fontWeight="700"
+              lineHeight="100%"
+            >
+              Credit List
+            </Text>
+
+            <TableAddButton label="Add Credit" link={links.createCredit} />
+          </Flex>
+          <Flex justifyContent={"space-between"}>
+            <Box mt={2} marginRight={10} width={"200px"}>
+              <ReactSelect
+                placeholder="Day plan"
+                options={weekDayOptions}
+                value={selectedDay}
+                onChange={setSelectedDay}
+              />
+            </Box>
+            <Box mt={2} marginRight={10} width={"200px"}>
+              <ReactSelect
+                placeholder="choose a clients"
+                options={clients?.map((cl) => ({
+                  label: cl.name,
+                  value: cl.id,
+                }))}
+                value={selectedClient}
+                onChange={setSelectedClient}
+              />
+            </Box>
+          </Flex>
         </Box>
-        <Box marginRight={10} width={"200px"}>
-          <ReactSelect
-            placeholder="choose a clients"
-            options={clients?.map((cl) => ({ label: cl.name, value: cl.id }))}
-            value={selectedClient}
-            onChange={setSelectedClient}
-          />
-        </Box>
-        <TableAddButton label="Add Credit" link={links.createCredit} />
-      </Flex>
+      )}
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">
           <Thead>

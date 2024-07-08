@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import {
   Box,
+  Button,
   Flex,
   Table,
   Tbody,
@@ -9,10 +10,12 @@ import {
   Th,
   Thead,
   Tr,
+  useBreakpointValue,
   useColorModeValue,
   useQuery,
 } from "@chakra-ui/react";
 import {
+  ColumnDef,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
@@ -33,6 +36,7 @@ import { TableAddButton } from "components/tableAddButton/TableAddButton";
 import { useGetInventoryQuery } from "api/inventory";
 import ReactSelect from "react-select";
 import { setQuery } from "helpers/queryParams";
+import { useTranslation } from "react-i18next";
 // Assets
 
 type RowObj = {
@@ -61,12 +65,14 @@ function SupplierOrderList() {
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
 
+  const isMobile = useBreakpointValue({ base: true, md: false });
   const { data: inventoryData } = useGetInventoryQuery();
   const inventoryOptions = inventoryData?.inventories?.map((inv: any) => ({
     label: inv.name,
     value: inv.id,
   }));
-  const columns = [
+  const { t } = useTranslation();
+  const columns: ColumnDef<RowObj, any>[] = [
     columnHelper.accessor("inventorySupplier.name", {
       id: "inventorySupplier",
       header: () => (
@@ -166,6 +172,29 @@ function SupplierOrderList() {
       ),
     }),
   ];
+  if (isMobile) {
+    columns.push(
+      columnHelper.display({
+        id: "edit_action",
+        header: () => null,
+        cell: (info: any) => (
+          <Button
+            colorScheme="teal"
+            onClick={() =>
+              history.push(
+                links.supplyOrder(
+                  info.row.original.inventorySupplierId,
+                  info.row.original.id,
+                ),
+              )
+            }
+          >
+            {t("common.edit")}
+          </Button>
+        ),
+      }),
+    );
+  }
   const table = useReactTable({
     data: ordersArray,
     columns: columns as any,
@@ -177,6 +206,54 @@ function SupplierOrderList() {
     getSortedRowModel: getSortedRowModel(),
     debugTable: true,
   });
+  if (isMobile) {
+    return (
+      <Box>
+        <Flex justifyContent={"flex-end"} mt="20px" mb="20px">
+          <TableAddButton
+            link={links.createSupplyOrderNoSupplier}
+            label={t("common.inventorySupplier.makeOrder")}
+          />
+        </Flex>
+
+        {table.getRowModel().rows.map((row) => (
+          <Box
+            key={row.id}
+            borderWidth="1px"
+            borderRadius="lg"
+            overflow="hidden"
+            p="4"
+            mb="4"
+          >
+            {row.getVisibleCells().map((cell) => {
+              return (
+                <Box
+                  key={cell.id}
+                  display="flex"
+                  justifyContent="space-between"
+                  py="2"
+                >
+                  <Box
+                    as="span"
+                    fontSize={"16px"}
+                    css={{ p: { fontSize: "14px" } }}
+                  >
+                    {flexRender(
+                      cell.column.columnDef.header,
+                      cell.getContext() as any,
+                    )}
+                  </Box>
+                  <Box as="span">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        ))}
+      </Box>
+    );
+  }
   return (
     <Card
       flexDirection="column"

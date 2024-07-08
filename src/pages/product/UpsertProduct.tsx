@@ -10,6 +10,8 @@ import {
   NumberInputField,
   Checkbox,
   CheckboxGroup,
+  useBreakpointValue,
+  Text,
 } from "@chakra-ui/react";
 import {
   useDeleteProductMutation,
@@ -62,6 +64,7 @@ const UpsertProduct = (props: { create: boolean }) => {
     { label: t("common.piece"), value: "piece" },
   ];
   const [getProductById] = useLazyGetProductByIdQuery();
+  const isMobile = useBreakpointValue({ base: true, md: false });
   useEffect(() => {
     (async () => {
       if (params.productId) {
@@ -136,10 +139,10 @@ const UpsertProduct = (props: { create: boolean }) => {
           isSubmitting,
         }) => {
           return (
-            <Box>
+            <Box width={"100%"}>
               <Form onSubmit={handleSubmit}>
                 <Box gap="20px">
-                  <Flex gap="20px">
+                  <Flex gap="20px" flexDirection={isMobile ? "column" : "row"}>
                     <FormControl>
                       <FormLabel>{t("common.name")}</FormLabel>
                       <Input
@@ -186,6 +189,8 @@ const UpsertProduct = (props: { create: boolean }) => {
                               gap={"20px"}
                               marginTop="20px"
                               key={ing.reactKey}
+                              flexDirection={isMobile ? "column" : "row"}
+                              width={"100%"}
                             >
                               <FormControl>
                                 <FormLabel>{t("common.ingredients")}</FormLabel>
@@ -255,6 +260,9 @@ const UpsertProduct = (props: { create: boolean }) => {
                                     });
                                   }}
                                 >
+                                  {isMobile ? (
+                                    <Text mr={2}>{t("common.add")}</Text>
+                                  ) : null}
                                   <FontAwesomeIcon icon={faPlus} />
                                 </Button>
                               </FormControl>
@@ -269,6 +277,9 @@ const UpsertProduct = (props: { create: boolean }) => {
                                   background="red.500"
                                   onClick={() => remove(ingIndex)}
                                 >
+                                  {isMobile ? (
+                                    <Text mr={2}>{t("common.delete")}</Text>
+                                  ) : null}
                                   <FontAwesomeIcon icon={faTrash} />
                                 </Button>
                               </FormControl>
@@ -297,7 +308,7 @@ const UpsertProduct = (props: { create: boolean }) => {
                     colorScheme="red"
                     onClick={() => setIsDeleteDialogOpened(true)}
                   >
-                    Delete
+                    {t("common.product.deleteProduct")}
                   </Button>
                 ) : null}
               </Box>

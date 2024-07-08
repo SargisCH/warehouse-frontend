@@ -9,6 +9,7 @@ import {
   Th,
   Thead,
   Tr,
+  useBreakpointValue,
   useColorModeValue,
 } from "@chakra-ui/react";
 import {
@@ -75,6 +76,8 @@ function InventoryEntryList() {
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
   const { t } = useTranslation();
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
   const columns = [
     columnHelper.accessor("date", {
       id: "date",
@@ -197,6 +200,54 @@ function InventoryEntryList() {
     getSortedRowModel: getSortedRowModel(),
     debugTable: true,
   });
+  if (isMobile) {
+    return (
+      <Box>
+        <Flex justifyContent={"flex-end"} mt="20px" mb="20px">
+          <TableAddButton
+            link={links.createInventoryEntry}
+            label={t("common.inventory.addNewEntry")}
+          />
+        </Flex>
+
+        {table.getRowModel().rows.map((row) => (
+          <Box
+            key={row.id}
+            borderWidth="1px"
+            borderRadius="lg"
+            overflow="hidden"
+            p="4"
+            mb="4"
+          >
+            {row.getVisibleCells().map((cell) => {
+              return (
+                <Box
+                  key={cell.id}
+                  display="flex"
+                  justifyContent="space-between"
+                  py="2"
+                >
+                  <Box
+                    as="span"
+                    fontSize={"16px"}
+                    css={{ p: { fontSize: "14px" } }}
+                  >
+                    {flexRender(
+                      cell.column.columnDef.header,
+                      cell.getContext() as any,
+                    )}
+                  </Box>
+                  <Box as="span">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        ))}
+      </Box>
+    );
+  }
   return (
     <Card
       position={"static"}
@@ -258,13 +309,7 @@ function InventoryEntryList() {
           <Tbody>
             {table.getRowModel().rows.map((row) => {
               return (
-                <Tr
-                  key={row.id}
-                  cursor="pointer"
-                  onClick={() => {
-                    history.push(links.inventoryItem(row.original.id));
-                  }}
-                >
+                <Tr key={row.id}>
                   {row.getVisibleCells().map((cell) => {
                     return (
                       <Td

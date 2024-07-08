@@ -51,6 +51,7 @@
   "saleCancelation": "Վաճառքի չեղարկում",
   "confirm": "Հաստատել",
   "close": "Փակել",
+  "add": "Ավելացնել",
   "client": {
     "name": "Անուն",
     "legalName": "Իրավաբանական անուն",
@@ -78,6 +79,20 @@
     "inStock": "Առկա",
     "costPrice": "Ինքնարժեք",
     "addProduct": "Ավելացնել ապրանք",
-    "make": "Պատրաստել"
+    "make": "Պատրաստել",
+    "deleteProduct": "Ջնջել ապրանքը"
+  },
+  "inventorySupplier": {
+    "createInventorySupplier": "Ստեղծել մատակարար",
+    "makeOrder": "Կատարել պատվեր"
+  },
+  "credit": {
+    "addCredit": "Ավելացնել Կրեդիտ"
+  },
+  "transaction": {
+    "addTransaction": "Ավելացնել փոխանցում"
+  },
+  "manager": {
+    "addManager": "Ավելացնել մենեջեր"
   }
 }

@@ -6,6 +6,7 @@ import {
   Box,
   NumberInput,
   NumberInputField,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import { useGetClientQuery } from "api/client";
 import DatePicker from "react-datepicker";
@@ -81,6 +82,7 @@ const TransactionHistoryForm = () => {
   const [selectedStatus, setSelectedStatus] =
     useState<TransactionStatusOptionType>();
   const history = useHistory();
+const isMobile = useBreakpointValue({ base: true, md: false });
   useEffect(() => {
     (async () => {
       if (params.transactionHistoryId) {
@@ -157,7 +159,7 @@ const TransactionHistoryForm = () => {
   return (
     <Flex direction="column">
       <Flex gap="20px">
-        <Flex gap="20px">
+        <Flex gap="20px" flexDirection={isMobile ? 'column': 'row'}>
           <FormControl>
             <FormLabel>Amount</FormLabel>
             <NumberInput value={amount} onChange={(v) => setAmount(Number(v))}>
@@ -210,7 +212,7 @@ const TransactionHistoryForm = () => {
           )}
         </Flex>
       </Flex>
-      <Flex width={"30%"}>
+      <Flex width={"30%"} flexDirection={isMobile ? 'column': 'row'}>
         <FormControl>
           <FormLabel>Transaction Status</FormLabel>
           <Select

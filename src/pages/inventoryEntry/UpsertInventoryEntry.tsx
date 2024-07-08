@@ -8,6 +8,7 @@ import {
   NumberInputField,
   Text,
   useDisclosure,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -94,6 +95,8 @@ const UpsertInventory = (props: { create: boolean }) => {
   });
   const history = useHistory();
   const [getInventoryEntryById] = useLazyGetInventoryEntryByIdQuery();
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
   useEffect(() => {
     (async () => {
       if (params.inventoryEntryId) {
@@ -154,7 +157,7 @@ const UpsertInventory = (props: { create: boolean }) => {
       <form onSubmit={handleSubmit}>
         <Box gap="20px">
           <Box>
-            <Flex gap="20px">
+            <Flex gap="20px" flexDirection={isMobile ? "column" : "row"}>
               <FormControl>
                 <FormLabel>Order date</FormLabel>
                 <ReactDatePicker
@@ -200,7 +203,10 @@ const UpsertInventory = (props: { create: boolean }) => {
               });
               return (
                 <Box>
-                  <Flex gap={"10px"}>
+                  <Flex
+                    flexDirection={isMobile ? "column" : "row"}
+                    gap={"10px"}
+                  >
                     <FormControl>
                       <FormLabel>Inventory</FormLabel>
                       <Select
@@ -281,6 +287,11 @@ const UpsertInventory = (props: { create: boolean }) => {
                           ]);
                         }}
                       >
+                        {isMobile ? (
+                          <Text mr={2} color={"white"}>
+                            {t("common.add")}
+                          </Text>
+                        ) : null}
                         <FontAwesomeIcon icon={faPlus} />
                       </Button>
                     </FormControl>
@@ -298,6 +309,11 @@ const UpsertInventory = (props: { create: boolean }) => {
                           setFieldValue("inventoryEntryItems", newItems);
                         }}
                       >
+                        {isMobile ? (
+                          <Text mr={2} color={"white"}>
+                            {t("common.delete")}
+                          </Text>
+                        ) : null}
                         <FontAwesomeIcon icon={faTrash} />
                       </Button>
                     </FormControl>
@@ -309,7 +325,7 @@ const UpsertInventory = (props: { create: boolean }) => {
         </Box>
         <Box mt={5}>
           <Button colorScheme="teal" type="submit">
-            Save
+            {t("common.save")}
           </Button>
         </Box>
       </form>

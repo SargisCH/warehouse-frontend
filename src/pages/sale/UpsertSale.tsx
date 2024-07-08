@@ -9,6 +9,7 @@ import {
   NumberInput,
   NumberInputField,
   FormErrorMessage,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import {
   useAddSaleMutation,
@@ -28,6 +29,7 @@ import { Form, Formik, FieldArray, getIn } from "formik";
 import * as Yup from "yup";
 import SaleForm from "./SaleForm";
 import { generateKey } from "helpers/generateKey";
+import { useTranslation } from "react-i18next";
 
 const paymentTypeOptions = [
   {
@@ -95,6 +97,7 @@ const UpsertSale = () => {
   const { data } = useGetStockProductQuery();
   const stockProducts = data?.stockProducts || [];
 
+  const isMobile = useBreakpointValue({ base: true, md: false });
   useEffect(() => {
     (async () => {
       if (params.clientId) {
@@ -130,6 +133,7 @@ const UpsertSale = () => {
     label: pd.product.name,
     value: pd.id,
   }));
+  const { t } = useTranslation();
   if (isLoading) {
     return (
       <Spinner
@@ -188,10 +192,14 @@ const UpsertSale = () => {
 
             return (
               <Form onSubmit={handleSubmit}>
-                <Flex direction="row">
+                <Flex>
                   <Box width={"100%"} gap="20px">
                     <Flex direction={"column"} width={"100%"} gap="20px">
-                      <Flex gap="20px" width={"100%"}>
+                      <Flex
+                        gap="20px"
+                        width={"100%"}
+                        direction={isMobile ? "column" : "row"}
+                      >
                         <FormControl
                           isInvalid={errors.clientId && touched.clientId}
                         >
@@ -262,7 +270,7 @@ const UpsertSale = () => {
                         ) : null}
                       </Flex>
                     </Flex>
-                    <Flex direction="column" gap={"20px"} marginTop="20px">
+                    <Flex gap={"20px"} marginTop="20px">
                       <FieldArray name="saleItems">
                         {({ push, remove }) => {
                           return values.saleItems?.map((si, siIndex) => {
@@ -310,6 +318,7 @@ const UpsertSale = () => {
                               <Flex
                                 gap="20px"
                                 key={si.stockProduct ?? si.reactKey}
+                                direction={isMobile ? "column" : "row"}
                               >
                                 <FormControl
                                   isInvalid={
@@ -485,7 +494,7 @@ const UpsertSale = () => {
                           disabled={isSubmitting}
                           type="submit"
                         >
-                          Save
+                          {t("common.save")}
                         </Button>
                         <Box>
                           <SaleForm values={values} />

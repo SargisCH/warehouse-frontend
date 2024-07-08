@@ -9,9 +9,11 @@ import {
   Th,
   Thead,
   Tr,
+  useBreakpointValue,
   useColorModeValue,
 } from "@chakra-ui/react";
 import {
+  ColumnDef,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
@@ -76,6 +78,7 @@ function ReturnSaleList() {
     query: location.search,
   });
   const { t } = useTranslation();
+  const isMobile = useBreakpointValue({ base: true, md: false });
   const { data: clientData = [] } = useGetClientQuery();
   const [selectedClients, setSelectedClients] = React.useState<Array<Option>>(
     [],
@@ -121,7 +124,7 @@ function ReturnSaleList() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
-  const columns = [
+  const columns: ColumnDef<RowObj, any>[] = [
     columnHelper.accessor("clientName", {
       id: "clientName",
       header: () => (
@@ -217,6 +220,25 @@ function ReturnSaleList() {
     }),
   ];
 
+  if (isMobile) {
+    columns.push(
+      columnHelper.display({
+        id: "edit_action",
+        header: () => null,
+        cell: (info) => (
+          <Button
+            position={"static"}
+            colorScheme={"teal"}
+            onClick={() => {
+              history.push(links.returnSale(info.row.original.id));
+            }}
+          >
+            {t("common.edit")}
+          </Button>
+        ),
+      }),
+    );
+  }
   const table = useReactTable({
     data: returnSaleArray,
     columns: columns as any,
@@ -232,7 +254,85 @@ function ReturnSaleList() {
   React.useEffect(() => {
     refetch();
   }, [location.search, refetch]);
-
+  if (isMobile) {
+    return (
+      <Box>
+        <Flex px="25px" mb="8px" flexDirection={"column"}>
+          <Text
+            color={textColor}
+            fontSize="22px"
+            fontWeight="700"
+            lineHeight="100%"
+          >
+            Sale List
+          </Text>
+          <Flex justifyContent={"space-between"} mt={3}>
+            <Select
+              options={clientData.map((client) => {
+                return { label: client.name, value: client.id };
+              })}
+              isMulti
+              value={selectedClients}
+              onChange={(newValue) => {
+                setQuery(location, history, {
+                  name: "client",
+                  value: newValue.map((op: Option) => op.value),
+                });
+                setSelectedClients(newValue as Option[]);
+              }}
+              placeholder="Select a client"
+            />
+            <Flex
+              borderColor={"blue.500"}
+              borderStyle="solid"
+              borderWidth={"1px"}
+            >
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date: Date) => handleDateChange(date)}
+                isClearable
+              />
+            </Flex>
+          </Flex>
+        </Flex>
+        {table.getRowModel().rows.map((row) => (
+          <Box
+            key={row.id}
+            borderWidth="1px"
+            borderRadius="lg"
+            overflow="hidden"
+            p="4"
+            mb="4"
+          >
+            {row.getVisibleCells().map((cell) => {
+              return (
+                <Box
+                  key={cell.id}
+                  display="flex"
+                  justifyContent="space-between"
+                  py="2"
+                >
+                  <Box
+                    as="span"
+                    fontSize={"16px"}
+                    css={{ p: { fontSize: "14px" } }}
+                  >
+                    {flexRender(
+                      cell.column.columnDef.header,
+                      cell.getContext() as any,
+                    )}
+                  </Box>
+                  <Box as="span">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        ))}
+      </Box>
+    );
+  }
   return (
     <Card
       flexDirection="column"
