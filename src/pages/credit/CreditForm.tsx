@@ -6,6 +6,7 @@ import {
   Box,
   NumberInput,
   NumberInputField,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import { useGetClientQuery, useLazyGetClientQuery } from "api/client";
 import DatePicker from "react-datepicker";
@@ -26,6 +27,7 @@ import {
   useLazyGetInventorySupplierQuery,
 } from "api/inventorySupplier";
 import { CreditType, TransactionStatus } from "types";
+import { useTranslation } from "react-i18next";
 type OptionType = {
   label: string;
   value: string;
@@ -51,6 +53,9 @@ const CreditForm = () => {
   const [getCreditById] = useLazyGetCreditByIdQuery();
   const [getClientQuery] = useLazyGetClientQuery();
   const [getInventorySupplierQuery] = useLazyGetInventorySupplierQuery();
+  const { t } = useTranslation();
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   useEffect(() => {
     (async () => {
@@ -116,7 +121,11 @@ const CreditForm = () => {
     <Flex direction="column">
       <Box gap="20px">
         <Box gap="20px">
-          <Flex alignItems={"center"} gap="20px">
+          <Flex
+            alignItems={"center"}
+            gap="20px"
+            flexDirection={isMobile ? "column" : "row"}
+          >
             <FormControl>
               <FormLabel>Name</FormLabel>
               <NumberInput
@@ -161,7 +170,7 @@ const CreditForm = () => {
           </Flex>
         </Box>
         <Box mt="20px">
-          <Flex gap="20px">
+          <Flex gap="20px" flexDirection={isMobile ? "column" : "row"}>
             <FormControl alignItems={"center"}>
               <FormLabel>Type</FormLabel>
               <Select
@@ -210,7 +219,7 @@ const CreditForm = () => {
       </Box>
       <Box mt={5}>
         <Button colorScheme="teal" onClick={() => saveCredit()}>
-          Save
+          {t("common.save")}
         </Button>
       </Box>
     </Flex>

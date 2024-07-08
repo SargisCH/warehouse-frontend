@@ -11,8 +11,11 @@ import {
   Tr,
   Link,
   useColorModeValue,
+  useBreakpointValue,
+  Button,
 } from "@chakra-ui/react";
 import {
+  ColumnDef,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
@@ -35,6 +38,7 @@ import { useHistory, Link as ReactLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { TransactionStatus } from "types";
+import { useTranslation } from "react-i18next";
 // Assets
 
 type RowObj = {
@@ -68,7 +72,10 @@ function TransactionHistoryList() {
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
-  const columns = [
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
+  const { t } = useTranslation();
+  const columns: ColumnDef<RowObj, any>[] = [
     columnHelper.accessor("client.name", {
       id: "client_name",
       header: () => (
@@ -262,6 +269,23 @@ function TransactionHistoryList() {
       ),
     }),
   ];
+  if (isMobile) {
+    columns.push(
+      columnHelper.display({
+        id: "edit_action",
+        header: () => null,
+        cell: (info) => (
+          <Button
+            onClick={() => {
+              history.push(links.transactionHistory(info.row.original.id));
+            }}
+          >
+            {t("common.edit")}
+          </Button>
+        ),
+      }),
+    );
+  }
   const table = useReactTable({
     data: transactionHistoryArray,
     columns: columns as any,
@@ -273,6 +297,54 @@ function TransactionHistoryList() {
     getSortedRowModel: getSortedRowModel(),
     debugTable: true,
   });
+  if (isMobile) {
+    return (
+      <Box>
+        <Flex justifyContent={"flex-end"} mt="20px" mb="20px">
+          <TableAddButton
+            link={links.createTransactionHistory}
+            label={t("common.transaction.addTransaction")}
+          />
+        </Flex>
+
+        {table.getRowModel().rows.map((row) => (
+          <Box
+            key={row.id}
+            borderWidth="1px"
+            borderRadius="lg"
+            overflow="hidden"
+            p="4"
+            mb="4"
+          >
+            {row.getVisibleCells().map((cell) => {
+              return (
+                <Box
+                  key={cell.id}
+                  display="flex"
+                  justifyContent="space-between"
+                  py="2"
+                >
+                  <Box
+                    as="span"
+                    fontSize={"16px"}
+                    css={{ p: { fontSize: "14px" } }}
+                  >
+                    {flexRender(
+                      cell.column.columnDef.header,
+                      cell.getContext() as any,
+                    )}
+                  </Box>
+                  <Box as="span">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        ))}
+      </Box>
+    );
+  }
   return (
     <Card
       flexDirection="column"

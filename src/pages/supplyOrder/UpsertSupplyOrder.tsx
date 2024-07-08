@@ -6,6 +6,7 @@ import {
   Box,
   NumberInput,
   NumberInputField,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -136,6 +137,8 @@ const UpsertSupplierOrder = () => {
     label: s.name,
     value: s.id,
   }));
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
   useEffect(() => {
     (async () => {
       if (params.inventorySupplierOrderId) {
@@ -229,7 +232,7 @@ const UpsertSupplierOrder = () => {
   return (
     <Box>
       <form onSubmit={handleSubmit}>
-        <Flex gap="20px">
+        <Flex gap="20px" flexDirection={isMobile ? "column" : "row"}>
           <FormControl>
             <FormLabel>Order date</FormLabel>
             <DatePicker
@@ -305,7 +308,11 @@ const UpsertSupplierOrder = () => {
             (inv) => inv.id === oi.inventoryId,
           );
           return (
-            <Flex gap={"20px"} key={oi.reactKey}>
+            <Flex
+              gap={"20px"}
+              key={oi.reactKey}
+              flexDirection={isMobile ? "column" : "row"}
+            >
               <FormControl>
                 <FormLabel>Select Inventory</FormLabel>
                 <Select
@@ -443,7 +450,7 @@ const UpsertSupplierOrder = () => {
             isLoading={isSubmitting}
             isDisabled={isSubmitting}
           >
-            Save
+            {t("common.save")}
           </Button>
           {params.inventorySupplierOrderId ? (
             <Button
@@ -451,7 +458,7 @@ const UpsertSupplierOrder = () => {
               colorScheme="red"
               onClick={() => setIsDeleteDialogOpened(true)}
             >
-              Delete
+              {t("common.delete")}
             </Button>
           ) : null}
         </Box>

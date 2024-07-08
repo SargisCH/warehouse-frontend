@@ -6,6 +6,7 @@ import {
   Input,
   Box,
   Spinner,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import {
   useDeleteClientMutation,
@@ -68,6 +69,8 @@ const UpsertClient = () => {
   const history = useHistory();
   const [getClientById] = useLazyGetClientByIdQuery();
   const { t } = useTranslation();
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
   useEffect(() => {
     (async () => {
       if (params.clientId) {
@@ -161,7 +164,7 @@ const UpsertClient = () => {
   return (
     <Box>
       <Flex direction="column" gap="20px">
-        <Flex gap="20px">
+        <Flex gap="20px" flexDirection={isMobile ? "column" : "row"}>
           <FormControl>
             <FormLabel>{t("common.client.name")}</FormLabel>
             <Input
@@ -181,7 +184,7 @@ const UpsertClient = () => {
             />
           </FormControl>
         </Flex>
-        <Flex gap="20px">
+        <Flex gap="20px" flexDirection={isMobile ? "column" : "row"}>
           <FormControl>
             <FormLabel>{t("common.client.email")}</FormLabel>
             <Input
@@ -192,7 +195,7 @@ const UpsertClient = () => {
             />
           </FormControl>
         </Flex>
-        <Flex gap="20px">
+        <Flex gap="20px" flexDirection={isMobile ? "column" : "row"}>
           <FormControl>
             <FormLabel>{t("common.client.accountNumber")}</FormLabel>
             <Input
@@ -221,7 +224,7 @@ const UpsertClient = () => {
             />
           </FormControl>
         </Flex>
-        <Flex gap="20px">
+        <Flex gap="20px" flexDirection={isMobile ? "column" : "row"}>
           <FormControl>
             <FormLabel>{t("common.client.address")}</FormLabel>
             <Input
@@ -277,7 +280,7 @@ const UpsertClient = () => {
       </Flex>
       <Box mt={5}>
         <Button colorScheme="teal" onClick={() => saveClient()}>
-          Save
+          {t("common.save")}
         </Button>
         {params.clientId ? (
           <Button
@@ -285,7 +288,7 @@ const UpsertClient = () => {
             colorScheme="red"
             onClick={() => setIsDeleteDialogOpened(true)}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         ) : null}
       </Box>

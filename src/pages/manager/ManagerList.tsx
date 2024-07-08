@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import {
   Box,
+  Button,
   Flex,
   Table,
   Tbody,
@@ -9,9 +10,11 @@ import {
   Th,
   Thead,
   Tr,
+  useBreakpointValue,
   useColorModeValue,
 } from "@chakra-ui/react";
 import {
+  ColumnDef,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
@@ -28,6 +31,7 @@ import { useHistory } from "react-router-dom";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 // Assets
 
 type RowObj = ManagerType;
@@ -44,7 +48,9 @@ function ManagerList() {
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
-  const columns = [
+  const { t } = useTranslation();
+  const isMobile = useBreakpointValue({ base: true, md: false });
+  const columns: ColumnDef<RowObj, any>[] = [
     columnHelper.accessor("name", {
       id: "name",
       header: () => (
@@ -148,6 +154,22 @@ function ManagerList() {
       ),
     }),
   ];
+  if (isMobile) {
+    columns.push(
+      columnHelper.display({
+        id: "edit_action",
+        header: () => null,
+        cell: (info) => (
+          <Button
+            colorScheme={"teal"}
+            onClick={() => history.push(links.manager(info.row.original.id))}
+          >
+            {t("common.edit")}
+          </Button>
+        ),
+      }),
+    );
+  }
   const table = useReactTable({
     data: managerArray,
     columns: columns as any,
@@ -159,6 +181,54 @@ function ManagerList() {
     getSortedRowModel: getSortedRowModel(),
     debugTable: true,
   });
+  if (isMobile) {
+    return (
+      <Box>
+        <Flex justifyContent={"flex-end"} mt="20px" mb="20px">
+          <TableAddButton
+            link={links.createManager}
+            label={t("common.manager.addManager")}
+          />
+        </Flex>
+
+        {table.getRowModel().rows.map((row) => (
+          <Box
+            key={row.id}
+            borderWidth="1px"
+            borderRadius="lg"
+            overflow="hidden"
+            p="4"
+            mb="4"
+          >
+            {row.getVisibleCells().map((cell) => {
+              return (
+                <Box
+                  key={cell.id}
+                  display="flex"
+                  justifyContent="space-between"
+                  py="2"
+                >
+                  <Box
+                    as="span"
+                    fontSize={"16px"}
+                    css={{ p: { fontSize: "14px" } }}
+                  >
+                    {flexRender(
+                      cell.column.columnDef.header,
+                      cell.getContext() as any,
+                    )}
+                  </Box>
+                  <Box as="span">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        ))}
+      </Box>
+    );
+  }
   return (
     <Card
       flexDirection="column"

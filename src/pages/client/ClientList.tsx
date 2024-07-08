@@ -11,6 +11,7 @@ import {
   Th,
   Thead,
   Tr,
+  useBreakpointValue,
   useColorModeValue,
 } from "@chakra-ui/react";
 import {
@@ -35,6 +36,7 @@ import { Role, Weekday } from "types";
 import { useSelector } from "react-redux";
 import { RootState } from "store/store";
 import { ManagerType, useLazyGetManagerQuery } from "api/manager";
+import { useTranslation } from "react-i18next";
 // Assets
 
 type RowObj = ClientType;
@@ -74,6 +76,7 @@ function ClientList() {
     sortKey: "",
     sortOrder: "",
   };
+  const { t } = useTranslation();
   if (sorting.length) {
     queryObject.sortKey = sorting[0].id;
     queryObject.sortOrder = sorting[0].desc ? "desc" : "asc";
@@ -98,6 +101,8 @@ function ClientList() {
       setSearchFilter(e.target.value);
     }, 500);
   };
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
   const columns = [
     columnHelper.accessor("name", {
       id: "name",
@@ -247,6 +252,25 @@ function ClientList() {
       ),
     }),
   ];
+  if (isMobile) {
+    columns.push(
+      columnHelper.display({
+        id: "edit_action",
+        header: () => null,
+        cell: (info) => (
+          <Button
+            position={"static"}
+            colorScheme={"teal"}
+            onClick={() => {
+              history.push(links.client(info.row.original.id));
+            }}
+          >
+            {t("common.edit")}
+          </Button>
+        ),
+      }),
+    );
+  }
   const table = useReactTable({
     data: clientArray,
     columns: columns as any,
@@ -259,6 +283,94 @@ function ClientList() {
       sorting,
     },
   });
+  if (isMobile) {
+    return (
+      <Box>
+        <Flex px="25px" mb="8px" flexDirection={"column"}>
+          <Flex justifyContent={"space-between"}>
+            <Text
+              color={textColor}
+              fontSize="22px"
+              fontWeight="700"
+              lineHeight="100%"
+            >
+              Client List
+            </Text>
+            <TableAddButton label="Add Client" link={links.createClient} />
+          </Flex>
+          <Flex marginTop={"20px"} justifyContent="flex-start">
+            {user.role === Role.ADMIN ? (
+              <Box marginRight={10} width={"200px"}>
+                <ReactSelect
+                  placeholder="Manager"
+                  options={managersData.map((m) => {
+                    return {
+                      label: m.name,
+                      value: m.id,
+                    };
+                  })}
+                  value={selectedManager}
+                  onChange={setSelectedManager}
+                  isClearable
+                />
+              </Box>
+            ) : null}
+            <Box marginRight={10} width={"200px"}>
+              <ReactSelect
+                placeholder="Day plan"
+                options={weekDayOptions}
+                value={selectedDay}
+                onChange={setSelectedDay}
+                isClearable
+              />
+            </Box>
+          </Flex>
+          <Flex mt={3} marginRight={10} width={"200px"}>
+            <Input
+              placeholder="Search term"
+              value={searchTerm}
+              onChange={handleSearchTermChange}
+            />
+          </Flex>
+        </Flex>
+        {table.getRowModel().rows.map((row) => (
+          <Box
+            key={row.id}
+            borderWidth="1px"
+            borderRadius="lg"
+            overflow="hidden"
+            p="4"
+            mb="4"
+          >
+            {row.getVisibleCells().map((cell) => {
+              return (
+                <Box
+                  key={cell.id}
+                  display="flex"
+                  justifyContent="space-between"
+                  py="2"
+                >
+                  <Box
+                    as="span"
+                    fontSize={"16px"}
+                    css={{ p: { fontSize: "14px" } }}
+                  >
+                    {flexRender(
+                      cell.column.columnDef.header,
+                      cell.getContext() as any,
+                    )}
+                  </Box>
+                  <Box as="span">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        ))}
+      </Box>
+    );
+  }
   return (
     <Card
       flexDirection="column"

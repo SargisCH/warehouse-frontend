@@ -6,6 +6,7 @@ import {
   Input,
   Box,
   Spinner,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import {
   useCreateManagerMutation,
@@ -15,6 +16,7 @@ import {
   Schedule,
 } from "api/manager";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
 import { links } from "routes";
 
@@ -30,6 +32,8 @@ const UpsertManager = () => {
   const [updateManager] = useUpdateManagerMutation();
   const [getManagerById] = useLazyGetManagerByIdQuery();
   const history = useHistory();
+  const isMobile = useBreakpointValue({ base: true, md: false });
+  const { t } = useTranslation();
   useEffect(() => {
     (async () => {
       if (params.managerId) {
@@ -82,7 +86,7 @@ const UpsertManager = () => {
   return (
     <Flex direction="column">
       <Flex direction={"column"} gap="20px">
-        <Flex gap="20px">
+        <Flex gap="20px" flexDirection={isMobile ? "column" : "row"}>
           <FormControl>
             <FormLabel>Name</FormLabel>
             <Input
@@ -136,7 +140,7 @@ const UpsertManager = () => {
       </Flex>
       <Box mt={5}>
         <Button colorScheme="teal" onClick={() => saveClient()}>
-          Save
+          {t("common.save")}
         </Button>
       </Box>
     </Flex>
