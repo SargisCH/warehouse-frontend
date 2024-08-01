@@ -17,6 +17,7 @@ export default function AlertDialog({
   bodyText,
   headerText,
   handleConfirm,
+  oneButton,
 }: {
   confirmText?: string;
   cancelText?: string;
@@ -25,6 +26,7 @@ export default function AlertDialog({
   bodyText: string;
   headerText: string;
   handleConfirm: () => void;
+  oneButton?: boolean;
 }) {
   const cancelRef = useRef();
 
@@ -44,13 +46,15 @@ export default function AlertDialog({
           <AlertDialogBody>{bodyText}</AlertDialogBody>
 
           <AlertDialogFooter>
-            <Button ref={cancelRef} onClick={onClose}>
-              {cancelText}
-            </Button>
+            {!oneButton ? (
+              <Button ref={cancelRef} onClick={onClose}>
+                {cancelText}
+              </Button>
+            ) : null}
+
             <Button colorScheme="red" onClick={handleConfirm} ml={3}>
               {confirmText}
             </Button>
-          
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialogChakra>

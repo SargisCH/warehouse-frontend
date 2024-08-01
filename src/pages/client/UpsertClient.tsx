@@ -56,12 +56,21 @@ const UpsertClient = () => {
   const [address, setAddress] = useState("");
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [clientCreateError, setClientCreateErro] = useState("");
   const [manager, setManager] = useState<OptionType>();
   const [selectedWeekdays, setSelectedWeekdays] =
     useState<WeekdayOptionArray>();
   const params = useParams() as any;
 
-  const [createClient] = useCreateClientMutation();
+  const [
+    createClient,
+    {
+      data: createData,
+      isSuccess: isSuccessClient,
+      isError: isErrorClient,
+      error: createError,
+    },
+  ] = useCreateClientMutation();
   const [updateClient] = useUpdateClientMutation();
   const [deleteClient] = useDeleteClientMutation();
   const [getClientSchedule] = useLazyGetClientScheduleQuery();
@@ -71,6 +80,14 @@ const UpsertClient = () => {
   const { t } = useTranslation();
 
   const isMobile = useBreakpointValue({ base: true, md: false });
+  useEffect(() => {
+    if (isErrorClient) {
+      setClientCreateErro((createError as any)?.data?.message as string);
+    }
+    if (isSuccessClient) {
+      history.push(links.clients);
+    }
+  }, [isErrorClient, createData, isSuccessClient, history, createError]);
   useEffect(() => {
     (async () => {
       if (params.clientId) {
@@ -148,7 +165,6 @@ const UpsertClient = () => {
     } else {
       await createClient(data);
     }
-    history.push(links.clients);
   };
   if (isLoading) {
     return (
@@ -302,6 +318,19 @@ const UpsertClient = () => {
           onClose={() => setIsDeleteDialogOpened(false)}
           bodyText={`Are you sure? You can't undo this action afterwards.`}
           headerText={`Delete Inventory Supplier`}
+        />
+      ) : null}
+      {clientCreateError ? (
+        <AlertDialog
+          handleConfirm={async () => {
+            setClientCreateErro("");
+          }}
+          oneButton={true}
+          isOpen={Boolean(clientCreateError)}
+          onClose={() => setClientCreateErro("")}
+          bodyText={clientCreateError}
+          headerText={"Warning"}
+          confirmText="OK"
         />
       ) : null}
     </Box>
