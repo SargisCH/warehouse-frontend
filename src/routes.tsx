@@ -52,6 +52,9 @@ import {
   faWarehouse,
 } from "@fortawesome/free-solid-svg-icons";
 import ReturnSaleList from "pages/sale/ReturnSaleList";
+import ForgotPassword from "views/auth/forgotPassword";
+import { resetPassword } from "aws-amplify/auth";
+import ConfirmResetPassword from "views/auth/ConfirmResetPassword";
 const routes: RouteTypeExtended[] = [
   {
     name: "Main Dashboard",
@@ -131,6 +134,22 @@ const routes: RouteTypeExtended[] = [
     path: "/change-password/:email",
     icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
     component: ChangePassword,
+    role: [],
+  },
+  {
+    name: "Forgot password",
+    layout: "/auth",
+    path: "/forgot-password/",
+    icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
+    component: ForgotPassword,
+    role: [],
+  },
+  {
+    name: "Confirm reset Password",
+    layout: "/auth",
+    path: "/reset-password/:username",
+    icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
+    component: ConfirmResetPassword,
     role: [],
   },
   // {
