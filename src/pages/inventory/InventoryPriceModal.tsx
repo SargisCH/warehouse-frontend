@@ -28,7 +28,8 @@ export default function InventoryAmountModal({
   inventoryId,
 }: Props) {
   const { t } = useTranslation();
-  const [updateAmount, { isSuccess, isLoading }] = useUpdateAmountMutation();
+  const [updateAmount, { isSuccess, isLoading, reset }] =
+    useUpdateAmountMutation();
   const isMobile = useBreakpointValue({ base: true, md: false });
   const { values, setFieldValue, handleSubmit } = useFormik({
     initialValues: {
@@ -46,8 +47,9 @@ export default function InventoryAmountModal({
   useEffect(() => {
     if (isSuccess && isOpen) {
       onClose();
+      reset();
     }
-  }, [isSuccess, onClose, isOpen]);
+  }, [isSuccess, onClose, isOpen, reset]);
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={isMobile ? "full" : "md"}>
       <ModalOverlay />
