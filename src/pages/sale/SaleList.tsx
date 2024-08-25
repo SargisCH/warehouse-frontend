@@ -42,6 +42,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { setQuery } from "helpers/queryParams";
 import { useTranslation } from "react-i18next";
 import CancelDialog from "./CancelDialog";
+import { useGetManagerQuery } from "api/manager";
+import { useGetStockProductQuery } from "api/product";
 type Option = { label: string; value: number };
 
 type RowObj = {
@@ -76,11 +78,21 @@ function SaleList() {
   });
   const { t } = useTranslation();
   const { data: clientData = [] } = useGetClientQuery();
+  const { data: managers = [] } = useGetManagerQuery();
+  const { data: stockProductsData } = useGetStockProductQuery();
+  const { stockProducts = [] } = stockProductsData || { stockProducts: [] };
   const [selectedClients, setSelectedClients] = React.useState<Array<Option>>(
+    [],
+  );
+  const [selectedManagers, setSelectedManagers] = React.useState<Array<Option>>(
+    [],
+  );
+  const [selectedProducts, setSelectedProducts] = React.useState<Array<Option>>(
     [],
   );
   const [currentPage, setCurrentPage] = React.useState(1);
   const [selectedDate, setSelectedDate] = React.useState(new Date());
+  const [selectedEndDate, setSelectedEndDate] = React.useState(null);
   const [cancelId, setCancelId] = React.useState(null);
   const isMobile = useBreakpointValue({ base: true, md: false });
   const handlePageChange = (page: number) => {
@@ -89,12 +101,18 @@ function SaleList() {
     }, 5000);
     setCurrentPage(page);
   };
-  const handleDateChange = (date: Date) => {
+  const handleDateChange = (dates: [Date, Date]) => {
+    const [start, end] = dates;
     setQuery(location, history, {
-      name: "created_at",
-      value: date ? dayjs(date).format("YYYY-MM-DD") : "",
+      name: "startDate",
+      value: start ? dayjs(start).format("YYYY-MM-DD") : "",
     });
-    setSelectedDate(date);
+    setQuery(location, history, {
+      name: "endDate",
+      value: end ? dayjs(end).format("YYYY-MM-DD") : "",
+    });
+    setSelectedEndDate(end);
+    setSelectedDate(start);
   };
   const total = React.useMemo(() => {
     return data.saleList.reduce((saleAcc, sale) => {
@@ -141,11 +159,11 @@ function SaleList() {
     refetch();
   }, [refetch]);
   useEffect(() => {
-    if (location.search.includes("created_at")) {
+    if (location.search.includes("startDate")) {
       return;
     }
     setQuery(location, history, {
-      name: "created_at",
+      name: "startDate",
       value: dayjs().format("YYYY-MM-DD"),
     });
   }, []);
@@ -524,7 +542,7 @@ function SaleList() {
           >
             Sale List
           </Text>
-          <Flex justifyContent={"space-between"} mt={3}>
+          <Flex justifyContent={"center"} mt={3} gap={3} flexDirection="column">
             <Select
               options={clientData.map((client) => {
                 return { label: client.name, value: client.id };
@@ -541,15 +559,52 @@ function SaleList() {
               }}
               placeholder="Select a client"
             />
+            <Select
+              options={managers.map((manager) => {
+                return { label: manager.name, value: manager.id };
+              })}
+              isMulti
+              value={selectedManagers}
+              onChange={(newValue) => {
+                setQuery(location, history, {
+                  name: "manager",
+                  value: newValue.map((op: Option) => op.value),
+                });
+                handlePageChange(1);
+                setSelectedManagers(newValue as Option[]);
+              }}
+              placeholder="Select a manager"
+            />
+            <Select
+              options={stockProducts.map((stockProduct) => {
+                return {
+                  label: stockProduct.product.name,
+                  value: stockProduct.id,
+                };
+              })}
+              isMulti
+              value={selectedProducts}
+              onChange={(newValue) => {
+                setQuery(location, history, {
+                  name: "stockProduct",
+                  value: newValue.map((op: Option) => op.value),
+                });
+                handlePageChange(1);
+                setSelectedProducts(newValue as Option[]);
+              }}
+              placeholder="Select a product"
+            />
             <Flex
               borderColor={"blue.500"}
               borderStyle="solid"
               borderWidth={"1px"}
             >
               <DatePicker
-                selected={selectedDate}
-                onChange={(date: Date) => handleDateChange(date)}
-                isClearable
+                selectsRange={true}
+                startDate={selectedDate}
+                endDate={selectedEndDate}
+                onChange={handleDateChange}
+                isClearable={true}
               />
             </Flex>
           </Flex>
@@ -626,11 +681,48 @@ function SaleList() {
           }}
           placeholder="Select a client"
         />
+        <Select
+          options={managers.map((manager) => {
+            return { label: manager.name, value: manager.id };
+          })}
+          isMulti
+          value={selectedManagers}
+          onChange={(newValue) => {
+            setQuery(location, history, {
+              name: "manager",
+              value: newValue.map((op: Option) => op.value),
+            });
+            handlePageChange(1);
+            setSelectedManagers(newValue as Option[]);
+          }}
+          placeholder="Select a manager"
+        />
+        <Select
+          options={stockProducts.map((stockProduct) => {
+            return {
+              label: stockProduct.product.name,
+              value: stockProduct.id,
+            };
+          })}
+          isMulti
+          value={selectedProducts}
+          onChange={(newValue) => {
+            setQuery(location, history, {
+              name: "stockProduct",
+              value: newValue.map((op: Option) => op.value),
+            });
+            handlePageChange(1);
+            setSelectedProducts(newValue as Option[]);
+          }}
+          placeholder="Select a product"
+        />
         <Flex borderColor={"blue.500"} borderStyle="solid" borderWidth={"1px"}>
           <DatePicker
-            selected={selectedDate}
-            onChange={(date: Date) => handleDateChange(date)}
-            isClearable
+            selectsRange={true}
+            startDate={selectedDate}
+            endDate={selectedEndDate}
+            onChange={handleDateChange}
+            isClearable={true}
           />
         </Flex>
       </Flex>
