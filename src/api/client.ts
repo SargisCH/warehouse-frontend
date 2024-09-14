@@ -26,22 +26,23 @@ export type ClientType = {
   updated_at?: string;
   created_at?: string;
 };
+interface SaleItem {
+  id?: number;
+  stockProductId: number;
+  stockProduct?: StockProductItem;
+  price: number;
+  priceUnit: string;
+  amount: number;
+  amountUnit: string;
+  originalPrice?: number;
+}
 export interface SaleType {
   id?: number;
   clientId: number;
   client?: ClientType;
   partialCreditAmount?: number;
   canceled?: boolean;
-  saleItems: Array<{
-    id?: number;
-    stockProductId: number;
-    stockProduct?: StockProductItem;
-    price: number;
-    priceUnit: string;
-    amount: number;
-    amountUnit: string;
-    originalPrice?: number;
-  }>;
+  saleItems: Array<SaleItem>;
   paymentType: PaymentType;
   updated_at?: string;
   created_at?: string;
@@ -164,6 +165,15 @@ const clientApi = api.injectEndpoints({
         method: "GET",
       }),
     }),
+    getLatestSaleForProduct: builder.query<
+      { saleItem: SaleItem | undefined },
+      { stockProductId: number }
+    >({
+      query: (arg: { stockProductId: number }) => ({
+        url: `sale/latest/${arg.stockProductId}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -182,4 +192,5 @@ export const {
   useGetReturnSaleQuery,
   useReturnSaleMutation,
   useCancelSaleMutation,
+  useLazyGetLatestSaleForProductQuery,
 } = clientApi;
