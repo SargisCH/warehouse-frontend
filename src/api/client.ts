@@ -48,8 +48,18 @@ export interface SaleType {
   created_at?: string;
 }
 
-interface SaleReturnType extends SaleType {
+export interface SaleReturnType {
   id: number;
+  saleId: number;
+  returnItems: Array<{
+    id: number;
+    amount: number;
+    stockProduct: StockProductItem;
+    stockProductId: number;
+    confirmed?: Boolean;
+    disposed?: Boolean;
+    sale: SaleType;
+  }>;
 }
 
 const clientApi = api.injectEndpoints({
@@ -131,6 +141,34 @@ const clientApi = api.injectEndpoints({
         body: args.returnData,
       }),
     }),
+    confirmReturn: builder.mutation({
+      query: (args: { saleId: number }) => ({
+        url: `sale/${args.saleId}/return/confirm`,
+        method: "POST",
+        body: {},
+      }),
+    }),
+    confirmReturnById: builder.mutation({
+      query: (args: { saleId: number; returnId: number }) => ({
+        url: `sale/return/confirm/${args.returnId}`,
+        method: "POST",
+        body: {},
+      }),
+    }),
+    disposeReturnById: builder.mutation({
+      query: (args: { saleId: number; returnId: number }) => ({
+        url: `sale/${args.saleId}/return/dispose/${args.returnId}`,
+        method: "POST",
+        body: {},
+      }),
+    }),
+    disposeReturn: builder.mutation({
+      query: (args: { saleId: number }) => ({
+        url: `sale/${args.saleId}/return/dispose`,
+        method: "POST",
+        body: {},
+      }),
+    }),
     cancelSale: builder.mutation({
       query: (args: { saleId: number }) => ({
         url: `sale/${args.saleId}/cancel`,
@@ -174,6 +212,12 @@ const clientApi = api.injectEndpoints({
         method: "GET",
       }),
     }),
+    getReturnedSaleBySaleId: builder.query<SaleReturnType, { saleId: number }>({
+      query: (arg: { saleId: number }) => ({
+        url: `sale/return/${arg.saleId}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -193,4 +237,9 @@ export const {
   useReturnSaleMutation,
   useCancelSaleMutation,
   useLazyGetLatestSaleForProductQuery,
+  useGetReturnedSaleBySaleIdQuery,
+  useConfirmReturnMutation,
+  useConfirmReturnByIdMutation,
+  useDisposeReturnMutation,
+  useDisposeReturnByIdMutation,
 } = clientApi;

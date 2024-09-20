@@ -6,6 +6,7 @@ import {
   Tbody,
   Td,
   Text,
+  textDecoration,
   Th,
   Thead,
   Tr,
@@ -44,14 +45,9 @@ type Option = { label: string; value: number };
 
 type RowObj = {
   id: number;
-  stockProduct: { product: { name: string; id: number }; id: number };
-  sale: { client: { name: string; id: number } };
-  amount: number;
-  price: number;
+  clientName: string;
   saleId: number;
   productName: string;
-  clientName: string;
-  created_at: Date;
 };
 
 const columnHelper = createColumnHelper<RowObj>();
@@ -66,14 +62,21 @@ type ReturnSaleType = {
   };
   created_at: Date;
 };
+type ReturnType = {
+  id: number;
+  saleId: number;
+  sale: {
+    client: { name: string; id: number };
+    saleItems: Array<{ stockProductId: number; price: number }>;
+  };
+  returnItems: Array<ReturnSaleType>;
+};
 // const columns = columnsDataCheck;
 function ReturnSaleList() {
   const location = useLocation();
   const history = useHistory();
-  const { data = { returnSaleList: [] }, refetch } = useGetReturnSaleQuery<{
-    data: {
-      returnSaleList: ReturnSaleType[];
-    };
+  const { data: returnSaleList = [], refetch } = useGetReturnSaleQuery<{
+    data: ReturnType[];
   }>({
     query: location.search,
   });
@@ -91,21 +94,15 @@ function ReturnSaleList() {
     });
     setSelectedDate(date);
   };
-  const returnSaleArray: RowObj[] = data.returnSaleList.map(
-    ({ id, amount, sale, created_at, stockProduct, ...rest }) => {
-      const price = sale?.saleItems?.find(
-        (si) => si.stockProductId === stockProduct.id,
-      )?.price;
+  const returnSaleArray: RowObj[] = returnSaleList.map(
+    ({ id, saleId, sale, returnItems }) => {
       return {
-        ...rest,
-        sale,
+        saleId,
         id,
-        amount,
-        stockProduct,
-        productName: stockProduct?.product?.name,
+        productName: returnItems
+          .map((ri: ReturnSaleType) => ri.stockProduct?.product?.name)
+          .join(", "),
         clientName: sale?.client?.name,
-        created_at,
-        price: amount * price,
       };
     },
   );
@@ -125,8 +122,8 @@ function ReturnSaleList() {
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const columns: ColumnDef<RowObj, any>[] = [
-    columnHelper.accessor("clientName", {
-      id: "clientName",
+    columnHelper.accessor("saleId", {
+      id: "saleId",
       header: () => (
         <Text
           justifyContent="space-between"
@@ -134,21 +131,30 @@ function ReturnSaleList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          Client Name
+          Sale Id
         </Text>
       ),
       cell: (info: any) => {
+        const saleId = info.getValue();
         return (
           <Flex align="center">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              {info.getValue()}
+            <Text
+              color={textColor}
+              fontSize="sm"
+              fontWeight="700"
+              _hover={{
+                textDecoration: "underline",
+              }}
+              onClick={() => history.push(links.saleInfo(saleId))}
+            >
+              {saleId}
             </Text>
           </Flex>
         );
       },
     }),
     columnHelper.accessor("productName", {
-      id: "products",
+      id: "productName",
       header: () => (
         <Text
           justifyContent="space-between"
@@ -163,55 +169,6 @@ function ReturnSaleList() {
         return (
           <Flex align="center">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              {info.getValue()}
-            </Text>
-          </Flex>
-        );
-      },
-    }),
-    columnHelper.accessor("created_at", {
-      id: "created_at",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Created At
-        </Text>
-      ),
-      cell: (info: any) => {
-        return (
-          <Flex align="center">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              {dayjs(info.getValue()).format("DD/MM/YYYY")}
-            </Text>
-          </Flex>
-        );
-      },
-    }),
-    columnHelper.accessor("amount", {
-      id: "amount",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Amount
-        </Text>
-      ),
-      cell: (info: any) => {
-        return (
-          <Flex align="center">
-            <Text
-              title="Original price has been changed"
-              color={"red.500"}
-              fontSize="sm"
-              fontWeight="700"
-            >
               {info.getValue()}
             </Text>
           </Flex>
@@ -413,7 +370,13 @@ function ReturnSaleList() {
           <Tbody>
             {table.getRowModel().rows.map((row) => {
               return (
-                <Tr key={row.id} cursor="pointer">
+                <Tr
+                  key={row.id}
+                  cursor="pointer"
+                  onClick={() => {
+                    history.push(links.returnSaleDetails(row.original.saleId));
+                  }}
+                >
                   {row.getVisibleCells().map((cell) => {
                     return (
                       <Td
