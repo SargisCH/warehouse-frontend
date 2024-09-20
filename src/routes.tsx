@@ -377,5 +377,6 @@ export const links = {
   settings: "/admin/settings",
   returnSale: (saleId: number) => `/admin/sale/return/${saleId}`,
   returnSaleList: "/admin/sale/return/",
+  returnSaleDetails: (saleId: number) => `/admin/sale/return/${saleId}/details`,
 };
 export default routes;

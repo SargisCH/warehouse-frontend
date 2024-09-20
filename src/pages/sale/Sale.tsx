@@ -6,6 +6,7 @@ import UpsertSale from "./UpsertSale";
 import SaleInfo from "./SaleInfo";
 import ReturnSale from "./ReturnSale";
 import ReturnSaleList from "./ReturnSaleList";
+import ReturnSaleDetails from "./ReturnSaleDetails";
 
 export default function Sale() {
   const match = useRouteMatch();
@@ -24,6 +25,9 @@ export default function Sale() {
         </Route>
         <Route exact path={`${match.path}/return/:saleId`}>
           <ReturnSale />
+        </Route>
+        <Route exact path={`${match.path}/return/:saleId/details`}>
+          <ReturnSaleDetails />
         </Route>
         <Route path={`${match.path}/info/:saleId`}>
           <SaleInfo />
