@@ -23,7 +23,7 @@ import FullPageLoader from "components/fullPageLoader/FullPageLoader";
 i18next.init(
   {
     interpolation: { escapeValue: false }, // React already does escaping
-    lng: "am",
+    fallbackLng: "am",
     resources: {
       en: {
         translation: {

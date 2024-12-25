@@ -6,13 +6,14 @@ import type {
   FetchArgs,
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query";
+import i18next from "i18next";
 const baseQueryAuthorized: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   const authRes = await fetchAuthSession();
-  const headers: { Authorization?: string } = {};
+  const headers: { Authorization?: string; "Accept-Language"?: string } = {};
   const fetchArgs = args as FetchArgs;
   if (
     !fetchArgs.url.includes("register") &&
@@ -21,7 +22,7 @@ const baseQueryAuthorized: BaseQueryFn<
   ) {
     headers.Authorization = "Bearer " + authRes.tokens.accessToken.toString();
   }
-  console.log("base url", API_BASE_URL);
+  headers["Accept-Language"] = i18next.language || "en";
   const res = await fetchBaseQuery({
     baseUrl: API_BASE_URL,
     headers,

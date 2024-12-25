@@ -52,6 +52,7 @@
   "confirm": "Հաստատել",
   "close": "Փակել",
   "add": "Ավելացնել",
+  "required": "Պարտադիր դաշտ",
   "client": {
     "name": "Անուն",
     "legalName": "Իրավաբանական անուն",
@@ -65,6 +66,8 @@
     "dayPlan": "Օրվա պլան"
   },
   "inventory": {
+    "required": "Պարտադիր դաշտ",
+    "minValueAmount": "Մինիմում քանակը պետք է մեծ լինի 0 ից",
     "entries": "Մուտքեր",
     "inventory": "Հումք",
     "supplier": "Մատակարար",
@@ -94,5 +97,8 @@
   },
   "manager": {
     "addManager": "Ավելացնել մենեջեր"
+  },
+  "inventoryEntry": {
+    "orderDate": "Պատվերի ամսաթիվ"
   }
 }

@@ -13,14 +13,21 @@ import {
   NumberInput,
   NumberInputField,
   Spinner,
+  Text,
   useBreakpointValue,
 } from "@chakra-ui/react";
+
+import * as Yup from "yup";
 import { useUpdateAmountMutation } from "api/inventory";
 import { useFormik } from "formik";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 type Props = { isOpen: boolean; onClose: () => void; inventoryId: number };
+const ValidationSchema = Yup.object().shape({
+  amount: Yup.number().min(1, "minValueAmount").required("required"),
+  avg: Yup.number().required("required"),
+});
 
 export default function InventoryAmountModal({
   isOpen,
@@ -31,11 +38,13 @@ export default function InventoryAmountModal({
   const [updateAmount, { isSuccess, isLoading, reset }] =
     useUpdateAmountMutation();
   const isMobile = useBreakpointValue({ base: true, md: false });
-  const { values, setFieldValue, handleSubmit } = useFormik({
+  const { values, setFieldValue, handleSubmit, errors } = useFormik({
     initialValues: {
       amount: 0,
       avg: 0,
     },
+    validationSchema: ValidationSchema,
+
     onSubmit: (values) => {
       updateAmount({
         amount: Number(values.amount),
@@ -53,6 +62,7 @@ export default function InventoryAmountModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={isMobile ? "full" : "md"}>
       <ModalOverlay />
+
       <ModalContent>
         <ModalHeader>{t("common.declareAmount")}</ModalHeader>
         {isLoading ? (
@@ -75,6 +85,11 @@ export default function InventoryAmountModal({
                   >
                     <NumberInputField placeholder="Price" />
                   </NumberInput>
+                  {errors.amount ? (
+                    <Text color="red.500" mt="10px">
+                      {t(`common.inventory.${errors.amount}`)}
+                    </Text>
+                  ) : null}
                 </FormControl>
                 <FormControl mt={"20px"}>
                   <FormLabel>{t("common.average")}</FormLabel>
@@ -87,6 +102,7 @@ export default function InventoryAmountModal({
                   >
                     <NumberInputField placeholder="Price" />
                   </NumberInput>
+                  {errors.avg ? <Text>{t(`common.${errors.avg}`)}</Text> : null}
                 </FormControl>
                 <Button mt={"20px"} colorScheme={"teal"} type="submit">
                   {t("common.save")}

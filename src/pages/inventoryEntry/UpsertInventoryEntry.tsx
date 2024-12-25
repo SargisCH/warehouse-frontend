@@ -14,6 +14,7 @@ import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   InventoryEntry,
+  InventoryEntryItem,
   useCreateInventoryEntryMutation,
   useGetInventoryQuery,
   useLazyGetInventoryEntryByIdQuery,
@@ -23,6 +24,7 @@ import { useGetInventorySupplierQuery } from "api/inventorySupplier";
 import { useFormik } from "formik";
 import withAdminRoute from "hocs/withAdminRoute";
 import { useEffect, useState } from "react";
+import * as Yup from "yup";
 import ReactDatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
@@ -30,6 +32,17 @@ import Select, { components, MenuProps } from "react-select";
 import { links } from "routes";
 import InventoryCreateModal from "./InventoryCreateModal";
 
+const ValidationSchema = Yup.object().shape({
+  inventorySupplierId: Yup.string().optional(),
+  inventoryEntryItems: Yup.array().of(
+    Yup.object().shape({
+      inventoryId: Yup.string().required("required"),
+      price: Yup.number().min(1, "minValueAmount").required("required"),
+      amountUnit: Yup.string().required("required"),
+      amount: Yup.number().min(1, "minValueAmount").required("required"),
+    }),
+  ),
+});
 interface CustomOptionType {
   label: string;
   value: string | number;
@@ -112,24 +125,26 @@ const UpsertInventory = (props: { create: boolean }) => {
     })();
   }, [params.inventoryEntryId, getInventoryEntryById]);
 
-  const { values, handleSubmit, setFieldValue } = useFormik<InventoryEntry>({
-    initialValues,
-    onSubmit: async (values) => {
-      const inventorySupplierId =
-        values.inventorySupplierId === "noSupplier"
-          ? undefined
-          : values.inventorySupplierId;
-      if (params.inventoryEntryId) {
-        await updateInventoryEntry({
-          ...values,
-          inventorySupplierId,
-        });
-      } else {
-        await createInventoryEntry({ ...values, inventorySupplierId });
-      }
-      history.push(links.inventoryEntry);
-    },
-  });
+  const { values, handleSubmit, setFieldValue, getFieldMeta } =
+    useFormik<InventoryEntry>({
+      initialValues,
+      validationSchema: ValidationSchema,
+      onSubmit: async (values) => {
+        const inventorySupplierId =
+          values.inventorySupplierId === "noSupplier"
+            ? undefined
+            : values.inventorySupplierId;
+        if (params.inventoryEntryId) {
+          await updateInventoryEntry({
+            ...values,
+            inventorySupplierId,
+          });
+        } else {
+          await createInventoryEntry({ ...values, inventorySupplierId });
+        }
+        history.push(links.inventoryEntry);
+      },
+    });
   const selectedSupplier = supplierOptions.find(
     (sup) => sup.value === values.inventorySupplierId,
   );
@@ -152,6 +167,26 @@ const UpsertInventory = (props: { create: boolean }) => {
       label: inv.name,
       value: inv.id,
     })) || [];
+  const getErrors = (index: number) => {
+    return {
+      inventory: getFieldMeta(`inventoryEntryItems[${index}].inventoryId`)
+        .error,
+      price: getFieldMeta(`inventoryEntryItems[${index}].price`).error,
+      amount: getFieldMeta(`inventoryEntryItems[${index}].amount`).error,
+      amountUnit: getFieldMeta(`inventoryEntryItems[${index}].amountUnit`)
+        .error,
+    };
+  };
+  const getTouched = (index: number) => {
+    return {
+      inventory: getFieldMeta(`inventoryEntryItems[${index}].inventoryId`)
+        .touched,
+      price: getFieldMeta(`inventoryEntryItems[${index}].price`).touched,
+      amount: getFieldMeta(`inventoryEntryItems[${index}].amount`).touched,
+      amountUnit: getFieldMeta(`inventoryEntryItems[${index}].amountUnit`)
+        .touched,
+    };
+  };
   return (
     <Box>
       <form onSubmit={handleSubmit}>
@@ -159,7 +194,7 @@ const UpsertInventory = (props: { create: boolean }) => {
           <Box>
             <Flex gap="20px" flexDirection={isMobile ? "column" : "row"}>
               <FormControl>
-                <FormLabel>Order date</FormLabel>
+                <FormLabel>{t("common.inventoryEntry.orderDate")}</FormLabel>
                 <ReactDatePicker
                   name={"date"}
                   selected={values.date}
@@ -168,7 +203,7 @@ const UpsertInventory = (props: { create: boolean }) => {
               </FormControl>
 
               <FormControl>
-                <FormLabel>Inventory Supplier</FormLabel>
+                <FormLabel>{t("common.inventory.supplier")}</FormLabel>
 
                 <Select
                   value={selectedSupplier}
@@ -201,14 +236,16 @@ const UpsertInventory = (props: { create: boolean }) => {
               const selectedInventory = inventoryOptions.find((invOp) => {
                 return invOp.value === inventoryEntryItem.inventoryId;
               });
+              const errors = getErrors(index);
+              const touched = getTouched(index);
               return (
-                <Box>
+                <Box mt={"10px"}>
                   <Flex
                     flexDirection={isMobile ? "column" : "row"}
                     gap={"10px"}
                   >
                     <FormControl>
-                      <FormLabel>Inventory</FormLabel>
+                      <FormLabel>{t("common.inventory.inventory")}</FormLabel>
                       <Select
                         components={{ Menu: CustomMenu }}
                         value={selectedInventory}
@@ -224,9 +261,14 @@ const UpsertInventory = (props: { create: boolean }) => {
                         }}
                         options={inventoryOptions}
                       />
+                      {errors.inventory && touched.inventory ? (
+                        <Text color="red.500" mt={"10px"}>
+                          {t(`common.inventory.${errors.inventory}`)}
+                        </Text>
+                      ) : null}
                     </FormControl>
                     <FormControl>
-                      <FormLabel>Price</FormLabel>
+                      <FormLabel>{t("common.price")}</FormLabel>
                       <NumberInput
                         value={inventoryEntryItem.price}
                         onChange={(value: string) => {
@@ -236,11 +278,16 @@ const UpsertInventory = (props: { create: boolean }) => {
                           );
                         }}
                       >
-                        <NumberInputField placeholder="Price" />
+                        <NumberInputField placeholder={t("common.price")} />
                       </NumberInput>
+                      {errors.price && touched.price ? (
+                        <Text color="red.500" mt={"10px"}>
+                          {t(`common.inventory.${errors.price}`)}
+                        </Text>
+                      ) : null}
                     </FormControl>
                     <FormControl>
-                      <FormLabel>Amount</FormLabel>
+                      <FormLabel>{t("common.amount")}</FormLabel>
                       <NumberInput
                         value={inventoryEntryItem.amount}
                         onChange={(value: string) => {
@@ -250,11 +297,16 @@ const UpsertInventory = (props: { create: boolean }) => {
                           );
                         }}
                       >
-                        <NumberInputField placeholder="Price" />
+                        <NumberInputField placeholder={t("common.amount")} />
                       </NumberInput>
+                      {errors.amount && touched.amount ? (
+                        <Text color="red.500" mt={"10px"}>
+                          {t(`common.inventory.${errors.amount}`)}
+                        </Text>
+                      ) : null}
                     </FormControl>
                     <FormControl>
-                      <FormLabel>Amount unit </FormLabel>
+                      <FormLabel>{t("common.unit")} </FormLabel>
                       <Select
                         value={selectedAmountUnit}
                         onChange={(valueSelected) => {
@@ -265,6 +317,11 @@ const UpsertInventory = (props: { create: boolean }) => {
                         }}
                         options={amountUnitOptions}
                       />
+                      {errors.amountUnit && touched.amountUnit ? (
+                        <Text color="red.500" mt={"10px"}>
+                          {t(`common.inventory.${errors.amountUnit}`)}
+                        </Text>
+                      ) : null}
                     </FormControl>
                     <FormControl
                       width={"auto"}
@@ -324,7 +381,12 @@ const UpsertInventory = (props: { create: boolean }) => {
           </Box>
         </Box>
         <Box mt={5}>
-          <Button colorScheme="teal" type="submit">
+          <Button
+            colorScheme="teal"
+            type="submit"
+            isLoading={isLoading}
+            disabled={isLoading}
+          >
             {t("common.save")}
           </Button>
         </Box>
