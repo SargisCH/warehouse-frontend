@@ -1,6 +1,6 @@
 import { Weekday } from "types";
 import { api } from "./api";
-import { ProductItem, StockProductItem } from "./product";
+import { ProductItem } from "./product";
 
 export enum PaymentType {
   CASH = "CASH",
@@ -29,7 +29,7 @@ export type ClientType = {
 interface SaleItem {
   id?: number;
   stockProductId: number;
-  stockProduct?: StockProductItem;
+  // stockProduct?: StockProductItem;
   price: number;
   priceUnit: string;
   amount: number;
@@ -54,7 +54,7 @@ export interface SaleReturnType {
   returnItems: Array<{
     id: number;
     amount: number;
-    stockProduct: StockProductItem;
+    // stockProduct: StockProductItem;
     stockProductId: number;
     confirmed?: Boolean;
     disposed?: Boolean;

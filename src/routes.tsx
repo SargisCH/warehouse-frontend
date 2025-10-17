@@ -16,6 +16,7 @@ import RTL from "views/admin/rtl";
 import Inventory from "pages/inventory/Inventory";
 import InventoryEntry from "pages/inventoryEntry/InventoryEntry";
 import Product from "pages/product/Product";
+import Warehouse from "pages/warehouse/Warehouse";
 import InventorySupplier from "pages/inventorySupplier/InventorySupplier";
 import InventorySupplierOrder from "pages/supplyOrder/SupplyOrder";
 import { Role, RouteTypeExtended } from "./types/index";
@@ -23,13 +24,10 @@ import { Role, RouteTypeExtended } from "./types/index";
 // Auth Imports
 import SignInCentered from "views/auth/signIn";
 import SignUp from "views/auth/signup";
-import ProductCategory from "pages/productCategory/ProductCategory";
 import Client from "pages/client/Client";
-import Sale from "pages/sale/Sale";
 import Credit from "pages/credit/Credit";
 import VerifyEmail from "views/auth/verifyEmail";
 import TransactionHistory from "pages/transactionHistory/TransactionHistory";
-import StockProductList from "pages/product/StockProductList";
 import BalanceHistory from "pages/balanceHistory/BalanceHistory";
 import Manager from "pages/manager/Manager";
 import Settings from "pages/profile/Settings";
@@ -51,10 +49,10 @@ import {
   faUpload,
   faWarehouse,
 } from "@fortawesome/free-solid-svg-icons";
-import ReturnSaleList from "pages/sale/ReturnSaleList";
 import ForgotPassword from "views/auth/forgotPassword";
 import { resetPassword } from "aws-amplify/auth";
 import ConfirmResetPassword from "views/auth/ConfirmResetPassword";
+import ProductGroup from "pages/productGroup/ProductGroup";
 const routes: RouteTypeExtended[] = [
   {
     name: "Main Dashboard",
@@ -73,6 +71,51 @@ const routes: RouteTypeExtended[] = [
     icon: <FontAwesomeIcon icon={faMoneyBill} />,
     component: BalanceHistory,
     role: [Role.ADMIN],
+  },
+
+  {
+    name: "",
+    layout: "",
+    path: "",
+    exact: true,
+    icon: <FontAwesomeIcon icon={faWarehouse} />,
+    component: () => <></>,
+    group: true,
+    groupName: "Pahest",
+    translationKey: "warehouse.warehouse",
+    role: [],
+    nestedRoutes: [
+      {
+        name: "Groups",
+        layout: "/admin",
+        path: "/productGroups",
+        translationKey: "productGroups.productGroups",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faList} />,
+        component: ProductGroup,
+        role: [Role.ADMIN],
+      },
+      {
+        name: "Products",
+        layout: "/admin",
+        translationKey: "products",
+        path: "/products",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faBox} />,
+        component: Product,
+        role: [Role.ADMIN],
+      },
+      {
+        name: "Warehouses",
+        layout: "/admin",
+        translationKey: "warehouse.warehouse",
+        path: "/warehouse",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faBox} />,
+        component: Warehouse,
+        role: [Role.ADMIN],
+      },
+    ],
   },
 
   // {
@@ -168,7 +211,7 @@ const routes: RouteTypeExtended[] = [
     component: () => <></>,
     group: true,
     groupName: "Pahest",
-    translationKey: "warehouse",
+    translationKey: "warehouse.warehouse",
     role: [],
     nestedRoutes: [
       {
@@ -191,16 +234,7 @@ const routes: RouteTypeExtended[] = [
         component: InventoryEntry,
         role: [Role.ADMIN],
       },
-      {
-        name: "Products",
-        layout: "/admin",
-        translationKey: "products",
-        path: "/products",
-        exact: true,
-        icon: <FontAwesomeIcon icon={faBox} />,
-        component: Product,
-        role: [Role.ADMIN],
-      },
+
       // {
       //   name: "Stock Products",
       //   layout: "/admin",
@@ -211,122 +245,112 @@ const routes: RouteTypeExtended[] = [
       //   component: StockProductList,
       //   role: [Role.ADMIN],
       // },
-      {
-        name: "Categories",
-        layout: "/admin",
-        path: "/productCategory",
-        translationKey: "categories",
-        exact: true,
-        icon: <FontAwesomeIcon icon={faList} />,
-        component: ProductCategory,
-        role: [Role.ADMIN],
-      },
     ],
   },
-  {
-    name: "",
-    layout: "",
-    path: "",
-    exact: true,
-    icon: <FontAwesomeIcon icon={faTags} />,
-    component: () => <></>,
-    group: true,
-    groupName: "Vacharq",
-    translationKey: "sales",
-    role: [],
-    nestedRoutes: [
-      {
-        name: "vacharqneri patmutyun",
-        layout: "/admin",
-        path: "/sale",
-        translationKey: "salesHistory",
-        exact: true,
-        icon: <FontAwesomeIcon icon={faHistory} />,
-        component: Sale,
-        role: [Role.ADMIN, Role.MANAGER],
-      },
-      {
-        name: "return",
-        layout: "/admin",
-        path: "/return",
-        translationKey: "returnHistory",
-        exact: true,
-        icon: <FontAwesomeIcon icon={faHistory} />,
-        component: ReturnSaleList,
-        role: [Role.ADMIN, Role.MANAGER],
-      },
-      {
-        name: "vacharaketer",
-        layout: "/admin",
-        path: "/client",
-        translationKey: "clients",
-        exact: true,
-        icon: <FontAwesomeIcon icon={faPerson} />,
-        component: Client,
-        role: [Role.ADMIN, Role.MANAGER],
-      },
-    ],
-  },
-  {
-    name: "Inventory Suppliers",
-    translationKey: "inventorySuppliers",
-    layout: "/admin",
-    path: "/suppliers",
-    exact: true,
-    icon: <FontAwesomeIcon icon={faUpload} />,
-    component: InventorySupplier,
-    role: [Role.ADMIN],
-  },
-  {
-    name: "Suppy Orders",
-    translationKey: "supplyOrders",
-    layout: "/admin",
-    path: "/supply-orders",
-    exact: true,
-    icon: <FontAwesomeIcon icon={faShop} />,
-    component: InventorySupplierOrder,
-    role: [Role.ADMIN],
-  },
-  {
-    name: "Credit list",
-    translationKey: "creditList",
-    layout: "/admin",
-    path: "/credit",
-    exact: true,
-    icon: <FontAwesomeIcon icon={faMoneyCheckAlt} />,
-    component: Credit,
-    role: [Role.ADMIN, Role.MANAGER],
-  },
-  {
-    name: "Transaction History List",
-    layout: "/admin",
-    path: "/transactionHistory",
-    translationKey: "transactionHistoryList",
-    exact: true,
-    icon: <FontAwesomeIcon icon={faCreditCard} />,
-    component: TransactionHistory,
-    role: [Role.ADMIN, Role.MANAGER],
-  },
-  {
-    name: "Managers",
-    layout: "/admin",
-    path: "/manager",
-    translationKey: "managers",
-    exact: true,
-    icon: <FontAwesomeIcon icon={faPerson} />,
-    component: Manager,
-    role: [Role.ADMIN],
-  },
-  {
-    name: "Profile settings",
-    layout: "/admin",
-    path: "/settings",
-    translationKey: "profileSettings",
-    exact: true,
-    icon: <FontAwesomeIcon icon={faGear} />,
-    component: Settings,
-    role: [Role.ADMIN],
-  },
+  // {
+  //   name: "",
+  //   layout: "",
+  //   path: "",
+  //   exact: true,
+  //   icon: <FontAwesomeIcon icon={faTags} />,
+  //   component: () => <></>,
+  //   group: true,
+  //   groupName: "Vacharq",
+  //   translationKey: "sales",
+  //   role: [],
+  //   nestedRoutes: [
+  //     {
+  //       name: "vacharqneri patmutyun",
+  //       layout: "/admin",
+  //       path: "/sale",
+  //       translationKey: "salesHistory",
+  //       exact: true,
+  //       icon: <FontAwesomeIcon icon={faHistory} />,
+  //       component: Sale,
+  //       role: [Role.ADMIN, Role.MANAGER],
+  //     },
+  //     {
+  //       name: "return",
+  //       layout: "/admin",
+  //       path: "/return",
+  //       translationKey: "returnHistory",
+  //       exact: true,
+  //       icon: <FontAwesomeIcon icon={faHistory} />,
+  //       component: ReturnSaleList,
+  //       role: [Role.ADMIN, Role.MANAGER],
+  //     },
+  //     {
+  //       name: "vacharaketer",
+  //       layout: "/admin",
+  //       path: "/client",
+  //       translationKey: "clients",
+  //       exact: true,
+  //       icon: <FontAwesomeIcon icon={faPerson} />,
+  //       component: Client,
+  //       role: [Role.ADMIN, Role.MANAGER],
+  //     },
+  //   ],
+  // },
+  // {
+  //   name: "Inventory Suppliers",
+  //   translationKey: "inventorySuppliers",
+  //   layout: "/admin",
+  //   path: "/suppliers",
+  //   exact: true,
+  //   icon: <FontAwesomeIcon icon={faUpload} />,
+  //   component: InventorySupplier,
+  //   role: [Role.ADMIN],
+  // },
+  // {
+  //   name: "Suppy Orders",
+  //   translationKey: "supplyOrders",
+  //   layout: "/admin",
+  //   path: "/supply-orders",
+  //   exact: true,
+  //   icon: <FontAwesomeIcon icon={faShop} />,
+  //   component: InventorySupplierOrder,
+  //   role: [Role.ADMIN],
+  // },
+  // {
+  //   name: "Credit list",
+  //   translationKey: "creditList",
+  //   layout: "/admin",
+  //   path: "/credit",
+  //   exact: true,
+  //   icon: <FontAwesomeIcon icon={faMoneyCheckAlt} />,
+  //   component: Credit,
+  //   role: [Role.ADMIN, Role.MANAGER],
+  // },
+  // {
+  //   name: "Transaction History List",
+  //   layout: "/admin",
+  //   path: "/transactionHistory",
+  //   translationKey: "transactionHistoryList",
+  //   exact: true,
+  //   icon: <FontAwesomeIcon icon={faCreditCard} />,
+  //   component: TransactionHistory,
+  //   role: [Role.ADMIN, Role.MANAGER],
+  // },
+  // {
+  //   name: "Managers",
+  //   layout: "/admin",
+  //   path: "/manager",
+  //   translationKey: "managers",
+  //   exact: true,
+  //   icon: <FontAwesomeIcon icon={faPerson} />,
+  //   component: Manager,
+  //   role: [Role.ADMIN],
+  // },
+  // {
+  //   name: "Profile settings",
+  //   layout: "/admin",
+  //   path: "/settings",
+  //   translationKey: "profileSettings",
+  //   exact: true,
+  //   icon: <FontAwesomeIcon icon={faGear} />,
+  //   component: Settings,
+  //   role: [Role.ADMIN],
+  // },
 ];
 
 export const links = {
@@ -350,10 +374,14 @@ export const links = {
   createSupplyOrder: (inventorySupplierId: string | number) =>
     `/admin/supply-orders/upsert/${inventorySupplierId}/order`,
   createSupplyOrderNoSupplier: "/admin/supply-orders/create-order",
-  productCategories: "/admin/productCategory",
-  productCategory: (productCategoryId: string | number) =>
-    `/admin/productCategory/upsert/${productCategoryId}`,
-  createProductCategory: "/admin/productCategory/upsert/",
+  productGroups: "/admin/productGroups",
+  productGroup: (productGroupId: string | number) =>
+    `/admin/productGroup/upsert/${productGroupId}`,
+  createProductGroup: "/admin/productGroups/upsert/",
+  warehouses: "/admin/warehouse",
+  warehouse: (warehouseId: string | number) =>
+    `/admin/warehouse/upsert/${warehouseId}`,
+  createWarehouse: "/admin/warehouse/upsert/",
   clients: "/admin/client",
   client: (clientId: string | number) => `/admin/client/upsert/${clientId}`,
   createClient: "/admin/client/upsert/",

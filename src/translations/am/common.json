@@ -12,6 +12,7 @@
   "warehouse": "Պահեստ",
   "inventory": "Հումք",
   "products": "Ապրանքներ",
+  "productSingle": "Ապրանք",
   "stockProducts": "Պատրաստի ապրանքներ",
   "categories": "Կատեգորիաներ",
   "balanceHistory": "Բալանսի պատմություն",
@@ -52,6 +53,9 @@
   "confirm": "Հաստատել",
   "close": "Փակել",
   "add": "Ավելացնել",
+  "previous": "Նախորդ",
+  "next": "Հաջորդ",
+  "skipCount": "Բաց թողնել {{count}}",
   "client": {
     "name": "Անուն",
     "legalName": "Իրավաբանական անուն",
@@ -74,13 +78,19 @@
     "deleteInventory": "Ջնջել հումք"
   },
   "product": {
+    "filterHeader": "Ֆիլտեր",
     "createWithoutCalculation": "Պահպանել ապրանքը առանց հումքերի վերահաշվարկի",
     "productCalculationWarning": "Ձեռքով փոփոխություն կատարելու դեպքում պահեստում տեղի չի ունենա հումքերի վերահաշվարկ․ Պահեստում կփոխվի միայն ապրանքի առկա քանակը։ Սեղմեք այո եթե պատրաստեք փոփոխությանը։",
     "inStock": "Առկա",
     "costPrice": "Ինքնարժեք",
     "addProduct": "Ավելացնել ապրանք",
     "make": "Պատրաստել",
-    "deleteProduct": "Ջնջել ապրանքը"
+    "deleteProduct": "Ջնջել ապրանքը",
+    "officialName": "Լրիվ անուն",
+    "forSale": "Վաճառվող",
+    "returnable": "Վերադարձվող",
+    "fractional": "Կոտորակային մաս",
+    "moveToWarehouse": "Տեղափոխել այլ պահեստ"
   },
   "inventorySupplier": {
     "createInventorySupplier": "Ստեղծել մատակարար",
@@ -94,5 +104,22 @@
   },
   "manager": {
     "addManager": "Ավելացնել մենեջեր"
-  }
+  },
+  "units": {
+    "g": "գրամ",
+    "kg": "կգ",
+    "unit": "Միավոր"
+  },
+  "productGroups": {
+    "productGroups": "Ապրանքի խմբեր",
+    "list": "Ապրանքի խմբերի ցանկ",
+    "deleteHeaderText": "Ջնջել ապրանքի խումբը",
+    "addProductGroup": "Ավելացնեն ապրանքի խումբ"
+  },
+  "warehouse": {
+    "warehouse": "Պահեստ",
+    "list": "Պահեստների ցանկ",
+    "addWarehouse": "Ավելացնել պահեստ"
+  },
+  "set": "Կոմպլեկտ"
 }

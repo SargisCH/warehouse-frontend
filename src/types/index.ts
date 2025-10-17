@@ -28,7 +28,7 @@ export enum Weekday {
 }
 
 export enum Role {
-  ADMIN = "ADMIN",
+  ADMIN = "Admin",
   MANAGER = "MANAGER",
   USER = "USER",
 }
@@ -43,3 +43,8 @@ export enum CreditType {
   TO_PAY = "TO_PAY",
   TO_RECEIVE = "TO_RECEIVE",
 }
+
+export type OptionType = {
+  label: string;
+  value: string;
+};

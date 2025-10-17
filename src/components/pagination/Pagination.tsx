@@ -3,6 +3,7 @@
 import React from "react";
 import { Box, Button, Stack } from "@chakra-ui/react";
 import { useHistory, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface PaginationProps {
   currentPage: number;
@@ -19,6 +20,7 @@ const Pagination: React.FC<PaginationProps> = ({
 }) => {
   const location = useLocation();
   const history = useHistory();
+  const { t } = useTranslation();
   const renderPageNumbers = () => {
     const pages = [];
 
@@ -45,15 +47,15 @@ const Pagination: React.FC<PaginationProps> = ({
   const handlePageChange = (page: number) => {
     // Update URL query parameter
     if (setQueryParams) {
-      const url = new URL(
-        `${window.location.origin.toString()}/${location.pathname}${location.search}`,
-      );
-      url.searchParams.set("page", String(page));
-      history.push(`${location.pathname}${url.search}`);
+      const newSearchParams = new URLSearchParams(location.search);
+      newSearchParams.set("page", String(page));
+      history.replace({
+        pathname: location.pathname,
+        search: newSearchParams.toString(),
+      });
     }
     onPageChange(page);
   };
-
   return (
     <Box>
       <Stack direction="row" spacing={2} justify="right" align="center">
@@ -63,7 +65,7 @@ const Pagination: React.FC<PaginationProps> = ({
           disabled={currentPage === 1}
           onClick={() => handlePageChange(currentPage - 1)}
         >
-          Previous
+          {t("common.previous")}
         </Button>
 
         {/* Page numbers */}
@@ -72,19 +74,19 @@ const Pagination: React.FC<PaginationProps> = ({
         {/* "Next" button */}
         <Button
           size="sm"
-          disabled={currentPage === totalPages}
+          disabled={currentPage === totalPages || totalPages < 1}
           onClick={() => handlePageChange(currentPage + 1)}
         >
-          Next
+          {t("common.next")}
         </Button>
 
         {/* "Skip 5" button */}
         <Button
           size="sm"
-          disabled={currentPage + 5 > totalPages}
+          disabled={currentPage + 5 > totalPages || totalPages > 1}
           onClick={() => handlePageChange(currentPage + 5)}
         >
-          Skip 5
+          {t("common.skipCount", { count: 5 })}
         </Button>
       </Stack>
     </Box>

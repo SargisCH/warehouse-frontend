@@ -8,33 +8,34 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import {
-  useDeleteProductCategoryMutation,
-  useLazyGetProductCategoryByIdQuery,
-  useUpdateProductCategoryMutation,
-  useCreateProductCategoryMutation,
-} from "api/productCategory";
+  useDeleteProductGroupMutation,
+  useLazyGetProductGroupByIdQuery,
+  useUpdateProductGroupMutation,
+  useCreateProductGroupMutation,
+} from "../../api/productGroup";
 import AlertDialog from "components/alertDialog/AlertDialog";
+import { t } from "i18next";
 import { useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import { links } from "routes";
 
-const UpsertproductCategory = (props: { create: boolean }) => {
+const UpsertProductGroup = (props: { create: boolean }) => {
   const [name, setName] = useState("");
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const params = useParams() as any;
 
-  const [createProductCategory] = useCreateProductCategoryMutation();
-  const [updateProductCategory] = useUpdateProductCategoryMutation();
-  const [deleteProductCategopry] = useDeleteProductCategoryMutation();
+  const [createProductGroup] = useCreateProductGroupMutation();
+  const [updateProductGroup] = useUpdateProductGroupMutation();
+  const [deleteProductGroup] = useDeleteProductGroupMutation();
   const history = useHistory();
-  const [getProductCategoryById] = useLazyGetProductCategoryByIdQuery();
+  const [getProductGroupById] = useLazyGetProductGroupByIdQuery();
   useEffect(() => {
     (async () => {
-      if (params.productCategoryId) {
+      if (params.productGroupId) {
         setIsLoading(true);
-        const res = await getProductCategoryById({
-          productCategoryId: params.productCategoryId,
+        const res = await getProductGroupById({
+          productGroupId: params.productGroupId,
         });
         setName(res.data.name);
         setTimeout(() => {
@@ -44,21 +45,21 @@ const UpsertproductCategory = (props: { create: boolean }) => {
         //setCurrency(productItemRes.data.currency);
       }
     })();
-  }, [params.productCategoryId, getProductCategoryById]);
+  }, [params.productGroupId, getProductGroupById]);
 
-  const saveProductCategory = async () => {
+  const saveProductGroup = async () => {
     const data = {
       name,
     };
-    if (params.productCategoryId) {
-      await updateProductCategory({
+    if (params.productGroupId) {
+      await updateProductGroup({
         ...data,
         id: params.productId,
       });
     } else {
-      await createProductCategory(data);
+      await createProductGroup(data);
     }
-    history.push(links.productCategories);
+    history.push(links.productGroups);
   };
   if (isLoading) {
     return (
@@ -76,10 +77,10 @@ const UpsertproductCategory = (props: { create: boolean }) => {
       <Flex gap="20px">
         <Flex direction={"column"} gap="20px">
           <FormControl>
-            <FormLabel>Name</FormLabel>
+            <FormLabel>{t("common.name")}</FormLabel>
             <Input
               type="text"
-              placeholder="Name"
+              placeholder={t("common.name")}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -87,33 +88,33 @@ const UpsertproductCategory = (props: { create: boolean }) => {
         </Flex>
       </Flex>
       <Box mt={5}>
-        <Button colorScheme="teal" onClick={() => saveProductCategory()}>
-          Save
+        <Button colorScheme="teal" onClick={() => saveProductGroup()}>
+          {t("common.save")}
         </Button>
-        {params.productCategoryId ? (
+        {params.productGroupId ? (
           <Button
             ml={4}
             colorScheme="red"
             onClick={() => setIsDeleteDialogOpened(true)}
           >
-            Delete
+            {t("common.delete")}
           </Button>
         ) : null}
       </Box>
       {isDeleteDialogOpened ? (
         <AlertDialog
           handleConfirm={async () => {
-            await deleteProductCategopry(params.productCategoryId);
-            history.push(links.productCategories);
+            await deleteProductGroup(params.productGroupId);
+            history.push(links.productGroups);
           }}
           isOpen={isDeleteDialogOpened}
           onClose={() => setIsDeleteDialogOpened(false)}
           bodyText={`Are you sure? You can't undo this action afterwards.`}
-          headerText={`Delete Inventory Supplier`}
+          headerText={t("common.productGroups.deleteHeaderText")}
         />
       ) : null}
     </Flex>
   );
 };
 
-export default UpsertproductCategory;
+export default UpsertProductGroup;

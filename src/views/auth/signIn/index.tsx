@@ -154,6 +154,7 @@ function SignIn() {
             initialValues={{ email: "", password: "" }}
             onSubmit={(values, actions) => {
               setTimeout(async () => {
+                console.log("login");
                 try {
                   const ampData = await amplifySignIn({
                     username: values.email,

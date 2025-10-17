@@ -1,36 +1,27 @@
 import { api } from "./api";
 
 export type ProductItem = {
-  price: number;
-  priceUnit: string;
-  created_at: string;
   id: number;
   name: string;
-  noCalculation?: boolean;
-  inStock?: number;
-  inStockUnit?: string;
+  unitId: number;
+  warehouseId: number;
+  groupId: number;
+  officialName: string;
+  forSale: boolean;
+  returnable: boolean;
+  fractional: boolean;
+  sku: string;
+  unit: { id: number; name: string };
+  warehouse: { id: number; name: string };
+  group: { id: number; name: string };
   ingredients?: Array<{
-    inventoryId: number;
-    amount: number;
-    amountUnit: string;
+    productId: number;
+    product?: Partial<{ name: string; id: string }>;
+    quantity: number;
+    unitId: number;
   }>;
+  created_at: string;
   updated_at: string;
-};
-
-export type StockProductItem = {
-  id: number;
-  product?: Partial<{
-    name: string;
-    id: number;
-    price: number;
-    priceUnit: string;
-    amountUnit: string;
-  }>;
-  costPrice: number;
-  productId: number;
-  inStock: number;
-  inStockUnit?: string;
-  noCalculation?: boolean;
 };
 
 const productApi = api.injectEndpoints({
@@ -55,6 +46,13 @@ const productApi = api.injectEndpoints({
         method: "DELETE",
       }),
     }),
+    moveProduct: builder.mutation({
+      query: (body) => ({
+        url: `product/move`,
+        method: "POST",
+        body,
+      }),
+    }),
     updateProduct: builder.mutation({
       query: (newProduct) => {
         const id = newProduct.id;
@@ -75,67 +73,63 @@ const productApi = api.injectEndpoints({
       }),
     }),
     getProduct: builder.query<
-      { products: ProductItem[]; totalWorth: number },
-      void
+      { data: ProductItem[]; totalCount: number },
+      { queryString: string } | undefined
     >({
-      query: () => ({
-        url: "product",
+      query: (arg = { queryString: "" }) => ({
+        url: `product${arg.queryString || ""}`,
         method: "GET",
       }),
     }),
-    getStockProduct: builder.query<
-      { stockProducts: StockProductItem[]; totalWorth: number },
-      void
-    >({
-      query: () => ({
-        url: "product/stockProduct",
-        method: "GET",
-      }),
-    }),
+    // getStockProduct: builder.query<
+    //   { stockProducts: StockProductItem[]; totalWorth: number },
+    //   void
+    // >({
+    //   query: () => ({
+    //     url: "product/stockProduct",
+    //     method: "GET",
+    //   }),
+    // }),
     getProductById: builder.query<ProductItem, { productId: string | number }>({
       query: (arg: { productId: string | number }) => ({
         url: `product/${arg.productId}`,
         method: "GET",
       }),
     }),
-    getStockProductById: builder.query<
-      StockProductItem,
-      { stockProductId: string | number }
-    >({
-      query: (arg: { stockProductId: string | number }) => ({
-        url: `product/stockProduct/${arg.stockProductId}`,
-        method: "GET",
-      }),
-    }),
-    updateStockProductById: builder.mutation({
-      query: (newStockProduct) => ({
-        url: `product/stockProduct/${newStockProduct.id}`,
-        method: "PUT",
-        body: newStockProduct,
-      }),
-    }),
-    makeProduct: builder.mutation({
-      query: (newStockProduct: { id: number; amount: number }) => ({
-        url: `product/makeProduct/${newStockProduct.id}`,
-        method: "PUT",
-        body: newStockProduct,
-      }),
-    }),
+    // getStockProductById: builder.query<
+    //   StockProductItem,
+    //   { stockProductId: string | number }
+    // >({
+    //   query: (arg: { stockProductId: string | number }) => ({
+    //     url: `product/stockProduct/${arg.stockProductId}`,
+    //     method: "GET",
+    //   }),
+    // }),
+    // updateStockProductById: builder.mutation({
+    //   query: (newStockProduct) => ({
+    //     url: `product/stockProduct/${newStockProduct.id}`,
+    //     method: "PUT",
+    //     body: newStockProduct,
+    //   }),
+    // }),
+    // makeProduct: builder.mutation({
+    //   query: (newStockProduct: { id: number; amount: number }) => ({
+    //     url: `product/makeProduct/${newStockProduct.id}`,
+    //     method: "PUT",
+    //     body: newStockProduct,
+    //   }),
+    // }),
   }),
 });
 
 export const {
   useCreateProductMutation,
-  useGetStockProductQuery,
   useGetProductQuery,
   useGetProductByIdQuery,
   useLazyGetProductByIdQuery,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useMoveProductMutation,
   useAddInStockMutation,
-  useGetStockProductByIdQuery,
-  useUpdateStockProductByIdMutation,
-  useLazyGetStockProductByIdQuery,
-  useMakeProductMutation,
   useUpdateProductAmountMutation,
 } = productApi;
