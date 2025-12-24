@@ -25,14 +25,13 @@ import {
 import AlertDialog from "components/alertDialog/AlertDialog";
 import { useEffect, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
-import Select, { Options } from "react-select";
+import Select from "react-select";
 import { links } from "../../routes";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { generateKey } from "helpers/generateKey";
 import { useTranslation } from "react-i18next";
 import { useGetUnitsQuery } from "api/unit";
-import { useGetWarehouseQuery } from "api/warehouse";
 import { useGetProductGroupQuery } from "api/productGroup";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 
@@ -41,7 +40,6 @@ const ValidationSchema = z.object({
   officialName: z.string().min(1, { message: "Official is required." }),
   unitId: z.string().min(1, { message: "Unit is required." }),
   productGroupId: z.string().min(1, { message: "Product Grop is required." }),
-  warehouseId: z.string().min(1, { message: "warehouse  is required." }),
   fractional: z.boolean().optional(),
   returnable: z.boolean().optional(),
   forSale: z.boolean().optional(),
@@ -83,7 +81,6 @@ const UpsertProduct = (props: { create: boolean }) => {
   const [getProductById, { isLoading }] = useLazyGetProductByIdQuery();
   const { data: productResponse } = useGetProductQuery(undefined);
   const { data: units = [] } = useGetUnitsQuery();
-  const { data: warehouses = [] } = useGetWarehouseQuery();
   const { data: productGroups = [] } = useGetProductGroupQuery();
   const products = productResponse?.data || [];
   const getLabel = (
@@ -97,11 +94,9 @@ const UpsertProduct = (props: { create: boolean }) => {
     label: t(`common.units.${unit.name}`),
     value: String(unit.id),
   }));
-  const getOptions = (data: OptionData[]) =>
-    data.map((warehouse) => ({
-      label: warehouse.name,
-      value: String(warehouse.id),
-    }));
+  const getOptions = (options: OptionData[]) => {
+    return options.map((op) => ({ label: op.name, value: String(op.id) }));
+  };
   const {
     control,
     handleSubmit,
@@ -113,7 +108,6 @@ const UpsertProduct = (props: { create: boolean }) => {
       name: "",
       officialName: "",
       unitId: "",
-      warehouseId: "",
       productGroupId: "",
       returnable: false,
       forSale: false,
@@ -137,7 +131,6 @@ const UpsertProduct = (props: { create: boolean }) => {
           name: productItemRes.data.name,
           officialName: productItemRes.data.officialName,
           unitId: String(productItemRes.data.unitId),
-          warehouseId: String(productItemRes.data.warehouseId),
           productGroupId: String(productItemRes.data.groupId),
           forSale: productItemRes.data.forSale,
           returnable: productItemRes.data.returnable,
@@ -160,7 +153,6 @@ const UpsertProduct = (props: { create: boolean }) => {
     const postData = {
       ...values,
       unitId: Number(values.unitId),
-      warehouseId: Number(values.warehouseId),
       groupId: Number(values.productGroupId),
       ingredients: !ingredientsOpened
         ? []
@@ -171,6 +163,7 @@ const UpsertProduct = (props: { create: boolean }) => {
             productId: Number(ing.productId),
           })),
     };
+    delete postData.productGroupId;
     if (params.productId) {
       await updateProduct({
         ...postData,
@@ -231,6 +224,9 @@ const UpsertProduct = (props: { create: boolean }) => {
               </FormControl>
             )}
           />
+        </Flex>
+
+        <Flex gap="20px" mt="4">
           <Controller
             name="unitId"
             control={control}
@@ -254,40 +250,6 @@ const UpsertProduct = (props: { create: boolean }) => {
                   options={unitOptions}
                 />
                 <FormErrorMessage>{errors.unitId?.message}</FormErrorMessage>
-              </FormControl>
-            )}
-          />
-        </Flex>
-
-        <Flex gap="20px" mt="4">
-          <Controller
-            name="warehouseId"
-            control={control}
-            render={({ field }) => (
-              <FormControl isInvalid={!!errors.warehouseId}>
-                <FormLabel>{t("common.warehouse.warehouse")}</FormLabel>
-                <Select
-                  styles={{
-                    control: (baseStyles) => ({
-                      ...baseStyles,
-                      ...getErrorStyles(!!errors.warehouseId),
-                    }),
-                  }}
-                  value={{
-                    label: getLabel(
-                      field.value,
-                      getOptions(warehouses as OptionData[]),
-                    ),
-                    value: field.value,
-                  }}
-                  onChange={(valueSelected) => {
-                    field.onChange(valueSelected.value);
-                  }}
-                  options={getOptions(warehouses as OptionData[])}
-                />
-                <FormErrorMessage>
-                  {errors.warehouseId?.message}
-                </FormErrorMessage>
               </FormControl>
             )}
           />

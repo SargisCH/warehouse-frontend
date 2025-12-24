@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Flex,
   FormControl,
@@ -21,7 +20,7 @@ import { useMoveProductMutation } from "api/product";
 import { useGetWarehouseQuery } from "api/warehouse";
 import { getSelectErrorStyles } from "helpers/styles";
 import { transformOptions } from "helpers/transformOptions";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import Select from "react-select";
@@ -42,18 +41,15 @@ export default function MoveToWarehouseModal<
 >({
   isOpen,
   onClose,
-  rowSelection,
   selectedRowData,
+  onConfirm,
 }: {
   isOpen: boolean;
   onClose: () => void;
   rowSelection: { [key: string]: boolean };
   selectedRowData: RowType[];
+  onConfirm?: () => void;
 }) {
-  const [selectedMoveWarehouse, setSelectedMoveWarehouse] = useState<{
-    label: string;
-    value: string;
-  }>();
   const { data: warehouses = [] } = useGetWarehouseQuery();
   const warehouseOptions = transformOptions(warehouses, {
     label: "name",
@@ -72,6 +68,7 @@ export default function MoveToWarehouseModal<
     handleSubmit,
     control,
     formState: { errors },
+    reset,
   } = useForm({
     defaultValues: {
       warehouseId: null,
@@ -79,19 +76,33 @@ export default function MoveToWarehouseModal<
     },
     resolver: zodResolver(ValidationSchema),
   });
-  const { fields, append } = useFieldArray({
+  const { fields } = useFieldArray({
     control,
     name: "products",
   });
+  type FormType = z.infer<typeof ValidationSchema>;
   useEffect(() => {
-    append(
-      selectedRowData.map((prod) => ({
-        productId: Number(prod.id),
-        quantity: 0,
-      })),
-    );
-  }, [selectedRowData, append]);
-  console.log("fields", fields);
+    if (selectedRowData.length > 0) {
+      reset({
+        warehouseId: null,
+        products: selectedRowData.map((prod) => ({
+          productId: Number(prod.id),
+          quantity: 0,
+        })),
+      });
+    }
+  }, [selectedRowData, reset]);
+  const onSubmit = async (values: FormType) => {
+    try {
+      await moveProductMutation(values);
+      if (onConfirm) {
+        onConfirm();
+      }
+    } catch (e: any) {
+      alert(e?.message || e?.toString());
+    }
+    onClose();
+  };
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -99,7 +110,7 @@ export default function MoveToWarehouseModal<
         <ModalHeader>{t("common.product.moveToWarehouse")}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <form>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <Controller
               name="warehouseId"
               control={control}
@@ -166,7 +177,7 @@ export default function MoveToWarehouseModal<
                             <NumberInputField
                               placeholder={"quantity"}
                               onChange={(e) => {
-                                field.onChange(e.target.value);
+                                field.onChange(Number(e.target.value));
                               }}
                             />
                           </NumberInput>
@@ -177,25 +188,16 @@ export default function MoveToWarehouseModal<
                 );
               })}
             </Flex>
+            <ModalFooter>
+              <Button mr={3} variant="ghost" onClick={onClose}>
+                Close
+              </Button>
+              <Button colorScheme="brand" type="submit">
+                {t("common.save")}
+              </Button>
+            </ModalFooter>
           </form>
         </ModalBody>
-        <ModalFooter>
-          <Button mr={3} variant="ghost" onClick={onClose}>
-            Close
-          </Button>
-          <Button
-            colorScheme="brand"
-            onClick={async () => {
-              await moveProductMutation({
-                ids: Object.keys(rowSelection),
-                warehouseId: selectedMoveWarehouse.value,
-              });
-              onClose();
-            }}
-          >
-            {t("common.save")}
-          </Button>
-        </ModalFooter>
       </ModalContent>
     </Modal>
   );

@@ -119,7 +119,6 @@ export default function FilterDrawer({ header, filters }: Props) {
                     </Flex>
                   );
                 } else if (filter.type === "select") {
-                  console.log(filter.options);
                   return (
                     <Flex direction="column" key={filter.id}>
                       <FormLabel htmlFor={filter.id}> {filter.label}</FormLabel>

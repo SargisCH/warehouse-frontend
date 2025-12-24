@@ -11,8 +11,9 @@ export type ProductItem = {
   returnable: boolean;
   fractional: boolean;
   sku: string;
+  amount: number;
   unit: { id: number; name: string };
-  warehouse: { id: number; name: string };
+  warehouse: { id: number; name: string; quantity?: number };
   group: { id: number; name: string };
   ingredients?: Array<{
     productId: number;
@@ -22,6 +23,12 @@ export type ProductItem = {
   }>;
   created_at: string;
   updated_at: string;
+  totalStock?: number;
+  inventory?: {
+    warehouseId: number;
+    warehouseName: string;
+    quantity: number;
+  }[];
 };
 
 const productApi = api.injectEndpoints({

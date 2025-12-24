@@ -7,20 +7,12 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
   Text,
-  Th,
-  Thead,
-  Tr,
   useBreakpointValue,
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
 import {
-  flexRender,
   getCoreRowModel,
   getSortedRowModel,
   SortingState,
@@ -33,7 +25,7 @@ import Card from "components/card/Card";
 import * as React from "react";
 import { OptionType } from "../../types";
 import "./product.css";
-import { useHistory, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { links } from "../../routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
 import { useTranslation } from "react-i18next";
@@ -48,6 +40,7 @@ import getProductCoumns, { RowObj } from "./column";
 import MoveToWarehouseModal from "./MoveToWarehouse";
 import { transformOptions } from "helpers/transformOptions";
 import CustomTable from "components/table/Table";
+import QuantityDetailsModal from "./QuantityDetailsModal";
 
 const getFilters = (
   t: (token: string) => string,
@@ -123,6 +116,7 @@ const getFilters = (
 function ProductList() {
   const location = useLocation();
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
+  const [quantityDetails, setQuantityDetails] = React.useState<RowObj>();
   const queryString = location.search;
   const { data: productResponse } = useGetProductQuery(
     { queryString },
@@ -132,12 +126,25 @@ function ProductList() {
   );
   const products = productResponse?.data ?? [];
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isQuantityModalOpened,
+    onOpen: onQuantityModalOpen,
+    onClose: onQuantityModalClose,
+  } = useDisclosure();
   const { data: units = [] } = useGetUnitsQuery();
-  const { data: groups = [] } = useGetProductGroupQuery();
+  const { data: groups = [], refetch } = useGetProductGroupQuery();
   const { data: warehouses = [] } = useGetWarehouseQuery();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const { t } = useTranslation();
+  const cellClickHandlers = useMemo(() => {
+    return {
+      totalStock: (row: RowObj) => {
+        setQuantityDetails(row);
+        onQuantityModalOpen();
+      },
+    };
+  }, [onQuantityModalOpen]);
 
   const options = useMemo(() => {
     const unitOptions = transformOptions(units, {
@@ -156,7 +163,10 @@ function ProductList() {
     [t, options.units, options.groups, options.warehouses],
   );
 
-  const columns = useMemo(() => getProductCoumns(t, textColor), [t, textColor]);
+  const columns = useMemo(
+    () => getProductCoumns(t, textColor, cellClickHandlers),
+    [t, textColor, cellClickHandlers],
+  );
 
   const table = useReactTable({
     data: products,
@@ -175,7 +185,6 @@ function ProductList() {
 
   const isRowsSelected = table.getIsSomeRowsSelected();
   const selectedRows = table.getSelectedRowModel().rows;
-
   // You can then map over selectedRows to get the original data:
   const selectedRowData = selectedRows.map((row) => row.original);
   const isMobile = useBreakpointValue({ base: true, md: false });
@@ -219,7 +228,7 @@ function ProductList() {
             link={links.createProduct}
             label={t("common.product.addProduct")}
           />
-          {isRowsSelected && (
+          {!!selectedRows.length && (
             <Menu>
               <MenuButton as={Button}>
                 <FontAwesomeIcon icon={faEllipsis} />
@@ -227,7 +236,6 @@ function ProductList() {
               <MenuList>
                 <MenuItem
                   onClick={() => {
-                    console.log("table", table.getSelectedRowModel());
                     onOpen();
                   }}
                 >
@@ -245,12 +253,7 @@ function ProductList() {
       <Flex px={7}>
         <SelectedFilterPanel filters={filters} />
       </Flex>
-      <MoveToWarehouseModal<RowObj>
-        isOpen={isOpen}
-        onClose={onClose}
-        rowSelection={rowSelection}
-        selectedRowData={selectedRowData}
-      />
+
       <Box>
         <CustomTable<RowObj>
           tableInstance={table}
@@ -260,7 +263,24 @@ function ProductList() {
               : 1
           }
           editRowUrl={links.productItem}
+          rowSelection={rowSelection}
         />
+        <MoveToWarehouseModal<RowObj>
+          isOpen={isOpen}
+          onClose={onClose}
+          rowSelection={rowSelection}
+          selectedRowData={selectedRowData}
+          onConfirm={() => {
+            refetch();
+          }}
+        />
+        {isQuantityModalOpened ? (
+          <QuantityDetailsModal
+            isOpen={isQuantityModalOpened}
+            onClose={onQuantityModalClose}
+            quantityDetails={quantityDetails}
+          />
+        ) : null}
 
         {/*{sharedElements}*/}
       </Box>

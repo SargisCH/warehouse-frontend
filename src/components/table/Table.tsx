@@ -22,6 +22,7 @@ type Props<T> = {
   tableInstance: ReactTable<T>;
   editRowUrl?: (id: string) => string;
   totalPages?: number;
+  rowSelection?: Record<number | string, boolean | number | string>;
 };
 
 export default function CustomTable<T extends { id: number | string }>({
@@ -77,6 +78,7 @@ export default function CustomTable<T extends { id: number | string }>({
       </Box>
     );
   }
+  console.log("rerender custom table:");
   return (
     <TableContainer maxHeight={"700px"} overflowY="auto">
       <Table

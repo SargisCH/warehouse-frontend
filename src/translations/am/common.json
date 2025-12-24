@@ -20,6 +20,7 @@
   "mainDashboard": "Գլխավոր մենյու",
   "saveAndSelect": "Ստեղծել և ընտրել",
   "totalWorth": "Ընդհանուր արժեք",
+  "total": "Ընդհանուր",
   "name": "Անուն",
   "price": "Գին",
   "date": "Ամսաթիվ",
@@ -90,7 +91,9 @@
     "forSale": "Վաճառվող",
     "returnable": "Վերադարձվող",
     "fractional": "Կոտորակային մաս",
-    "moveToWarehouse": "Տեղափոխել այլ պահեստ"
+    "moveToWarehouse": "Տեղափոխել այլ պահեստ",
+    "totalStock": "Առկա",
+    "totalStockTooltip": "Մանրամասն տեսնելու համար սեղմեք քանակի վրա"
   },
   "inventorySupplier": {
     "createInventorySupplier": "Ստեղծել մատակարար",
