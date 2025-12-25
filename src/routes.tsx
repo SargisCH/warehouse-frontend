@@ -36,6 +36,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBox,
   faCreditCard,
+  faFile,
   faGear,
   faHistory,
   faHome,
@@ -53,6 +54,10 @@ import ForgotPassword from "views/auth/forgotPassword";
 import { resetPassword } from "aws-amplify/auth";
 import ConfirmResetPassword from "views/auth/ConfirmResetPassword";
 import ProductGroup from "pages/productGroup/ProductGroup";
+import Document from "pages/document/Document";
+import Supplier from "pages/supplier/Supplier";
+import Supply from "pages/supply/Supply";
+
 const routes: RouteTypeExtended[] = [
   {
     name: "Main Dashboard",
@@ -117,7 +122,35 @@ const routes: RouteTypeExtended[] = [
       },
     ],
   },
-
+  {
+    name: "Documents",
+    layout: "/admin",
+    path: "/documents",
+    icon: <FontAwesomeIcon icon={faFile} />,
+    translationKey: "documents",
+    component: Document,
+    role: [Role.ADMIN, Role.MANAGER],
+  },
+  {
+    name: "Suppliers",
+    translationKey: "suppliers",
+    layout: "/admin",
+    path: "/suppliers",
+    exact: true,
+    icon: <FontAwesomeIcon icon={faUpload} />,
+    component: Supplier,
+    role: [Role.ADMIN],
+  },
+  {
+    name: "Supplies",
+    translationKey: "supplies",
+    layout: "/admin",
+    path: "/supplies",
+    exact: true,
+    icon: <FontAwesomeIcon icon={faShop} />,
+    component: Supply,
+    role: [Role.ADMIN],
+  },
   // {
   //   name: "NFT Marketplace",
   //   layout: "/admin",
@@ -368,6 +401,9 @@ export const links = {
   supplier: (supplierId: string | number) =>
     `/admin/suppliers/upsert/${supplierId}`,
   createSupplier: "/admin/suppliers/upsert/",
+  supplies: "/admin/supplies",
+  createSupply: "/admin/supplies/create",
+  supply: (supplyId: string | number) => `/admin/supplies/edit/${supplyId}`,
   supplyOrders: "/admin/supply-orders",
   supplyOrder: (inventorySupplierId: string | number, orderId: number) =>
     `/admin/supply-orders/upsert/${inventorySupplierId}/order/${orderId}`,
@@ -406,5 +442,9 @@ export const links = {
   returnSale: (saleId: number) => `/admin/sale/return/${saleId}`,
   returnSaleList: "/admin/sale/return/",
   returnSaleDetails: (saleId: number) => `/admin/sale/return/${saleId}/details`,
+  documents: "/admin/documents",
+  document: (documentId: string | number) =>
+    `/admin/documents/upsert/${documentId}`,
+  createDocument: "/admin/documents/upsert/",
 };
 export default routes;

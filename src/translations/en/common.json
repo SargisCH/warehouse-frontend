@@ -1,3 +1,155 @@
 {
-  "creditList": "Credit List"
+  "creditList": "Credit List",
+  "supplyOrders": "Supply Orders",
+  "inventories": "Inventories",
+  "inventorySuppliers": "Suppliers",
+  "inventorySupplier": "Supplier",
+  "managers": "Managers",
+  "transactionHistoryList": "Transaction History",
+  "sales": "Sales",
+  "salesHistory": "Sales History",
+  "clients": "Clients",
+  "warehouse": "Warehouse",
+  "inventory": "Inventory",
+  "products": "Products",
+  "productSingle": "Product",
+  "stockProducts": "Stock Products",
+  "categories": "Categories",
+  "balanceHistory": "Balance History",
+  "inventoryEntries": "Inventory Entries",
+  "mainDashboard": "Main Dashboard",
+  "saveAndSelect": "Save and Select",
+  "totalWorth": "Total Worth",
+  "total": "Total",
+  "name": "Name",
+  "price": "Price",
+  "date": "Date",
+  "amount": "Amount",
+  "unit": "Unit",
+  "average": "Average Price",
+  "createdAt": "Created At",
+  "updatedAt": "Updated At",
+  "kg": "Kg",
+  "g": "g",
+  "ingredients": "Ingredients",
+  "save": "Save",
+  "declareAmount": "Declare Amount",
+  "actions": "Actions",
+  "sureToDelete": "Are you sure you want to delete?",
+  "cancel": "Cancel",
+  "yes": "Yes",
+  "profileSettings": "Profile Settings",
+  "companyName": "Company Name",
+  "fileUpload": "Upload Logo",
+  "preview": "Preview",
+  "delete": "Delete",
+  "edit": "Edit",
+  "return": "Return",
+  "returnHistory": "Return History",
+  "piece": "piece",
+  "createNewPayoutType": "Create New Payout Type",
+  "makeNewPayout": "Make New Payout",
+  "sureToCancelSale": "Are you sure you want to cancel the sale?",
+  "saleCancelation": "Sale Cancelation",
+  "confirm": "Confirm",
+  "close": "Close",
+  "add": "Add",
+  "previous": "Previous",
+  "next": "Next",
+  "skipCount": "Skip {{count}}",
+  "documents": "Documents",
+  "supplies": "Supplies",
+  "supply": {
+    "title": "Supply",
+    "document": "Document",
+    "warehouse": "Warehouse",
+    "productsToSupply": "Products to Supply",
+    "product": "Product",
+    "quantity": "Quantity",
+    "quantityPlaceholder": "Enter quantity",
+    "supplyList": "Supply List",
+    "addSupply": "Add Supply"
+  },
+  "suppliers": "Suppliers",
+  "supplier": {
+    "title": "Supplier",
+    "name": "Name",
+    "namePlaceholder": "Enter supplier name",
+    "deleteConfirmation": "Are you sure you want to delete this supplier?",
+    "deleteSupplier": "Delete Supplier",
+    "supplierList": "Supplier List",
+    "addSupplier": "Add Supplier"
+  },
+  "client": {
+    "name": "Name",
+    "legalName": "Legal Name",
+    "legalId": "Tax ID",
+    "legalAddress": "Legal Address",
+    "address": "Address",
+    "accountNumber": "Account Number",
+    "phoneNumber": "Phone Number",
+    "otherPhoneNumber": "Other Phone Number",
+    "assignManager": "Assign Manager",
+    "dayPlan": "Day Plan"
+  },
+  "inventory": {
+    "entries": "Entries",
+    "inventory": "Inventory",
+    "supplier": "Supplier",
+    "noSupplier": "No Supplier",
+    "createNewInventory": "Create New Inventory",
+    "addNewEntry": "Add New Entry",
+    "deleteInventory": "Delete Inventory"
+  },
+  "product": {
+    "filterHeader": "Filter",
+    "createWithoutCalculation": "Save product without recalculating ingredients",
+    "productCalculationWarning": "Manual changes will not trigger ingredient recalculation in the warehouse. Only the product quantity will be updated. Click yes to proceed.",
+    "inStock": "In Stock",
+    "costPrice": "Cost Price",
+    "addProduct": "Add Product",
+    "make": "Make",
+    "deleteProduct": "Delete Product",
+    "officialName": "Full Name",
+    "forSale": "For Sale",
+    "returnable": "Returnable",
+    "fractional": "Fractional",
+    "moveToWarehouse": "Move to another warehouse",
+    "totalStock": "Total Stock",
+    "totalStockTooltip": "Click on the quantity to see details"
+  },
+  "inventorySupplier": {
+    "createInventorySupplier": "Create Supplier",
+    "makeOrder": "Make Order"
+  },
+  "credit": {
+    "addCredit": "Add Credit"
+  },
+  "transaction": {
+    "addTransaction": "Add Transaction"
+  },
+  "manager": {
+    "addManager": "Add Manager"
+  },
+  "units": {
+    "g": "g",
+    "kg": "kg",
+    "unit": "Unit"
+  },
+  "document": {
+    "documentList": "Document List",
+    "addDocument": "Add Document"
+  },
+  "productGroups": {
+    "productGroups": "Product Groups",
+    "list": "Product Group List",
+    "deleteHeaderText": "Delete Product Group",
+    "addProductGroup": "Add Product Group"
+  },
+  "warehouse": {
+    "warehouse": "Warehouse",
+    "list": "Warehouse List",
+    "addWarehouse": "Add Warehouse"
+  },
+  "set": "Set"
 }

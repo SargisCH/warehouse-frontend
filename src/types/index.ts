@@ -48,3 +48,25 @@ export type OptionType = {
   label: string;
   value: string;
 };
+
+export type Supplier = {
+  id: number;
+  name: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type SupplyItem = {
+  productId: number;
+  amount: number;
+};
+
+export type Supply = {
+  id: number;
+  documentId: number;
+  warehouseId: number;
+  products: SupplyItem[];
+  created_at?: string;
+  updated_at?: string;
+};
+
