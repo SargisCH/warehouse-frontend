@@ -1,5 +1,5 @@
-import { Weekday } from "types";
 import { api } from "./api";
+import { Client } from "types";
 import { ProductItem } from "./product";
 
 export enum PaymentType {
@@ -9,23 +9,6 @@ export enum PaymentType {
   PARTIAL_CREDIT = "PARTIAL CREDIT",
 }
 
-export type ClientType = {
-  id?: number;
-  name: string;
-  legalName: string;
-  taxId?: string;
-  accountNumber: string;
-  legalAddress: string;
-  address: string;
-  phoneNumber: string;
-  otherPhoneNumber: string;
-  email: string;
-  managerId?: number;
-  manager?: Partial<{ name: string; id: number }>;
-  dayPlan?: Weekday[];
-  updated_at?: string;
-  created_at?: string;
-};
 interface SaleItem {
   id?: number;
   stockProductId: number;
@@ -39,7 +22,7 @@ interface SaleItem {
 export interface SaleType {
   id?: number;
   clientId: number;
-  client?: ClientType;
+  client?: Client;
   partialCreditAmount?: number;
   canceled?: boolean;
   saleItems: Array<SaleItem>;
@@ -62,11 +45,18 @@ export interface SaleReturnType {
   }>;
 }
 
+type ClientListArgs = {
+  searchTerm?: string;
+  sortKey?: string;
+  sortOrder?: string;
+  managerId?: number;
+};
+
 const clientApi = api.injectEndpoints({
   endpoints: (builder) => ({
     createClient: builder.mutation({
-      query: (newClient: ClientType) => ({
-        url: "client/create",
+      query: (newClient: Partial<Client>) => ({
+        url: "client",
         method: "POST",
         body: newClient,
       }),
@@ -78,47 +68,35 @@ const clientApi = api.injectEndpoints({
       }),
     }),
     updateClient: builder.mutation({
-      query: (newClient) => {
-        const id = newClient.id;
-        const updatedClient = { ...newClient };
-        delete updatedClient.id;
+      query: (newClient: Partial<Client>) => {
+        // «Կոդ» and the joined-in labels are server-owned, so they never go back.
+        const {
+          id,
+          code,
+          clientGroupName,
+          salesZoneName,
+          managerName,
+          ...updatedClient
+        } = newClient;
         return {
           url: `client/${id}`,
-          method: "PUT",
+          method: "PATCH",
           body: updatedClient,
         };
       },
     }),
-    getClient: builder.query<
-      ClientType[],
-      {
-        weekDay?: string;
-        searchTerm?: string;
-        managerId?: number;
-        sortKey?: string;
-        sortOrder?: string;
-      } | void
-    >({
-      query: (
-        arg: {
-          weekDay?: string;
-          searchTerm?: string;
-          managerId?: number;
-          sortKey?: string;
-          sortOrder?: string;
-        } = {
-          weekDay: "",
-          searchTerm: "",
-        },
-      ) => {
-        const queryString = `weekDay=${arg.weekDay ?? ""}&searchTerm=${arg.searchTerm || ""}&managerId=${arg.managerId || ""}&sortKey=${arg.sortKey || ""}&sortOrder=${arg.sortOrder || ""}`;
+    getClient: builder.query<Client[], ClientListArgs | void>({
+      query: (arg: ClientListArgs = {}) => {
+        const queryString = `searchTerm=${arg.searchTerm || ""}&managerId=${
+          arg.managerId || ""
+        }&sortKey=${arg.sortKey || ""}&sortOrder=${arg.sortOrder || ""}`;
         return {
           url: `client?${queryString}`,
           method: "GET",
         };
       },
     }),
-    getClientById: builder.query<ClientType, { clientId: string | number }>({
+    getClientById: builder.query<Client, { clientId: string | number }>({
       query: (arg: { clientId: string | number }) => ({
         url: `client/${arg.clientId}`,
         method: "GET",

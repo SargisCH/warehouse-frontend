@@ -38,6 +38,8 @@ import { Controller, useFieldArray, useForm } from "react-hook-form";
 const ValidationSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
   officialName: z.string().min(1, { message: "Official is required." }),
+  // «Արտադրող»
+  manufacturer: z.string().optional(),
   unitId: z.string().min(1, { message: "Unit is required." }),
   productGroupId: z.string().min(1, { message: "Product Grop is required." }),
   fractional: z.boolean().optional(),
@@ -107,6 +109,7 @@ const UpsertProduct = (props: { create: boolean }) => {
     defaultValues: {
       name: "",
       officialName: "",
+      manufacturer: "",
       unitId: "",
       productGroupId: "",
       returnable: false,
@@ -130,6 +133,7 @@ const UpsertProduct = (props: { create: boolean }) => {
         reset({
           name: productItemRes.data.name,
           officialName: productItemRes.data.officialName,
+          manufacturer: productItemRes.data.manufacturer ?? "",
           unitId: String(productItemRes.data.unitId),
           productGroupId: String(productItemRes.data.groupId),
           forSale: productItemRes.data.forSale,
@@ -221,6 +225,19 @@ const UpsertProduct = (props: { create: boolean }) => {
                     {errors.officialName.message}
                   </FormErrorMessage>
                 ) : null}
+              </FormControl>
+            )}
+          />
+          <Controller
+            name="manufacturer"
+            control={control}
+            render={({ field }) => (
+              <FormControl>
+                <FormLabel>{t("common.product.manufacturer")}</FormLabel>
+                <Input
+                  {...field}
+                  placeholder={t("common.product.manufacturer")}
+                />
               </FormControl>
             )}
           />

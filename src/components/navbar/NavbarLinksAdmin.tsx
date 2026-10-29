@@ -28,7 +28,7 @@ import { IoMdMoon, IoMdSunny } from "react-icons/io";
 import { FaEthereum } from "react-icons/fa";
 import routes, { links } from "routes";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@reduxjs/toolkit/query";
+import { RootState } from "store/store";
 import { logout } from "store/slices/userSlice";
 import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -50,15 +50,6 @@ export default function HeaderLinks(props: { secondary: boolean }) {
   );
   const borderButton = useColorModeValue("secondaryGray.500", "whiteAlpha.200");
 
-  interface RootState {
-    user: {
-      tenant: {
-        name?: string;
-        logo?: string;
-        currency: string;
-      };
-    };
-  }
   const dispatch = useDispatch();
   const history = useHistory();
   const user = useSelector((state: RootState) => state.user);

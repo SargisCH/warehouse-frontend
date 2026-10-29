@@ -9,6 +9,7 @@ const initialState = {
   tenantId: null,
   tenant: { id: null, name: "", logo: "" },
   role: Role.USER,
+  assistantAccess: "NONE",
 } as User;
 
 const userSlice = createSlice({

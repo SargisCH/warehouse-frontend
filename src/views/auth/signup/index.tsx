@@ -105,19 +105,19 @@ export default function SignUp() {
         {(props) => (
           <Form>
             <Flex
-              maxW={{ base: "100%", md: "max-content" }}
-              w="100%"
-              mx={{ base: "auto", lg: "0px" }}
+              w={{ base: "100%", lg: "50%" }}
+              maxW={{ base: "100%", lg: "50%" }}
+              ms="0px"
               me="auto"
               h="100%"
-              alignItems="start"
+              alignItems="center"
               justifyContent="center"
               mb={{ base: "30px", md: "60px" }}
               px={{ base: "25px", md: "0px" }}
               mt={{ base: "40px", md: "14vh" }}
               flexDirection="column"
             >
-              <Box me="auto">
+              <Box mx="auto" textAlign="center">
                 <Heading color={textColor} fontSize="36px" mb="10px">
                   Sign Up
                 </Heading>
@@ -138,8 +138,7 @@ export default function SignUp() {
                 maxW="100%"
                 background="transparent"
                 borderRadius="15px"
-                mx={{ base: "auto", lg: "unset" }}
-                me="auto"
+                mx="auto"
                 mb={{ base: "20px", md: "auto" }}
               >
                 <Field name="email" validate={validateEmail}>

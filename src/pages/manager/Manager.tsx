@@ -9,7 +9,6 @@ export default function Manager() {
 
   return (
     <Box>
-      <h1>Manager</h1>
       <Switch>
         <Route path={`${match.path}`} exact={true}>
           <ManagerList />

@@ -25,6 +25,7 @@ import { Role, RouteTypeExtended } from "./types/index";
 import SignInCentered from "views/auth/signIn";
 import SignUp from "views/auth/signup";
 import Client from "pages/client/Client";
+import Sale from "pages/sale/Sale";
 import Credit from "pages/credit/Credit";
 import VerifyEmail from "views/auth/verifyEmail";
 import TransactionHistory from "pages/transactionHistory/TransactionHistory";
@@ -49,6 +50,13 @@ import {
   faTags,
   faUpload,
   faWarehouse,
+  faUsers,
+  faMapMarkedAlt,
+  faExchangeAlt,
+  faTruck,
+  faUndo,
+  faChartBar,
+  faHandHoldingUsd,
 } from "@fortawesome/free-solid-svg-icons";
 import ForgotPassword from "views/auth/forgotPassword";
 import { resetPassword } from "aws-amplify/auth";
@@ -57,6 +65,24 @@ import ProductGroup from "pages/productGroup/ProductGroup";
 import Document from "pages/document/Document";
 import Supplier from "pages/supplier/Supplier";
 import Supply from "pages/supply/Supply";
+import ClientGroup from "pages/clientGroup/ClientGroup";
+import SalesZone from "pages/salesZone/SalesZone";
+import SaleReturn from "pages/sale/SaleReturn";
+import PriceList from "pages/priceList/PriceList";
+import { Payments, Refund } from "pages/payment/Payment";
+import Repayment from "pages/repayment/Repayment";
+import {
+  DelivererIssue,
+  DelivererReturn,
+  DelivererTransfer,
+  WarehouseTransfer,
+} from "pages/stockTransfer/StockTransfer";
+import SalesAnalysis from "pages/report/SalesAnalysis";
+import SalesComparison from "pages/report/SalesComparison";
+import ClientStatement from "pages/report/ClientStatement";
+import ClientBalances from "pages/report/ClientBalances";
+import ManagerBalances from "pages/report/ManagerBalances";
+import ManagerStockReport from "pages/report/ManagerStockReport";
 
 const routes: RouteTypeExtended[] = [
   {
@@ -150,6 +176,248 @@ const routes: RouteTypeExtended[] = [
     icon: <FontAwesomeIcon icon={faShop} />,
     component: Supply,
     role: [Role.ADMIN],
+  },
+  {
+    name: "",
+    layout: "",
+    path: "",
+    exact: true,
+    icon: <FontAwesomeIcon icon={faUsers} />,
+    component: () => <></>,
+    group: true,
+    groupName: "Vacharq",
+    translationKey: "sales",
+    role: [],
+    nestedRoutes: [
+      {
+        name: "Client Groups",
+        layout: "/admin",
+        path: "/client-groups",
+        translationKey: "clientGroup.clientGroups",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faUsers} />,
+        component: ClientGroup,
+        role: [Role.ADMIN],
+      },
+      {
+        name: "Sales Zones",
+        layout: "/admin",
+        path: "/sales-zones",
+        translationKey: "salesZone.salesZones",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faMapMarkedAlt} />,
+        component: SalesZone,
+        role: [Role.ADMIN],
+      },
+      {
+        name: "Managers",
+        layout: "/admin",
+        path: "/manager",
+        translationKey: "manager.managers",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faPerson} />,
+        component: Manager,
+        role: [Role.ADMIN],
+      },
+      {
+        name: "Clients",
+        layout: "/admin",
+        path: "/client",
+        translationKey: "client.clients",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faUsers} />,
+        component: Client,
+        role: [Role.ADMIN, Role.MANAGER],
+      },
+      {
+        name: "Price Lists",
+        layout: "/admin",
+        path: "/price-lists",
+        translationKey: "priceList.priceLists",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faTags} />,
+        component: PriceList,
+        role: [Role.ADMIN],
+      },
+      {
+        name: "Sales",
+        layout: "/admin",
+        path: "/sale",
+        translationKey: "sale.sales",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faReceipt} />,
+        component: Sale,
+        role: [Role.ADMIN, Role.MANAGER],
+      },
+      {
+        name: "Sale Returns",
+        layout: "/admin",
+        path: "/sale-return",
+        translationKey: "sale.returns",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faHistory} />,
+        component: SaleReturn,
+        role: [Role.ADMIN, Role.MANAGER],
+      },
+      {
+        name: "Payments",
+        layout: "/admin",
+        path: "/payments",
+        translationKey: "payment.payments",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faMoneyBill} />,
+        component: Payments,
+        role: [Role.ADMIN, Role.MANAGER],
+      },
+      {
+        name: "Repayments",
+        layout: "/admin",
+        path: "/repayments",
+        translationKey: "repayment.repayments",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faMoneyCheckAlt} />,
+        component: Repayment,
+        role: [Role.ADMIN, Role.MANAGER],
+      },
+      {
+        name: "Refunds",
+        layout: "/admin",
+        path: "/refunds",
+        translationKey: "payment.refunds",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faHandHoldingUsd} />,
+        component: Refund,
+        role: [Role.ADMIN],
+      },
+    ],
+  },
+  {
+    name: "",
+    layout: "",
+    path: "",
+    exact: true,
+    icon: <FontAwesomeIcon icon={faTruck} />,
+    component: () => <></>,
+    group: true,
+    groupName: "Stock movements",
+    translationKey: "transfer.stockMovements",
+    role: [],
+    nestedRoutes: [
+      {
+        name: "Warehouse Transfers",
+        layout: "/admin",
+        path: "/warehouse-transfers",
+        translationKey: "transfer.kinds.WAREHOUSE",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faExchangeAlt} />,
+        component: WarehouseTransfer,
+        role: [Role.ADMIN],
+      },
+      {
+        name: "Deliverer Issues",
+        layout: "/admin",
+        path: "/deliverer-issues",
+        translationKey: "transfer.kinds.ISSUE",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faTruck} />,
+        component: DelivererIssue,
+        role: [Role.ADMIN],
+      },
+      {
+        name: "Deliverer Returns",
+        layout: "/admin",
+        path: "/deliverer-returns",
+        translationKey: "transfer.kinds.RETURN",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faUndo} />,
+        component: DelivererReturn,
+        role: [Role.ADMIN],
+      },
+      {
+        name: "Deliverer Transfers",
+        layout: "/admin",
+        path: "/deliverer-transfers",
+        translationKey: "transfer.kinds.DELIVERER",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faExchangeAlt} />,
+        component: DelivererTransfer,
+        role: [Role.ADMIN],
+      },
+    ],
+  },
+  {
+    name: "",
+    layout: "",
+    path: "",
+    exact: true,
+    icon: <FontAwesomeIcon icon={faChartBar} />,
+    component: () => <></>,
+    group: true,
+    groupName: "Reports",
+    translationKey: "report.reports",
+    role: [],
+    nestedRoutes: [
+      {
+        name: "Sales Analysis",
+        layout: "/admin",
+        path: "/reports/sales-analysis",
+        translationKey: "report.salesAnalysis",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faChartBar} />,
+        component: SalesAnalysis,
+        role: [Role.ADMIN],
+      },
+      {
+        name: "Sales Comparison",
+        layout: "/admin",
+        path: "/reports/sales-comparison",
+        translationKey: "report.salesComparison",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faChartBar} />,
+        component: SalesComparison,
+        role: [Role.ADMIN],
+      },
+      {
+        name: "Client Statement",
+        layout: "/admin",
+        path: "/reports/client-statement",
+        translationKey: "report.clientStatement",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faFile} />,
+        component: ClientStatement,
+        role: [Role.ADMIN, Role.MANAGER],
+      },
+      {
+        name: "Client Balances",
+        layout: "/admin",
+        path: "/reports/client-balances",
+        translationKey: "report.clientBalances",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faList} />,
+        component: ClientBalances,
+        role: [Role.ADMIN, Role.MANAGER],
+      },
+      {
+        name: "Manager Balances",
+        layout: "/admin",
+        path: "/reports/manager-balances",
+        translationKey: "report.managerBalances",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faList} />,
+        component: ManagerBalances,
+        role: [Role.ADMIN],
+      },
+      {
+        name: "Manager Stock",
+        layout: "/admin",
+        path: "/reports/manager-stock",
+        translationKey: "report.managerStock",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faBox} />,
+        component: ManagerStockReport,
+        role: [Role.ADMIN, Role.MANAGER],
+      },
+    ],
   },
   // {
   //   name: "NFT Marketplace",
@@ -424,6 +692,17 @@ export const links = {
   sale: "/admin/sale",
   saleCreate: (clientId: string | number) => `/admin/sale/create/${clientId}`,
   saleInfo: (saleId: number) => `/admin/sale/info/${saleId}`,
+  sales: "/admin/sale",
+  saleItem: (saleId: string | number) => `/admin/sale/upsert/${saleId}`,
+  createSale: "/admin/sale/upsert/",
+  saleReturns: "/admin/sale-return",
+  saleReturn: (saleId: string | number) =>
+    `/admin/sale-return/upsert/${saleId}`,
+  createSaleReturn: "/admin/sale-return/upsert/",
+  priceLists: "/admin/price-lists",
+  priceList: (priceListId: string | number) =>
+    `/admin/price-lists/upsert/${priceListId}`,
+  createPriceList: "/admin/price-lists/upsert/",
   credits: "/admin/credit",
   createCredit: "/admin/credit/upsert/",
   credit: (creditId: string | number) => `/admin/credit/upsert/${creditId}`,
@@ -442,9 +721,32 @@ export const links = {
   returnSale: (saleId: number) => `/admin/sale/return/${saleId}`,
   returnSaleList: "/admin/sale/return/",
   returnSaleDetails: (saleId: number) => `/admin/sale/return/${saleId}/details`,
+  clientGroups: "/admin/client-groups",
+  clientGroup: (clientGroupId: string | number) =>
+    `/admin/client-groups/upsert/${clientGroupId}`,
+  createClientGroup: "/admin/client-groups/upsert/",
+  salesZones: "/admin/sales-zones",
+  salesZone: (salesZoneId: string | number) =>
+    `/admin/sales-zones/upsert/${salesZoneId}`,
+  createSalesZone: "/admin/sales-zones/upsert/",
   documents: "/admin/documents",
   document: (documentId: string | number) =>
     `/admin/documents/upsert/${documentId}`,
   createDocument: "/admin/documents/upsert/",
+  payments: "/admin/payments",
+  payment: (paymentId: string | number) =>
+    `/admin/payments/upsert/${paymentId}`,
+  createPayment: "/admin/payments/upsert",
+  refunds: "/admin/refunds",
+  refund: (paymentId: string | number) => `/admin/refunds/upsert/${paymentId}`,
+  createRefund: "/admin/refunds/upsert",
+  repayments: "/admin/repayments",
+  repayment: (repaymentId: string | number) =>
+    `/admin/repayments/upsert/${repaymentId}`,
+  createRepayment: "/admin/repayments/upsert",
+  warehouseTransfers: "/admin/warehouse-transfers",
+  delivererTransfers: "/admin/deliverer-transfers",
+  delivererIssues: "/admin/deliverer-issues",
+  delivererReturns: "/admin/deliverer-returns",
 };
 export default routes;

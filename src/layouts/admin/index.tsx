@@ -1,6 +1,7 @@
 // Chakra imports
 import { Box, useDisclosure } from "@chakra-ui/react";
 import Footer from "components/footer/FooterAdmin";
+import AssistantPanel from "components/assistant/AssistantPanel";
 // Layout components
 import Navbar from "components/navbar/NavbarAdmin";
 import Sidebar from "components/sidebar/Sidebar";
@@ -150,6 +151,7 @@ export default function Dashboard(props: { [x: string]: any }) {
           <Box background={"#f8f9fc"}>
             <Footer />
           </Box>
+          <AssistantPanel />
         </Box>
       </SidebarContext.Provider>
     </Box>

@@ -138,7 +138,7 @@ export default function getProductCoumns(
       cell: (info) => (
         <Flex alignItems={"center"} gap={2}>
           <TextCell
-            text={`${info.getValue().toString()} ${t(`common.units.${info.row.original.unit.name}`)}`}
+            text={`${info.getValue() ?? 0} ${t(`common.units.${info.row.original.unit.name}`)}`}
             color={textColor}
             textDecoration="underline"
             onClick={(e) => {

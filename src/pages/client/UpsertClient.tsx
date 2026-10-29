@@ -1,171 +1,226 @@
 import {
+  Box,
   Button,
   Flex,
   FormControl,
+  FormErrorMessage,
   FormLabel,
   Input,
-  Box,
   Spinner,
-  useBreakpointValue,
 } from "@chakra-ui/react";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  useCreateClientMutation,
   useDeleteClientMutation,
   useLazyGetClientByIdQuery,
   useUpdateClientMutation,
-  useCreateClientMutation,
-  ClientType,
 } from "api/client";
-import { useGetManagerQuery, useLazyGetClientScheduleQuery } from "api/manager";
+import { useGetClientGroupsQuery } from "api/clientGroup";
+import { useGetManagersQuery } from "api/manager";
+import { useGetSalesZonesQuery } from "api/salesZone";
+import { useGetPriceListsQuery } from "api/priceList";
+import { PAYMENT_TYPES } from "types";
 import AlertDialog from "components/alertDialog/AlertDialog";
 import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
 import Select from "react-select";
 import { links } from "routes";
-import { Weekday } from "types";
 
-const weekDays: Weekday[] = [
-  Weekday.MONDAY,
-  Weekday.TUESDAY,
-  Weekday.WEDNESDAY,
-  Weekday.THURSDAY,
-  Weekday.FRIDAY,
-  Weekday.SATURDAY,
-  Weekday.SUNDAY,
-];
+// Matches PHONE_REGEX on the backend, so a number rejected here is rejected there.
+const PHONE_REGEX = /^[0-9\s+\-.()]+$/;
 
-type OptionType = {
-  label: string;
-  value: string;
+const optionalPhone = z
+  .string()
+  .refine((value) => !value || PHONE_REGEX.test(value), {
+    message: "Not a valid phone number.",
+  })
+  .optional();
+
+const ValidationSchema = z.object({
+  name: z.string().min(1, { message: "Name is required." }),
+  legalName: z.string().optional(),
+  taxId: z.string().optional(),
+  legalAddress: z.string().optional(),
+  address: z.string().optional(),
+  phoneNumber: optionalPhone,
+  otherPhoneNumber: optionalPhone,
+  email: z
+    .string()
+    .refine((value) => !value || z.string().email().safeParse(value).success, {
+      message: "Not a valid email.",
+    })
+    .optional(),
+  clientGroupId: z.string().optional(),
+  salesZoneId: z.string().optional(),
+  managerId: z.string().optional(),
+  // «Գնացուցակ», «Վճարման տեսակ» and the credit terms.
+  priceListId: z.string().optional(),
+  paymentType: z.string().optional(),
+  paymentTermDays: z
+    .string()
+    .refine((v) => !v || /^\d+$/.test(v), { message: "Whole days only." })
+    .optional(),
+  debtLimit: z
+    .string()
+    .refine((v) => !v || /^\d+(\.\d{1,2})?$/.test(v), {
+      message: "Not a valid amount.",
+    })
+    .optional(),
+  overdueDebtLimit: z
+    .string()
+    .refine((v) => !v || /^\d+(\.\d{1,2})?$/.test(v), {
+      message: "Not a valid amount.",
+    })
+    .optional(),
+});
+
+type ClientFormType = z.infer<typeof ValidationSchema>;
+
+const getErrorStyles = (error: boolean) => {
+  if (error) {
+    return { borderColor: "red", borderWidth: "2px" };
+  }
+  return {};
 };
 
-type WeekdayOptionArray = Array<{
-  label: Weekday;
-  value: Weekday;
-}>;
-
 const UpsertClient = () => {
-  const [name, setName] = useState("");
-  const [legalName, setLegalname] = useState("");
-  const [email, setEmail] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [otherPhoneNumber, setOtherPhoneNumber] = useState("");
-  const [taxId, setTaxId] = useState("");
-  const [accountNumber, setAccountNumber] = useState("");
-  const [legalAddress, setLegalAddress] = useState("");
-  const [address, setAddress] = useState("");
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [clientCreateError, setClientCreateErro] = useState("");
-  const [manager, setManager] = useState<OptionType>();
-  const [selectedWeekdays, setSelectedWeekdays] =
-    useState<WeekdayOptionArray>();
+  const [error, setError] = useState("");
+  // «Կոդ» is assigned by the server; shown once the record exists.
+  const [code, setCode] = useState("");
   const params = useParams() as any;
-
-  const [
-    createClient,
-    {
-      data: createData,
-      isSuccess: isSuccessClient,
-      isError: isErrorClient,
-      error: createError,
-    },
-  ] = useCreateClientMutation();
-  const [updateClient] = useUpdateClientMutation();
-  const [deleteClient] = useDeleteClientMutation();
-  const [getClientSchedule] = useLazyGetClientScheduleQuery();
-  const { data: managersArray = [] } = useGetManagerQuery();
   const history = useHistory();
-  const [getClientById] = useLazyGetClientByIdQuery();
   const { t } = useTranslation();
 
-  const isMobile = useBreakpointValue({ base: true, md: false });
-  useEffect(() => {
-    if (isErrorClient) {
-      setClientCreateErro((createError as any)?.data?.message as string);
-    }
-    if (isSuccessClient) {
-      history.push(links.clients);
-    }
-  }, [isErrorClient, createData, isSuccessClient, history, createError]);
+  const [createClient] = useCreateClientMutation();
+  const [updateClient] = useUpdateClientMutation();
+  const [deleteClient] = useDeleteClientMutation();
+  const [getClientById, { isLoading }] = useLazyGetClientByIdQuery();
+  const { data: clientGroups = [] } = useGetClientGroupsQuery();
+  const { data: salesZones = [] } = useGetSalesZonesQuery();
+  const { data: managers = [] } = useGetManagersQuery();
+
+  const groupOptions = clientGroups.map((group) => ({
+    label: group.name,
+    value: String(group.id),
+  }));
+
+  const zoneOptions = salesZones.map((zone) => ({
+    label: zone.name,
+    value: String(zone.id),
+  }));
+
+  const { data: priceLists = [] } = useGetPriceListsQuery();
+  const priceListOptions = priceLists.map((priceList) => ({
+    label: `${priceList.code} — ${priceList.name}`,
+    value: String(priceList.id),
+  }));
+  const paymentTypeOptions = PAYMENT_TYPES.map((type) => ({
+    label: t(`common.sale.paymentTypes.${type}`),
+    value: type,
+  }));
+
+  const managerOptions = managers.map((manager) => ({
+    label: `${manager.code} — ${manager.name}`,
+    value: String(manager.id),
+  }));
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<ClientFormType>({
+    resolver: zodResolver(ValidationSchema),
+    defaultValues: {
+      name: "",
+      legalName: "",
+      taxId: "",
+      legalAddress: "",
+      address: "",
+      phoneNumber: "",
+      otherPhoneNumber: "",
+      email: "",
+      clientGroupId: "",
+      salesZoneId: "",
+      managerId: "",
+      priceListId: "",
+      paymentType: "",
+      paymentTermDays: "0",
+      debtLimit: "0",
+      overdueDebtLimit: "0",
+    },
+  });
+
   useEffect(() => {
     (async () => {
       if (params.clientId) {
-        setIsLoading(true);
-        const res = await getClientById({
-          clientId: params.clientId,
-        });
-        setName(res.data.name);
-        setLegalname(res.data.legalName);
-        setTaxId(res.data.taxId);
-        setEmail(res.data.email);
-        setPhoneNumber(res.data.phoneNumber);
-        setOtherPhoneNumber(res.data.otherPhoneNumber);
-        setLegalAddress(res.data.legalAddress);
-        setAddress(res.data.address);
-        setAccountNumber(res.data.accountNumber);
-
-        const managerFound = managersArray.find(
-          (m: Partial<{ id: number }>) => {
-            return m.id === res.data.managerId;
-          },
-        );
-        if (managerFound) {
-          setManager({
-            label: managerFound.name,
-            value: String(managerFound.id),
+        const res = await getClientById({ clientId: params.clientId });
+        if (res.data) {
+          setCode(res.data.code);
+          reset({
+            name: res.data.name,
+            legalName: res.data.legalName ?? "",
+            taxId: res.data.taxId ?? "",
+            legalAddress: res.data.legalAddress ?? "",
+            address: res.data.address ?? "",
+            phoneNumber: res.data.phoneNumber ?? "",
+            otherPhoneNumber: res.data.otherPhoneNumber ?? "",
+            email: res.data.email ?? "",
+            clientGroupId: res.data.clientGroupId
+              ? String(res.data.clientGroupId)
+              : "",
+            salesZoneId: res.data.salesZoneId
+              ? String(res.data.salesZoneId)
+              : "",
+            managerId: res.data.managerId ? String(res.data.managerId) : "",
+            priceListId: res.data.priceListId
+              ? String(res.data.priceListId)
+              : "",
+            paymentType: res.data.paymentType ?? "",
+            paymentTermDays: String(res.data.paymentTermDays ?? 0),
+            debtLimit: res.data.debtLimit ?? "0",
+            overdueDebtLimit: res.data.overdueDebtLimit ?? "0",
           });
-
-          const scheduleRes = await getClientSchedule({
-            managerId: managerFound.id,
-            clientId: params.clientId,
-          });
-          if (scheduleRes.data.dayPlan) {
-            setSelectedWeekdays(
-              scheduleRes.data.dayPlan?.map((d: Weekday) => ({
-                label: d,
-                value: d,
-              })),
-            );
-          }
         }
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 100);
-
-        //setCurrency(productItemRes.data.currency);
       }
     })();
-  }, [params.clientId, getClientById, managersArray, getClientSchedule]);
+  }, [params.clientId, getClientById, reset]);
 
-  const saveClient = async () => {
-    const data: ClientType = {
-      name,
-      legalName,
-      taxId: taxId,
-      email,
-      phoneNumber,
-      otherPhoneNumber,
-      legalAddress,
-      address,
-      accountNumber,
+  const onSubmit = async (values: ClientFormType) => {
+    const data = {
+      name: values.name,
+      legalName: values.legalName || null,
+      taxId: values.taxId || null,
+      legalAddress: values.legalAddress || null,
+      address: values.address || null,
+      phoneNumber: values.phoneNumber || null,
+      otherPhoneNumber: values.otherPhoneNumber || null,
+      email: values.email || null,
+      clientGroupId: values.clientGroupId ? Number(values.clientGroupId) : null,
+      salesZoneId: values.salesZoneId ? Number(values.salesZoneId) : null,
+      managerId: values.managerId ? Number(values.managerId) : null,
+      priceListId: values.priceListId ? Number(values.priceListId) : null,
+      paymentType: values.paymentType || null,
+      paymentTermDays: Number(values.paymentTermDays || 0),
+      debtLimit: values.debtLimit || "0",
+      overdueDebtLimit: values.overdueDebtLimit || "0",
     };
-    if (manager?.value) {
-      data.managerId = Number(manager.value);
-    }
-    if (selectedWeekdays?.length > 0) {
-      data.dayPlan = selectedWeekdays.map((d) => d.value);
-    }
 
-    if (params.clientId) {
-      await updateClient({
-        ...data,
-        id: params.clientId,
-      });
-    } else {
-      await createClient(data);
+    const res: any = params.clientId
+      ? await updateClient({ ...data, id: params.clientId })
+      : await createClient(data);
+
+    if (res?.error) {
+      setError(res.error?.data?.message || "Request failed");
+      return;
     }
+    history.push(links.clients);
   };
+
   if (isLoading) {
     return (
       <Spinner
@@ -177,131 +232,146 @@ const UpsertClient = () => {
       />
     );
   }
+
+  // Every plain text field is laid out the same way; only the label differs.
+  const textField = (
+    fieldName: keyof ClientFormType,
+    labelKey: string,
+    type = "text",
+  ) => (
+    <Controller
+      name={fieldName}
+      control={control}
+      render={({ field }) => (
+        <FormControl isInvalid={!!errors[fieldName]}>
+          <FormLabel>{t(labelKey)}</FormLabel>
+          <Input {...field} type={type} placeholder={t(labelKey)} />
+          <FormErrorMessage>{errors[fieldName]?.message}</FormErrorMessage>
+        </FormControl>
+      )}
+    />
+  );
+
+  const selectField = (
+    fieldName:
+      | "clientGroupId"
+      | "salesZoneId"
+      | "managerId"
+      | "priceListId"
+      | "paymentType",
+    labelKey: string,
+    placeholderKey: string,
+    options: Array<{ label: string; value: string }>,
+  ) => (
+    <Controller
+      name={fieldName}
+      control={control}
+      render={({ field }) => (
+        <FormControl isInvalid={!!errors[fieldName]}>
+          <FormLabel>{t(labelKey)}</FormLabel>
+          <Select
+            isClearable={true}
+            placeholder={t(placeholderKey)}
+            styles={{
+              control: (baseStyles) => ({
+                ...baseStyles,
+                ...getErrorStyles(!!errors[fieldName]),
+              }),
+            }}
+            value={options.find((op) => op.value === field.value) ?? null}
+            onChange={(valueSelected) => {
+              field.onChange(valueSelected?.value ?? "");
+            }}
+            options={options}
+          />
+          <FormErrorMessage>{errors[fieldName]?.message}</FormErrorMessage>
+        </FormControl>
+      )}
+    />
+  );
+
   return (
-    <Box>
+    <Box as="form" onSubmit={handleSubmit(onSubmit)}>
       <Flex direction="column" gap="20px">
-        <Flex gap="20px" flexDirection={isMobile ? "column" : "row"}>
+        <Flex gap="20px">
           <FormControl>
-            <FormLabel>{t("common.client.name")}</FormLabel>
+            <FormLabel>{t("common.client.code")}</FormLabel>
             <Input
-              type="text"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={code || t("common.client.codeAutoAssigned")}
+              isReadOnly={true}
+              isDisabled={true}
             />
           </FormControl>
-          <FormControl>
-            <FormLabel>{t("common.client.legalName")}</FormLabel>
-            <Input
-              type="text"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setLegalname(e.target.value)}
-            />
-          </FormControl>
+          {textField("name", "common.client.name")}
         </Flex>
-        <Flex gap="20px" flexDirection={isMobile ? "column" : "row"}>
-          <FormControl>
-            <FormLabel>{t("common.client.email")}</FormLabel>
-            <Input
-              type="text"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </FormControl>
+        <Flex gap="20px">
+          {textField("legalName", "common.client.legalName")}
+          {textField("taxId", "common.client.taxId")}
         </Flex>
-        <Flex gap="20px" flexDirection={isMobile ? "column" : "row"}>
-          <FormControl>
-            <FormLabel>{t("common.client.accountNumber")}</FormLabel>
-            <Input
-              type="text"
-              placeholder="Bank Account"
-              value={accountNumber}
-              onChange={(e) => setAccountNumber(e.target.value)}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>{t("common.client.legalId")}</FormLabel>
-            <Input
-              type="text"
-              placeholder="Tax Id"
-              value={taxId}
-              onChange={(e) => setTaxId(e.target.value)}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>{t("common.client.legalAddress")}</FormLabel>
-            <Input
-              type="text"
-              placeholder="Legal Address"
-              value={legalAddress}
-              onChange={(e) => setLegalAddress(e.target.value)}
-            />
-          </FormControl>
+        <Flex gap="20px">
+          {textField("legalAddress", "common.client.legalAddress")}
+          {textField("address", "common.client.address")}
         </Flex>
-        <Flex gap="20px" flexDirection={isMobile ? "column" : "row"}>
-          <FormControl>
-            <FormLabel>{t("common.client.address")}</FormLabel>
-            <Input
-              type="text"
-              placeholder="Address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>{t("common.client.phoneNumber")}</FormLabel>
-            <Input
-              type="text"
-              placeholder="Phone Number"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>{t("common.client.otherPhoneNumber")}</FormLabel>
-            <Input
-              type="text"
-              placeholder="Other Phone Number"
-              value={otherPhoneNumber}
-              onChange={(e) => setOtherPhoneNumber(e.target.value)}
-            />
-          </FormControl>
+        <Flex gap="20px">
+          {textField("phoneNumber", "common.client.phoneNumber", "tel")}
+          {textField(
+            "otherPhoneNumber",
+            "common.client.otherPhoneNumber",
+            "tel",
+          )}
         </Flex>
-      </Flex>
-      <Flex gap="20px" mt="10px">
-        <FormControl>
-          <FormLabel>{t("common.client.assignManager")}</FormLabel>
-          <Select
-            value={manager}
-            onChange={setManager}
-            options={managersArray.map((m) => ({
-              label: m.name,
-              value: String(m.id),
-            }))}
-          />
-        </FormControl>
-        <FormControl>
-          <FormLabel>{t("common.client.dayPlan")}</FormLabel>
-          <Select
-            value={selectedWeekdays}
-            onChange={(newValue) =>
-              setSelectedWeekdays(newValue as WeekdayOptionArray)
-            }
-            options={weekDays.map((d) => ({ label: d, value: d }))}
-            isMulti
-          />
-        </FormControl>
+        <Flex gap="20px">
+          {textField("email", "common.client.email", "email")}
+          {selectField(
+            "clientGroupId",
+            "common.client.group",
+            "common.client.selectGroup",
+            groupOptions,
+          )}
+        </Flex>
+        <Flex gap="20px">
+          {selectField(
+            "salesZoneId",
+            "common.salesZone.salesZone",
+            "common.salesZone.selectSalesZone",
+            zoneOptions,
+          )}
+          {selectField(
+            "managerId",
+            "common.client.manager",
+            "common.client.selectManager",
+            managerOptions,
+          )}
+        </Flex>
+        <Flex gap="20px">
+          {selectField(
+            "priceListId",
+            "common.sale.priceList",
+            "common.sale.selectPriceList",
+            priceListOptions,
+          )}
+          {selectField(
+            "paymentType",
+            "common.sale.paymentType",
+            "common.sale.paymentType",
+            paymentTypeOptions,
+          )}
+        </Flex>
+        <Flex gap="20px">
+          {textField("paymentTermDays", "common.client.paymentTermDays")}
+          {textField("debtLimit", "common.client.debtLimit")}
+          {textField("overdueDebtLimit", "common.client.overdueDebtLimit")}
+        </Flex>
       </Flex>
       <Box mt={5}>
-        <Button colorScheme="teal" onClick={() => saveClient()}>
+        <Button colorScheme="teal" type="submit" isLoading={isSubmitting}>
           {t("common.save")}
         </Button>
         {params.clientId ? (
           <Button
             ml={4}
             colorScheme="red"
+            type="button"
             onClick={() => setIsDeleteDialogOpened(true)}
           >
             {t("common.delete")}
@@ -311,24 +381,27 @@ const UpsertClient = () => {
       {isDeleteDialogOpened ? (
         <AlertDialog
           handleConfirm={async () => {
-            await deleteClient(params.clientId);
+            const res: any = await deleteClient(params.clientId);
+            setIsDeleteDialogOpened(false);
+            if (res?.error) {
+              setError(res.error?.data?.message || "Request failed");
+              return;
+            }
             history.push(links.clients);
           }}
           isOpen={isDeleteDialogOpened}
           onClose={() => setIsDeleteDialogOpened(false)}
-          bodyText={`Are you sure? You can't undo this action afterwards.`}
-          headerText={`Delete Inventory Supplier`}
+          bodyText={t("common.client.deleteConfirmation")}
+          headerText={t("common.client.deleteClient")}
         />
       ) : null}
-      {clientCreateError ? (
+      {error ? (
         <AlertDialog
-          handleConfirm={async () => {
-            setClientCreateErro("");
-          }}
+          handleConfirm={() => setError("")}
           oneButton={true}
-          isOpen={Boolean(clientCreateError)}
-          onClose={() => setClientCreateErro("")}
-          bodyText={clientCreateError}
+          isOpen={Boolean(error)}
+          onClose={() => setError("")}
+          bodyText={error}
           headerText={"Warning"}
           confirmText="OK"
         />

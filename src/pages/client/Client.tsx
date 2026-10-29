@@ -4,12 +4,11 @@ import { Route } from "react-router-dom";
 import ClientList from "./ClientList";
 import UpsertClient from "./UpsertClient";
 
-export default function Inventory() {
+export default function Client() {
   const match = useRouteMatch();
 
   return (
     <Box>
-      <h1>Client</h1>
       <Switch>
         <Route path={`${match.path}`} exact={true}>
           <ClientList />

@@ -7,6 +7,8 @@ export type ProductItem = {
   warehouseId: number;
   groupId: number;
   officialName: string;
+  // «Արտադրող»
+  manufacturer?: string | null;
   forSale: boolean;
   returnable: boolean;
   fractional: boolean;

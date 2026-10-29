@@ -1,72 +1,66 @@
-import { Weekday } from "types";
 import { api } from "./api";
-import { ClientType } from "./client";
+import { Manager } from "types";
 
-export type Schedule = {
-  mangerId: number;
-  clientId: number;
-  client?: ClientType;
-  dayPlan: Weekday[];
+type ListArgs = {
+  searchTerm?: string;
+  sortKey?: string;
+  sortOrder?: string;
 };
 
-export type ManagerType = {
-  id?: number;
-  name: string;
-  phoneNumber: string;
-  email: string;
-  schedule?: Schedule[];
-  updated_at?: string;
-  created_at?: string;
-};
-
-const ManagerApi = api.injectEndpoints({
+const managerApi = api.injectEndpoints({
   endpoints: (builder) => ({
     createManager: builder.mutation({
-      query: (newManager: ManagerType) => ({
-        url: "manager/create",
+      query: (newManager: Partial<Manager>) => ({
+        url: "manager",
         method: "POST",
         body: newManager,
       }),
     }),
-    deleteManger: builder.mutation({
+    deleteManager: builder.mutation({
       query: (id) => ({
         url: `manager/${id}`,
         method: "DELETE",
       }),
     }),
     updateManager: builder.mutation({
-      query: (newManager) => {
-        const id = newManager.id;
-        const updatedManager = { ...newManager };
-        delete updatedManager.id;
+      query: (newManager: Partial<Manager>) => {
+        // «Կոդ» and the joined-in labels are server-owned, so they never go back.
+        const {
+          id,
+          code,
+          salesZoneName,
+          delivererCode,
+          delivererName,
+          ...updatedManager
+        } = newManager;
         return {
           url: `manager/${id}`,
-          method: "PUT",
+          method: "PATCH",
           body: updatedManager,
         };
       },
     }),
-    getManager: builder.query<ManagerType[], void>({
-      query: () => ({
-        url: "manager",
-        method: "GET",
-      }),
+    getManagers: builder.query<Manager[], ListArgs | void>({
+      query: (arg: ListArgs = {}) => {
+        const queryString = `searchTerm=${arg.searchTerm || ""}&sortKey=${
+          arg.sortKey || ""
+        }&sortOrder=${arg.sortOrder || ""}`;
+        return {
+          url: `manager?${queryString}`,
+          method: "GET",
+        };
+      },
     }),
-    getManagerById: builder.query<ManagerType, { managerId: string | number }>({
+    getManagerById: builder.query<Manager, { managerId: string | number }>({
       query: (arg: { managerId: string | number }) => ({
         url: `manager/${arg.managerId}`,
         method: "GET",
       }),
     }),
-    getClientSchedule: builder.query<
-      Schedule,
-      { managerId: string | number; clientId: string | number }
-    >({
-      query: (arg: {
-        managerId: string | number;
-        clientId: string | number;
-      }) => ({
-        url: `manager/${arg.managerId}/schedule/${arg.clientId}`,
+    // Who can be an «առաքիչ»: every manager of the tenant.
+    getDeliverers: builder.query<Manager[], void>({
+      query: () => ({
+        url: "manager/deliverers",
         method: "GET",
       }),
     }),
@@ -74,13 +68,12 @@ const ManagerApi = api.injectEndpoints({
 });
 
 export const {
-  useGetManagerQuery,
-  useLazyGetManagerQuery,
+  useCreateManagerMutation,
+  useGetManagersQuery,
+  useLazyGetManagersQuery,
   useGetManagerByIdQuery,
   useLazyGetManagerByIdQuery,
   useUpdateManagerMutation,
-  useCreateManagerMutation,
-  useDeleteMangerMutation,
-  useGetClientScheduleQuery,
-  useLazyGetClientScheduleQuery,
-} = ManagerApi;
+  useDeleteManagerMutation,
+  useGetDeliverersQuery,
+} = managerApi;

@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import {
   Box,
-  Button,
   Flex,
   Input,
   Table,
@@ -11,10 +10,10 @@ import {
   Th,
   Thead,
   Tr,
-  useBreakpointValue,
   useColorModeValue,
 } from "@chakra-ui/react";
 import {
+  ColumnDef,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
@@ -22,78 +21,62 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ClientType, useGetClientQuery } from "api/client";
+import { useGetClientQuery } from "api/client";
+import { useGetManagersQuery } from "api/manager";
+import { Client } from "types";
 // Custom components
 import Card from "components/card/Card";
 import * as React from "react";
-import dayjs from "dayjs";
-import "./client.css";
 import { useHistory } from "react-router-dom";
+import Select from "react-select";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
-import ReactSelect from "react-select";
-import { Role, Weekday } from "types";
-import { useSelector } from "react-redux";
-import { RootState } from "store/store";
-import { ManagerType, useLazyGetManagerQuery } from "api/manager";
 import { useTranslation } from "react-i18next";
-// Assets
 
-type RowObj = ClientType;
-
-type DayOptionType = { label: Weekday; value: Weekday };
-
-const weekDayOptions: DayOptionType[] = [
-  Weekday.MONDAY,
-  Weekday.TUESDAY,
-  Weekday.WEDNESDAY,
-  Weekday.THURSDAY,
-  Weekday.FRIDAY,
-  Weekday.SATURDAY,
-  Weekday.SUNDAY,
-].map((d) => ({ label: d, value: d }));
-
-const columnHelper = createColumnHelper<RowObj>();
+const columnHelper = createColumnHelper<Client>();
 let searchTimeoutId: ReturnType<typeof setTimeout>;
-// const columns = columnsDataCheck;
+
 function ClientList() {
-  const user = useSelector((state: RootState) => state.user);
-  const [selectedManager, setSelectedManager] = React.useState<{
-    label: string;
-    value: number;
-  }>();
-  const [getManagers, { data: managersData = [] }] = useLazyGetManagerQuery();
   const [searchTerm, setSearchTerm] = React.useState("");
   const [searchFilter, setSearchFilter] = React.useState("");
-  const [selectedDay, setSelectedDay] = React.useState<DayOptionType>();
+  const [managerFilter, setManagerFilter] = React.useState("");
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  console.log("sorting", sorting);
 
-  const queryObject = {
-    weekDay: selectedDay?.value as string,
+  const { t } = useTranslation();
+
+  const queryObject: {
+    searchTerm: string;
+    sortKey: string;
+    sortOrder: string;
+    managerId?: number;
+  } = {
     searchTerm: searchFilter,
-    managerId: selectedManager?.value,
     sortKey: "",
     sortOrder: "",
+    managerId: managerFilter ? Number(managerFilter) : undefined,
   };
-  const { t } = useTranslation();
+
   if (sorting.length) {
     queryObject.sortKey = sorting[0].id;
     queryObject.sortOrder = sorting[0].desc ? "desc" : "asc";
   }
-  const { data: clientArray = [], refetch } = useGetClientQuery(queryObject);
+
+  const { data: clients = [], refetch } = useGetClientQuery(queryObject);
+  const { data: managers = [] } = useGetManagersQuery();
+
+  const managerOptions = managers.map((manager) => ({
+    label: `${manager.code} — ${manager.name}`,
+    value: String(manager.id),
+  }));
+
   useEffect(() => {
     refetch();
   }, [refetch]);
-  useEffect(() => {
-    if (user.role === Role.ADMIN) {
-      getManagers();
-    }
-  }, [user.role, getManagers]);
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const history = useHistory();
+
   const handleSearchTermChange = (e: any) => {
     setSearchTerm(e.target.value);
     clearTimeout(searchTimeoutId);
@@ -102,275 +85,77 @@ function ClientList() {
     }, 500);
   };
 
-  const isMobile = useBreakpointValue({ base: true, md: false });
-  const columns = [
+  const header = (label: string) => () => (
+    <Text
+      justifyContent="space-between"
+      align="center"
+      fontSize={{ sm: "10px", lg: "12px" }}
+      color="gray.400"
+    >
+      {label.toUpperCase()}
+    </Text>
+  );
+
+  const textCell = (info: any) => (
+    <Text color={textColor} fontSize="sm" fontWeight="700">
+      {info.getValue() || "—"}
+    </Text>
+  );
+
+  const columns: ColumnDef<Client, any>[] = [
+    columnHelper.accessor("code", {
+      id: "code",
+      header: header(t("common.client.code")),
+      cell: textCell,
+    }),
     columnHelper.accessor("name", {
       id: "name",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          NAME
-        </Text>
-      ),
-      cell: (info: any) => {
-        return (
-          <Flex align="center">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              {info.getValue()}
-            </Text>
-          </Flex>
-        );
-      },
+      header: header(t("common.client.name")),
+      cell: textCell,
     }),
-    columnHelper.accessor("legalName", {
-      id: "legalName",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Legal Name
-        </Text>
-      ),
-      cell: (info: any) => {
-        return (
-          <Flex align="center">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              {info.getValue()}
-            </Text>
-          </Flex>
-        );
-      },
+    columnHelper.accessor("taxId", {
+      id: "taxId",
+      header: header(t("common.client.taxId")),
+      cell: textCell,
     }),
-    columnHelper.accessor("email", {
-      id: "email",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Email
-        </Text>
-      ),
-      cell: (info: any) => {
-        return (
-          <Flex align="center">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              {info.getValue()}
-            </Text>
-          </Flex>
-        );
-      },
+    columnHelper.accessor("address", {
+      id: "address",
+      enableSorting: false,
+      header: header(t("common.client.address")),
+      cell: textCell,
     }),
-    columnHelper.accessor("phoneNumber", {
-      id: "phoneNumber",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Phone number
-        </Text>
-      ),
-      cell: (info: any) => {
-        return (
-          <Flex align="center">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              {info.getValue()}
-            </Text>
-          </Flex>
-        );
-      },
+    columnHelper.accessor("clientGroupName", {
+      id: "clientGroupName",
+      enableSorting: false,
+      header: header(t("common.client.group")),
+      cell: textCell,
     }),
-    columnHelper.display({
-      id: "actions",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Actions
-        </Text>
-      ),
-      cell: (info) => (
-        <Button
-          onClick={(e) => {
-            e.stopPropagation();
-            history.push(links.saleCreate(info.row.original.id));
-          }}
-        >
-          Order
-        </Button>
-      ),
+    columnHelper.accessor("salesZoneName", {
+      id: "salesZoneName",
+      enableSorting: false,
+      header: header(t("common.salesZone.salesZone")),
+      cell: textCell,
     }),
-    columnHelper.accessor("created_at", {
-      id: "created_at",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Created at
-        </Text>
-      ),
-      cell: (info) => (
-        <Text color={textColor} fontSize="sm" fontWeight="700">
-          {dayjs(info.getValue()).format("DD/MM/YYYY")}
-        </Text>
-      ),
-    }),
-    columnHelper.accessor("updated_at", {
-      id: "updated_at",
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: "10px", lg: "12px" }}
-          color="gray.400"
-        >
-          Updated at
-        </Text>
-      ),
-      cell: (info) => (
-        <Text color={textColor} fontSize="sm" fontWeight="700">
-          {dayjs(info.getValue()).format("DD/MM/YYYY")}
-        </Text>
-      ),
+    columnHelper.accessor("managerName", {
+      id: "managerName",
+      enableSorting: false,
+      header: header(t("common.client.manager")),
+      cell: textCell,
     }),
   ];
-  if (isMobile) {
-    columns.push(
-      columnHelper.display({
-        id: "edit_action",
-        header: () => null,
-        cell: (info) => (
-          <Button
-            position={"static"}
-            colorScheme={"teal"}
-            onClick={() => {
-              history.push(links.client(info.row.original.id));
-            }}
-          >
-            {t("common.edit")}
-          </Button>
-        ),
-      }),
-    );
-  }
+
   const table = useReactTable({
-    data: clientArray,
+    data: clients,
     columns: columns as any,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    debugTable: true,
     manualSorting: true,
     state: {
       sorting,
     },
   });
-  if (isMobile) {
-    return (
-      <Box>
-        <Flex px="25px" mb="8px" flexDirection={"column"}>
-          <Flex justifyContent={"space-between"}>
-            <Text
-              color={textColor}
-              fontSize="22px"
-              fontWeight="700"
-              lineHeight="100%"
-            >
-              Client List
-            </Text>
-            <TableAddButton label="Add Client" link={links.createClient} />
-          </Flex>
-          <Flex marginTop={"20px"} justifyContent="flex-start">
-            {user.role === Role.ADMIN ? (
-              <Box marginRight={10} width={"200px"}>
-                <ReactSelect
-                  placeholder="Manager"
-                  options={managersData.map((m) => {
-                    return {
-                      label: m.name,
-                      value: m.id,
-                    };
-                  })}
-                  value={selectedManager}
-                  onChange={setSelectedManager}
-                  isClearable
-                />
-              </Box>
-            ) : null}
-            <Box marginRight={10} width={"200px"}>
-              <ReactSelect
-                placeholder="Day plan"
-                options={weekDayOptions}
-                value={selectedDay}
-                onChange={setSelectedDay}
-                isClearable
-              />
-            </Box>
-          </Flex>
-          <Flex mt={3} marginRight={10} width={"200px"}>
-            <Input
-              placeholder="Search term"
-              value={searchTerm}
-              onChange={handleSearchTermChange}
-            />
-          </Flex>
-        </Flex>
-        {table.getRowModel().rows.map((row) => (
-          <Box
-            key={row.id}
-            borderWidth="1px"
-            borderRadius="lg"
-            overflow="hidden"
-            p="4"
-            mb="4"
-          >
-            {row.getVisibleCells().map((cell) => {
-              return (
-                <Box
-                  key={cell.id}
-                  display="flex"
-                  justifyContent="space-between"
-                  py="2"
-                >
-                  <Box
-                    as="span"
-                    fontSize={"16px"}
-                    css={{ p: { fontSize: "14px" } }}
-                  >
-                    {flexRender(
-                      cell.column.columnDef.header,
-                      cell.getContext() as any,
-                    )}
-                  </Box>
-                  <Box as="span">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </Box>
-                </Box>
-              );
-            })}
-          </Box>
-        ))}
-      </Box>
-    );
-  }
+
   return (
     <Card
       flexDirection="column"
@@ -388,41 +173,32 @@ function ClientList() {
             fontWeight="700"
             lineHeight="100%"
           >
-            Client List
+            {t("common.client.clientList")}
           </Text>
-          <TableAddButton label="Add Client" link={links.createClient} />
+          <TableAddButton
+            label={t("common.client.addClient")}
+            link={links.createClient}
+          />
         </Flex>
         <Flex marginTop={"20px"} justifyContent="flex-start">
-          {user.role === Role.ADMIN ? (
-            <Box marginRight={10} width={"200px"}>
-              <ReactSelect
-                placeholder="Manager"
-                options={managersData.map((m) => {
-                  return {
-                    label: m.name,
-                    value: m.id,
-                  };
-                })}
-                value={selectedManager}
-                onChange={setSelectedManager}
-                isClearable
-              />
-            </Box>
-          ) : null}
-          <Box marginRight={10} width={"200px"}>
-            <ReactSelect
-              placeholder="Day plan"
-              options={weekDayOptions}
-              value={selectedDay}
-              onChange={setSelectedDay}
-              isClearable
-            />
-          </Box>
           <Box marginRight={10} width={"200px"}>
             <Input
-              placeholder="Search term"
+              placeholder={t("common.searchTerm")}
               value={searchTerm}
               onChange={handleSearchTermChange}
+            />
+          </Box>
+          <Box width={"250px"}>
+            <Select
+              isClearable={true}
+              placeholder={t("common.client.filterByManager")}
+              value={
+                managerOptions.find((op) => op.value === managerFilter) ?? null
+              }
+              onChange={(valueSelected) => {
+                setManagerFilter(valueSelected?.value ?? "");
+              }}
+              options={managerOptions}
             />
           </Box>
         </Flex>
@@ -432,65 +208,56 @@ function ClientList() {
           <Thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <Tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <Th
-                      key={header.id}
-                      colSpan={header.colSpan}
-                      pe="10px"
-                      borderColor={borderColor}
-                      cursor="pointer"
-                      onClick={header.column.getToggleSortingHandler()}
+                {headerGroup.headers.map((header) => (
+                  <Th
+                    key={header.id}
+                    colSpan={header.colSpan}
+                    pe="10px"
+                    borderColor={borderColor}
+                    cursor={header.column.getCanSort() ? "pointer" : "default"}
+                    onClick={header.column.getToggleSortingHandler()}
+                  >
+                    <Flex
+                      justifyContent="space-between"
+                      align="center"
+                      fontSize={{ sm: "10px", lg: "12px" }}
+                      color="gray.400"
                     >
-                      <Flex
-                        justifyContent="space-between"
-                        align="center"
-                        fontSize={{ sm: "10px", lg: "12px" }}
-                        color="gray.400"
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                        {{
-                          asc: "",
-                          desc: "",
-                        }[header.column.getIsSorted() as string] ?? null}
-                      </Flex>
-                    </Th>
-                  );
-                })}
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                      {{
+                        asc: " 🔼",
+                        desc: " 🔽",
+                      }[header.column.getIsSorted() as string] ?? null}
+                    </Flex>
+                  </Th>
+                ))}
               </Tr>
             ))}
           </Thead>
           <Tbody>
-            {table.getRowModel().rows.map((row) => {
-              return (
-                <Tr
-                  key={row.id}
-                  cursor="pointer"
-                  onClick={() => {
-                    history.push(links.client(row.original.id));
-                  }}
-                >
-                  {row.getVisibleCells().map((cell) => {
-                    return (
-                      <Td
-                        key={cell.id}
-                        fontSize={{ sm: "14px" }}
-                        minW={{ sm: "150px", md: "200px", lg: "auto" }}
-                        borderColor="transparent"
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </Td>
-                    );
-                  })}
-                </Tr>
-              );
-            })}
+            {table.getRowModel().rows.map((row) => (
+              <Tr
+                key={row.id}
+                cursor="pointer"
+                onClick={() => {
+                  history.push(links.client(row.original.id));
+                }}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <Td
+                    key={cell.id}
+                    fontSize={{ sm: "14px" }}
+                    minW={{ sm: "150px", md: "200px", lg: "auto" }}
+                    borderColor="transparent"
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </Td>
+                ))}
+              </Tr>
+            ))}
           </Tbody>
         </Table>
       </Box>

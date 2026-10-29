@@ -1,0 +1,55 @@
+name: Deploy frontend to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: warehouse-frontend-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Validate build settings
+        env:
+          REACT_APP_API_URL: ${{ secrets.API_URL }}
+          PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+        run: |
+          node <<'NODE'
+          const url = new URL(process.env.REACT_APP_API_URL);
+          if (url.protocol !== 'https:') throw new Error('API_URL must use HTTPS for the Pages frontend.');
+          if (!url.pathname.endsWith('/api/v1/')) throw new Error('API_URL must include /api/v1/ with a trailing slash.');
+          if (!/^[a-z0-9][a-z0-9-]*$/.test(process.env.PAGES_PROJECT || '')) throw new Error('Set CLOUDFLARE_PAGES_PROJECT to your Pages project name.');
+          NODE
+      - run: npm ci
+      - name: Test
+        run: npm test -- --watchAll=false --runInBand
+        env:
+          CI: 'true'
+      - name: Build
+        run: npm run build
+        env:
+          # Existing CRA warnings must not prevent deployment; compile errors still fail.
+          CI: 'false'
+          GENERATE_SOURCEMAP: 'false'
+          REACT_APP_API_URL: ${{ secrets.API_URL }}
+          REACT_APP_RELEASE: ${{ github.sha }}
+      - name: Deploy prebuilt assets
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy build --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT }} --branch=${{ github.ref_name }}
