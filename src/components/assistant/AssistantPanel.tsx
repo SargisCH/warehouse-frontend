@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Badge, Box, Button, ButtonGroup, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay,
   Flex, Heading, HStack, Link, Select, Spinner, Stack, Text, Textarea, useToast } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { useAssistantAccessQuery, useAssistantThreadsQuery, useAssistantThreadQuery, useCreateAssistantThreadMutation, useAssistantActionMutation } from 'api/assistant';
 import { useSelector } from 'react-redux';
@@ -8,8 +9,8 @@ import { RootState } from 'store/store';
 
 const label = (s: string) => s.toLowerCase().replace(/_/g, ' ');
 type ComposeMode = 'QUESTION' | 'FEEDBACK' | 'REQUEST';
-const failure = (e: any) => {
-  const message = e?.data?.message || e?.data?.error || 'The request failed. Your draft is still here.';
+const failure = (e: any, fallback: string) => {
+  const message = e?.data?.message || e?.data?.error || fallback;
   return Array.isArray(message) ? message.join(', ') : message;
 };
 export default function AssistantPanel() {
@@ -25,13 +26,15 @@ export default function AssistantPanel() {
   </Box>;
 }
 function Launcher({ userId, onOpen }: { userId: string; onOpen: () => void }) {
+  const { t: translate } = useTranslation();
   const { currentData: threads = [] } = useAssistantThreadsQuery(userId, { pollingInterval: 30000 });
   let seen: Record<string, string> = {};
   try { seen = JSON.parse(localStorage.getItem(`assistant-seen-${userId}`) || '{}'); } catch { /* optional */ }
   const ready = threads.filter(t => t.status === 'READY_TO_TEST' && seen[t.id] !== t.updatedAt).length;
-  return <Button position="fixed" bottom="24px" right="24px" zIndex={1200} colorScheme="blue" boxShadow="lg" onClick={onOpen}>Ask or suggest{ready > 0 && <Badge ml="8px" colorScheme="green">{ready} ready to test</Badge>}</Button>;
+  return <Button position="fixed" bottom="24px" right="24px" zIndex={1200} colorScheme="blue" boxShadow="lg" onClick={onOpen}>{translate('common.assistant.askOrSuggest')}{ready > 0 && <Badge ml="8px" colorScheme="green">{translate('common.assistant.readyCount', { count: ready })}</Badge>}</Button>;
 }
 function Panel({ developer, configured, close }: { developer: boolean; configured: boolean; close: () => void }) {
+  const { t: translate, i18n } = useTranslation();
   const location = useLocation();
   const toast = useToast();
   const userId = useSelector((state: RootState) => state.user.id);
@@ -82,8 +85,8 @@ function Panel({ developer, configured, close }: { developer: boolean; configure
       if (kind === 'messages') setReply('');
       if (kind === 'plans') setEditing(false);
       setConfirmApproval(false);
-      toast({ status: 'success', title: kind === 'approve' ? 'Approved plan queued for implementation' : 'Saved' });
-    } catch (e) { toast({ status: 'error', title: failure(e) }); }
+      toast({ status: 'success', title: kind === 'approve' ? translate('common.assistant.approved') : translate('common.assistant.saved') });
+    } catch (e) { toast({ status: 'error', title: failure(e, translate('common.assistant.requestFailed')) }); }
   };
   const submit = async (nextMode = mode, content = body) => {
     if (!content.trim()) return;
@@ -92,56 +95,56 @@ function Panel({ developer, configured, close }: { developer: boolean; configure
         release: process.env.REACT_APP_RELEASE || 'unknown', browser: navigator.userAgent.slice(0, 300) }).unwrap();
       setSelected(result.id); setComposing(false); setBody('');
       try { localStorage.setItem(`assistant-mode-${userId}`, nextMode); } catch { /* optional */ }
-      toast({ status: 'success', title: nextMode === 'REQUEST' ? 'Your new request has been sent for review.' : nextMode === 'FEEDBACK' ? 'Thanks—your suggestion has been sent for review.' : 'Question saved' });
-    } catch (e) { toast({ status: 'error', title: failure(e) }); }
+      toast({ status: 'success', title: nextMode === 'REQUEST' ? translate('common.assistant.requestSent') : nextMode === 'FEEDBACK' ? translate('common.assistant.feedbackSent') : translate('common.assistant.questionSaved') });
+    } catch (e) { toast({ status: 'error', title: failure(e, translate('common.assistant.requestFailed')) }); }
   };
   const visible = threads.filter(t => filter === 'ALL' ||
     (filter === 'REVIEW' && t.mode === 'FEEDBACK' && ['OPEN', 'NEEDS_REVIEW'].includes(t.status)) ||
     (filter === 'PROGRESS' && ['IN_PROGRESS', 'CODE_REVIEW'].includes(t.status)) || t.status === filter);
   return <Drawer isOpen placement="right" onClose={close} size="lg">
-    <DrawerOverlay /><DrawerContent><DrawerCloseButton /><DrawerHeader>{developer ? 'Assistant & review inbox' : 'Ask or suggest'}</DrawerHeader>
+    <DrawerOverlay /><DrawerContent><DrawerCloseButton aria-label={translate('common.assistant.close')} /><DrawerHeader>{developer ? translate('common.assistant.reviewInbox') : translate('common.assistant.askOrSuggest')}</DrawerHeader>
       <DrawerBody pb="24px">
-        {!configured && <Box bg="yellow.50" p="12px" borderRadius="md" mb="16px"><Text fontSize="sm">AI is not configured yet. Messages and feedback are saved; answers and plans will run after Gemini is connected.</Text></Box>}
-        <HStack mb="16px"><Button size="sm" onClick={() => { setSelected(''); setComposing(false); }}>Conversations</Button><Button size="sm" colorScheme="blue" onClick={() => { setSelected(''); setComposing(true); }}>New message</Button></HStack>
+        {!configured && <Box bg="yellow.50" p="12px" borderRadius="md" mb="16px"><Text fontSize="sm">{translate('common.assistant.notConfigured')}</Text></Box>}
+        <HStack mb="16px"><Button size="sm" onClick={() => { setSelected(''); setComposing(false); }}>{translate('common.assistant.conversations')}</Button><Button size="sm" colorScheme="blue" onClick={() => { setSelected(''); setComposing(true); }}>{translate('common.assistant.newMessage')}</Button></HStack>
         {composing ? <Stack spacing="16px">
-          <ButtonGroup isAttached><Button aria-pressed={mode === 'QUESTION'} colorScheme={mode === 'QUESTION' ? 'blue' : 'gray'} onClick={() => setMode('QUESTION')}>Question</Button><Button aria-pressed={mode === 'FEEDBACK'} colorScheme={mode === 'FEEDBACK' ? 'blue' : 'gray'} onClick={() => setMode('FEEDBACK')}>Feedback</Button><Button aria-pressed={mode === 'REQUEST'} colorScheme={mode === 'REQUEST' ? 'blue' : 'gray'} onClick={() => setMode('REQUEST')}>New request</Button></ButtonGroup>
-          <Text fontSize="sm" color="gray.600">{mode === 'REQUEST' ? 'A new feature or page, independent of the page you are on.' : `About this page: ${location.pathname}`}</Text>
-          <Textarea aria-label={mode === 'QUESTION' ? 'Your question' : mode === 'REQUEST' ? 'Your request' : 'Your feedback'} placeholder={mode === 'QUESTION' ? 'What would you like to know?' : mode === 'REQUEST' ? 'Describe the new feature or page you would like to build…' : 'What would you like improved?'} value={body} onChange={e => setBody(e.target.value)} maxLength={8000} minH="160px" />
-          <Text fontSize="sm" color="gray.600">{mode === 'QUESTION' ? 'AI answers questions about the app.' : mode === 'REQUEST' ? 'The assistant prepares a plan for developer review before any changes start.' : 'Your suggestion goes to a developer for review before any changes start.'}</Text>
-          <Button colorScheme="blue" isLoading={creating} isDisabled={!body.trim()} onClick={() => submit()}>Send</Button>
+          <ButtonGroup isAttached><Button aria-pressed={mode === 'QUESTION'} colorScheme={mode === 'QUESTION' ? 'blue' : 'gray'} onClick={() => setMode('QUESTION')}>{translate('common.assistant.question')}</Button><Button aria-pressed={mode === 'FEEDBACK'} colorScheme={mode === 'FEEDBACK' ? 'blue' : 'gray'} onClick={() => setMode('FEEDBACK')}>{translate('common.assistant.feedback')}</Button><Button aria-pressed={mode === 'REQUEST'} colorScheme={mode === 'REQUEST' ? 'blue' : 'gray'} onClick={() => setMode('REQUEST')}>{translate('common.assistant.newRequest')}</Button></ButtonGroup>
+          <Text fontSize="sm" color="gray.600">{mode === 'REQUEST' ? translate('common.assistant.independentPage') : translate('common.assistant.aboutPage', { page: location.pathname })}</Text>
+          <Textarea aria-label={mode === 'QUESTION' ? translate('common.assistant.yourQuestion') : mode === 'REQUEST' ? translate('common.assistant.yourRequest') : translate('common.assistant.yourFeedback')} placeholder={mode === 'QUESTION' ? translate('common.assistant.questionPlaceholder') : mode === 'REQUEST' ? translate('common.assistant.requestPlaceholder') : translate('common.assistant.feedbackPlaceholder')} value={body} onChange={e => setBody(e.target.value)} maxLength={8000} minH="160px" />
+          <Text fontSize="sm" color="gray.600">{mode === 'QUESTION' ? translate('common.assistant.questionHint') : mode === 'REQUEST' ? translate('common.assistant.requestHint') : translate('common.assistant.feedbackHint')}</Text>
+          <Button colorScheme="blue" isLoading={creating} isDisabled={!body.trim()} onClick={() => submit()}>{translate('common.assistant.send')}</Button>
         </Stack> : !selected ? <Stack spacing="12px">
-          {developer && <Select aria-label="Filter review inbox" value={filter} onChange={e => setFilter(e.target.value)}><option value="ALL">All conversations</option><option value="REVIEW">Needs review</option><option value="PROGRESS">In progress</option><option value="READY_TO_TEST">Ready to test</option><option value="RESOLVED">Resolved</option><option value="DEFERRED">Deferred</option><option value="DISMISSED">Dismissed</option></Select>}
-          {isLoading && <Spinner />}{listError && <Text role="alert">Could not load conversations. Please reopen the panel.</Text>}
-          {!isLoading && !listError && !visible.length && <Text color="gray.600">No conversations yet. Start with a question or suggestion.</Text>}
+          {developer && <Select aria-label={translate('common.assistant.filterInbox')} value={filter} onChange={e => setFilter(e.target.value)}><option value="ALL">{translate('common.assistant.allConversations')}</option><option value="REVIEW">{translate('common.assistant.needsReview')}</option><option value="PROGRESS">{translate('common.assistant.inProgress')}</option><option value="READY_TO_TEST">{translate('common.assistant.readyToTest')}</option><option value="RESOLVED">{translate('common.assistant.resolved')}</option><option value="DEFERRED">{translate('common.assistant.deferred')}</option><option value="DISMISSED">{translate('common.assistant.dismissed')}</option></Select>}
+          {isLoading && <Spinner label={translate('common.assistant.loading')} />}{listError && <Text role="alert">{translate('common.assistant.listError')}</Text>}
+          {!isLoading && !listError && !visible.length && <Text color="gray.600">{translate('common.assistant.empty')}</Text>}
           {visible.map(t => <Box key={t.id} as="button" textAlign="left" borderWidth="1px" borderRadius="md" p="14px" onClick={() => setSelected(t.id)}>
-            <HStack mb="6px"><Badge>{t.mode === 'QUESTION' ? 'Question' : t.page ? 'Feedback' : 'New request'}</Badge><Badge colorScheme={t.status === 'READY_TO_TEST' ? 'green' : 'blue'}>{label(t.status)}</Badge>{seen[t.id] !== t.updatedAt && <Badge colorScheme="orange">New</Badge>}</HStack>
-            <Text noOfLines={2}>{t.preview}</Text><Text fontSize="xs" color="gray.500" mt="4px">{t.page || 'No specific page'} · {new Date(t.updatedAt).toLocaleString()}</Text>
+            <HStack mb="6px"><Badge>{t.mode === 'QUESTION' ? translate('common.assistant.question') : t.page ? translate('common.assistant.feedback') : translate('common.assistant.newRequest')}</Badge><Badge colorScheme={t.status === 'READY_TO_TEST' ? 'green' : 'blue'}>{translate(`common.assistant.status.${t.status}`, { defaultValue: label(t.status) })}</Badge>{seen[t.id] !== t.updatedAt && <Badge colorScheme="orange">{translate('common.assistant.new')}</Badge>}</HStack>
+            <Text noOfLines={2}>{t.preview}</Text><Text fontSize="xs" color="gray.500" mt="4px">{t.page || translate('common.assistant.noPage')} · {new Date(t.updatedAt).toLocaleString(i18n.language === 'am' ? 'hy-AM' : 'en-US')}</Text>
           </Box>)}
-        </Stack> : !thread ? <>{detailError ? <Text role="alert">Conversation unavailable.</Text> : <Spinner />}</> : <Stack spacing="16px">
-          <Flex justify="space-between"><Badge>{label(thread.status)}</Badge>{isFetching && <Spinner size="xs" />}</Flex>
-          <Text fontSize="sm">{thread.page ? <Link href={thread.page} color="blue.600">Open {thread.page}</Link> : 'No specific page'} · Release {thread.release}</Text>
+        </Stack> : !thread ? <>{detailError ? <Text role="alert">{translate('common.assistant.unavailable')}</Text> : <Spinner label={translate('common.assistant.loading')} />}</> : <Stack spacing="16px">
+          <Flex justify="space-between"><Badge>{translate(`common.assistant.status.${thread.status}`, { defaultValue: label(thread.status) })}</Badge>{isFetching && <Spinner size="xs" label={translate('common.assistant.loading')} />}</Flex>
+          <Text fontSize="sm">{thread.page ? <Link href={thread.page} color="blue.600">{translate('common.assistant.openPage', { page: thread.page })}</Link> : translate('common.assistant.noPage')} · {translate('common.assistant.release', { release: thread.release })}</Text>
           {thread.messages.map(m => <Box key={m.id} p="12px" bg={m.kind === 'AI' ? 'blue.50' : m.kind === 'SYSTEM' ? 'gray.50' : 'gray.100'} borderRadius="md">
-            <Text fontSize="xs" fontWeight="bold" mb="4px">{m.kind === 'AI' ? 'AI assistant' : m.kind === 'SYSTEM' ? 'Update' : m.authorId === String(userId) ? 'You' : 'Reviewer'}</Text><Text whiteSpace="pre-wrap">{m.body}</Text>
+            <Text fontSize="xs" fontWeight="bold" mb="4px">{m.kind === 'AI' ? translate('common.assistant.aiAssistant') : m.kind === 'SYSTEM' ? translate('common.assistant.update') : m.authorId === String(userId) ? translate('common.assistant.you') : translate('common.assistant.reviewer')}</Text><Text whiteSpace="pre-wrap">{m.body}</Text>
           </Box>)}
-          {active && <Text fontSize="sm" color="gray.600">{configured ? 'Queued or processing. Updates appear here automatically.' : 'Saved and waiting for Gemini setup.'}</Text>}
-          {thread.runs.some(r => r.status === 'FAILED') && <Text fontSize="sm" color="red.600">A previous AI job failed. Your messages are saved.{developer ? ' Check the job details below.' : ' A developer can review and retry it.'}</Text>}
-          {developer && thread.runs.filter(r => r.error || r.result).map(r => <Box key={r.id} borderWidth="1px" p="12px" borderRadius="md"><Text fontWeight="bold">{label(r.kind)} · {label(r.status)}</Text>{r.error && <Text whiteSpace="pre-wrap">{r.error}</Text>}{r.result?.summary && <Text whiteSpace="pre-wrap">{r.result.summary}</Text>}{r.result?.pullRequests?.map(url => <Link display="block" key={url} href={url} isExternal color="blue.600">Review pull request</Link>)}</Box>)}
-          <Textarea aria-label="Reply" placeholder="Write a reply…" value={reply} onChange={e => setReply(e.target.value)} maxLength={8000} />
-          <Button isLoading={acting} isDisabled={!reply.trim()} onClick={() => perform('messages', { body: reply })}>Send reply</Button>
-          {thread.mode === 'QUESTION' && <><Button variant="outline" isLoading={creating} onClick={() => submit('FEEDBACK', thread.messages.filter(m => m.kind !== 'SYSTEM').map(m => `${m.kind}: ${m.body}`).join('\n').slice(-8000))}>Send conversation as feedback</Button>{developer && <Button isDisabled={busy || active} onClick={() => perform('plan')}>Retry answer</Button>}</>}
-          {thread.status === 'READY_TO_TEST' && <ButtonGroup><Button colorScheme="green" isDisabled={busy} onClick={() => perform('status', { status: 'RESOLVED' })}>Looks good</Button><Button isDisabled={busy} onClick={() => perform('status', { status: 'OPEN' })}>Still needs work</Button></ButtonGroup>}
+          {active && <Text fontSize="sm" color="gray.600">{configured ? translate('common.assistant.processing') : translate('common.assistant.waiting')}</Text>}
+          {thread.runs.some(r => r.status === 'FAILED') && <Text fontSize="sm" color="red.600">{translate('common.assistant.failedJob')}{developer ? translate('common.assistant.developerFailure') : translate('common.assistant.contributorFailure')}</Text>}
+          {developer && thread.runs.filter(r => r.error || r.result).map(r => <Box key={r.id} borderWidth="1px" p="12px" borderRadius="md"><Text fontWeight="bold">{translate(`common.assistant.kind.${r.kind}`, { defaultValue: label(r.kind) })} · {translate(`common.assistant.status.${r.status}`, { defaultValue: label(r.status) })}</Text>{r.error && <Text whiteSpace="pre-wrap">{r.error}</Text>}{r.result?.summary && <Text whiteSpace="pre-wrap">{r.result.summary}</Text>}{r.result?.pullRequests?.map(url => <Link display="block" key={url} href={url} isExternal color="blue.600">{translate('common.assistant.reviewPr')}</Link>)}</Box>)}
+          <Textarea aria-label={translate('common.assistant.reply')} placeholder={translate('common.assistant.replyPlaceholder')} value={reply} onChange={e => setReply(e.target.value)} maxLength={8000} />
+          <Button isLoading={acting} isDisabled={!reply.trim()} onClick={() => perform('messages', { body: reply })}>{translate('common.assistant.sendReply')}</Button>
+          {thread.mode === 'QUESTION' && <><Button variant="outline" isLoading={creating} onClick={() => submit('FEEDBACK', thread.messages.filter(m => m.kind !== 'SYSTEM').map(m => `${m.kind}: ${m.body}`).join('\n').slice(-8000))}>{translate('common.assistant.asFeedback')}</Button>{developer && <Button isDisabled={busy || active} onClick={() => perform('plan')}>{translate('common.assistant.retryAnswer')}</Button>}</>}
+          {thread.status === 'READY_TO_TEST' && <ButtonGroup><Button colorScheme="green" isDisabled={busy} onClick={() => perform('status', { status: 'RESOLVED' })}>{translate('common.assistant.looksGood')}</Button><Button isDisabled={busy} onClick={() => perform('status', { status: 'OPEN' })}>{translate('common.assistant.needsWork')}</Button></ButtonGroup>}
           {developer && thread.mode === 'FEEDBACK' && <Box borderTopWidth="1px" pt="16px">
-            <Heading size="sm" mb="12px">Developer review</Heading>
+            <Heading size="sm" mb="12px">{translate('common.assistant.developerReview')}</Heading>
             {plan ? <Stack spacing="12px">
-              <Text fontSize="sm">Plan version {plan.version}{stale ? ' · Feedback changed—regenerate before approval.' : ''}</Text>
-              {editing ? <><Textarea aria-label="Edit implementation plan" minH="300px" value={planBody} maxLength={40000} onChange={e => setPlanBody(e.target.value)} /><Button isLoading={acting} isDisabled={!planBody.trim()} onClick={() => perform('plans', { basePlanId: plan.id, body: planBody })}>Save new version</Button><Button variant="ghost" onClick={() => setEditing(false)}>Cancel edit</Button></> : <><Text whiteSpace="pre-wrap">{plan.body}</Text><Button isDisabled={busy || active || stale} onClick={() => { setPlanBody(plan.body); setEditing(true); }}>Edit plan</Button></>}
+              <Text fontSize="sm">{translate('common.assistant.planVersion', { version: plan.version })}{stale ? translate('common.assistant.stale') : ''}</Text>
+              {editing ? <><Textarea aria-label={translate('common.assistant.editPlanLabel')} minH="300px" value={planBody} maxLength={40000} onChange={e => setPlanBody(e.target.value)} /><Button isLoading={acting} isDisabled={!planBody.trim()} onClick={() => perform('plans', { basePlanId: plan.id, body: planBody })}>{translate('common.assistant.saveVersion')}</Button><Button variant="ghost" onClick={() => setEditing(false)}>{translate('common.assistant.cancelEdit')}</Button></> : <><Text whiteSpace="pre-wrap">{plan.body}</Text><Button isDisabled={busy || active || stale} onClick={() => { setPlanBody(plan.body); setEditing(true); }}>{translate('common.assistant.editPlan')}</Button></>}
               {!editing && thread.status === 'NEEDS_REVIEW' && !approved && <>
-                {confirmApproval ? <Box bg="orange.50" p="12px"><Text mb="8px">Start coding plan version {plan.version}? This authorizes a coding job. You still review the resulting PRs before release.</Text><ButtonGroup><Button colorScheme="green" isLoading={acting} isDisabled={active || stale} onClick={() => perform('approve', { planId: plan.id })}>Confirm & start</Button><Button onClick={() => setConfirmApproval(false)}>Cancel</Button></ButtonGroup></Box> : <Button colorScheme="green" isDisabled={busy || active || stale} onClick={() => setConfirmApproval(true)}>Approve & start</Button>}
+                {confirmApproval ? <Box bg="orange.50" p="12px"><Text mb="8px">{translate('common.assistant.confirmCoding', { version: plan.version })}</Text><ButtonGroup><Button colorScheme="green" isLoading={acting} isDisabled={active || stale} onClick={() => perform('approve', { planId: plan.id })}>{translate('common.assistant.confirmStart')}</Button><Button onClick={() => setConfirmApproval(false)}>{translate('common.assistant.cancel')}</Button></ButtonGroup></Box> : <Button colorScheme="green" isDisabled={busy || active || stale} onClick={() => setConfirmApproval(true)}>{translate('common.assistant.approveStart')}</Button>}
               </>}
-              {thread.plans.length > 1 && <details><summary>Previous plan versions</summary>{thread.plans.slice(1).map(p => <Box key={p.id} py="12px"><Text fontWeight="bold">Version {p.version}</Text><Text whiteSpace="pre-wrap">{p.body}</Text></Box>)}</details>}
-            </Stack> : <Text mb="12px">The proposed plan will appear here after AI processing.</Text>}
-            <Stack mt="16px" spacing="8px"><Button isDisabled={busy || active} onClick={() => perform('plan')}>{plan ? 'Regenerate plan' : 'Generate / retry plan'}</Button>
-              <ButtonGroup flexWrap="wrap"><Button size="sm" isDisabled={busy || uncancellable} onClick={() => perform('status', { status: 'DEFERRED' })}>Defer</Button><Button size="sm" isDisabled={busy || uncancellable} onClick={() => perform('status', { status: 'DISMISSED' })}>Dismiss</Button>{thread.status === 'CODE_REVIEW' && <Button size="sm" colorScheme="green" isDisabled={busy} onClick={() => perform('status', { status: 'READY_TO_TEST' })}>Deployed—ready to test</Button>}</ButtonGroup>
+              {thread.plans.length > 1 && <details><summary>{translate('common.assistant.previousVersions')}</summary>{thread.plans.slice(1).map(p => <Box key={p.id} py="12px"><Text fontWeight="bold">{translate('common.assistant.version', { version: p.version })}</Text><Text whiteSpace="pre-wrap">{p.body}</Text></Box>)}</details>}
+            </Stack> : <Text mb="12px">{translate('common.assistant.planPending')}</Text>}
+            <Stack mt="16px" spacing="8px"><Button isDisabled={busy || active} onClick={() => perform('plan')}>{plan ? translate('common.assistant.regenerate') : translate('common.assistant.generate')}</Button>
+              <ButtonGroup flexWrap="wrap"><Button size="sm" isDisabled={busy || uncancellable} onClick={() => perform('status', { status: 'DEFERRED' })}>{translate('common.assistant.defer')}</Button><Button size="sm" isDisabled={busy || uncancellable} onClick={() => perform('status', { status: 'DISMISSED' })}>{translate('common.assistant.dismiss')}</Button>{thread.status === 'CODE_REVIEW' && <Button size="sm" colorScheme="green" isDisabled={busy} onClick={() => perform('status', { status: 'READY_TO_TEST' })}>{translate('common.assistant.deployed')}</Button>}</ButtonGroup>
             </Stack>
           </Box>}
         </Stack>}
