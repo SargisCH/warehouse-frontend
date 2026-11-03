@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from 'store/store';
 
 const label = (s: string) => s.toLowerCase().replace(/_/g, ' ');
+type ComposeMode = 'QUESTION' | 'FEEDBACK' | 'REQUEST';
 const failure = (e: any) => {
   const message = e?.data?.message || e?.data?.error || 'The request failed. Your draft is still here.';
   return Array.isArray(message) ? message.join(', ') : message;
@@ -37,8 +38,11 @@ function Panel({ developer, configured, close }: { developer: boolean; configure
   const [selected, setSelected] = useState('');
   const [composing, setComposing] = useState(false);
   const [filter, setFilter] = useState('ALL');
-  const [mode, setMode] = useState<'QUESTION' | 'FEEDBACK'>(() => {
-    try { return localStorage.getItem(`assistant-mode-${userId}`) === 'FEEDBACK' ? 'FEEDBACK' : 'QUESTION'; } catch { return 'QUESTION'; }
+  const [mode, setMode] = useState<ComposeMode>(() => {
+    try {
+      const saved = localStorage.getItem(`assistant-mode-${userId}`);
+      return saved === 'FEEDBACK' || saved === 'REQUEST' ? saved : 'QUESTION';
+    } catch { return 'QUESTION'; }
   });
   const [body, setBody] = useState('');
   const [reply, setReply] = useState('');
@@ -84,11 +88,11 @@ function Panel({ developer, configured, close }: { developer: boolean; configure
   const submit = async (nextMode = mode, content = body) => {
     if (!content.trim()) return;
     try {
-      const result = await create({ mode: nextMode, body: content.trim(), page: location.pathname,
+      const result = await create({ mode: nextMode === 'REQUEST' ? 'FEEDBACK' : nextMode, body: content.trim(), page: nextMode === 'REQUEST' ? '' : location.pathname,
         release: process.env.REACT_APP_RELEASE || 'unknown', browser: navigator.userAgent.slice(0, 300) }).unwrap();
       setSelected(result.id); setComposing(false); setBody('');
       try { localStorage.setItem(`assistant-mode-${userId}`, nextMode); } catch { /* optional */ }
-      toast({ status: 'success', title: nextMode === 'FEEDBACK' ? 'Thanks—your suggestion has been sent for review.' : 'Question saved' });
+      toast({ status: 'success', title: nextMode === 'REQUEST' ? 'Your new request has been sent for review.' : nextMode === 'FEEDBACK' ? 'Thanks—your suggestion has been sent for review.' : 'Question saved' });
     } catch (e) { toast({ status: 'error', title: failure(e) }); }
   };
   const visible = threads.filter(t => filter === 'ALL' ||
@@ -100,22 +104,22 @@ function Panel({ developer, configured, close }: { developer: boolean; configure
         {!configured && <Box bg="yellow.50" p="12px" borderRadius="md" mb="16px"><Text fontSize="sm">AI is not configured yet. Messages and feedback are saved; answers and plans will run after Gemini is connected.</Text></Box>}
         <HStack mb="16px"><Button size="sm" onClick={() => { setSelected(''); setComposing(false); }}>Conversations</Button><Button size="sm" colorScheme="blue" onClick={() => { setSelected(''); setComposing(true); }}>New message</Button></HStack>
         {composing ? <Stack spacing="16px">
-          <ButtonGroup isAttached><Button aria-pressed={mode === 'QUESTION'} colorScheme={mode === 'QUESTION' ? 'blue' : 'gray'} onClick={() => setMode('QUESTION')}>Question</Button><Button aria-pressed={mode === 'FEEDBACK'} colorScheme={mode === 'FEEDBACK' ? 'blue' : 'gray'} onClick={() => setMode('FEEDBACK')}>Feedback</Button></ButtonGroup>
-          <Text fontSize="sm" color="gray.600">About this page: {location.pathname}</Text>
-          <Textarea aria-label={mode === 'QUESTION' ? 'Your question' : 'Your feedback'} placeholder={mode === 'QUESTION' ? 'What would you like to know?' : 'What would you like improved?'} value={body} onChange={e => setBody(e.target.value)} maxLength={8000} minH="160px" />
-          <Text fontSize="sm" color="gray.600">{mode === 'QUESTION' ? 'AI answers questions about the app.' : 'Your suggestion goes to a developer for review before any changes start.'}</Text>
+          <ButtonGroup isAttached><Button aria-pressed={mode === 'QUESTION'} colorScheme={mode === 'QUESTION' ? 'blue' : 'gray'} onClick={() => setMode('QUESTION')}>Question</Button><Button aria-pressed={mode === 'FEEDBACK'} colorScheme={mode === 'FEEDBACK' ? 'blue' : 'gray'} onClick={() => setMode('FEEDBACK')}>Feedback</Button><Button aria-pressed={mode === 'REQUEST'} colorScheme={mode === 'REQUEST' ? 'blue' : 'gray'} onClick={() => setMode('REQUEST')}>New request</Button></ButtonGroup>
+          <Text fontSize="sm" color="gray.600">{mode === 'REQUEST' ? 'A new feature or page, independent of the page you are on.' : `About this page: ${location.pathname}`}</Text>
+          <Textarea aria-label={mode === 'QUESTION' ? 'Your question' : mode === 'REQUEST' ? 'Your request' : 'Your feedback'} placeholder={mode === 'QUESTION' ? 'What would you like to know?' : mode === 'REQUEST' ? 'Describe the new feature or page you would like to build…' : 'What would you like improved?'} value={body} onChange={e => setBody(e.target.value)} maxLength={8000} minH="160px" />
+          <Text fontSize="sm" color="gray.600">{mode === 'QUESTION' ? 'AI answers questions about the app.' : mode === 'REQUEST' ? 'The assistant prepares a plan for developer review before any changes start.' : 'Your suggestion goes to a developer for review before any changes start.'}</Text>
           <Button colorScheme="blue" isLoading={creating} isDisabled={!body.trim()} onClick={() => submit()}>Send</Button>
         </Stack> : !selected ? <Stack spacing="12px">
           {developer && <Select aria-label="Filter review inbox" value={filter} onChange={e => setFilter(e.target.value)}><option value="ALL">All conversations</option><option value="REVIEW">Needs review</option><option value="PROGRESS">In progress</option><option value="READY_TO_TEST">Ready to test</option><option value="RESOLVED">Resolved</option><option value="DEFERRED">Deferred</option><option value="DISMISSED">Dismissed</option></Select>}
           {isLoading && <Spinner />}{listError && <Text role="alert">Could not load conversations. Please reopen the panel.</Text>}
           {!isLoading && !listError && !visible.length && <Text color="gray.600">No conversations yet. Start with a question or suggestion.</Text>}
           {visible.map(t => <Box key={t.id} as="button" textAlign="left" borderWidth="1px" borderRadius="md" p="14px" onClick={() => setSelected(t.id)}>
-            <HStack mb="6px"><Badge>{t.mode === 'QUESTION' ? 'Question' : 'Feedback'}</Badge><Badge colorScheme={t.status === 'READY_TO_TEST' ? 'green' : 'blue'}>{label(t.status)}</Badge>{seen[t.id] !== t.updatedAt && <Badge colorScheme="orange">New</Badge>}</HStack>
-            <Text noOfLines={2}>{t.preview}</Text><Text fontSize="xs" color="gray.500" mt="4px">{t.page} · {new Date(t.updatedAt).toLocaleString()}</Text>
+            <HStack mb="6px"><Badge>{t.mode === 'QUESTION' ? 'Question' : t.page ? 'Feedback' : 'New request'}</Badge><Badge colorScheme={t.status === 'READY_TO_TEST' ? 'green' : 'blue'}>{label(t.status)}</Badge>{seen[t.id] !== t.updatedAt && <Badge colorScheme="orange">New</Badge>}</HStack>
+            <Text noOfLines={2}>{t.preview}</Text><Text fontSize="xs" color="gray.500" mt="4px">{t.page || 'No specific page'} · {new Date(t.updatedAt).toLocaleString()}</Text>
           </Box>)}
         </Stack> : !thread ? <>{detailError ? <Text role="alert">Conversation unavailable.</Text> : <Spinner />}</> : <Stack spacing="16px">
           <Flex justify="space-between"><Badge>{label(thread.status)}</Badge>{isFetching && <Spinner size="xs" />}</Flex>
-          <Text fontSize="sm"><Link href={thread.page} color="blue.600">Open {thread.page}</Link> · Release {thread.release}</Text>
+          <Text fontSize="sm">{thread.page ? <Link href={thread.page} color="blue.600">Open {thread.page}</Link> : 'No specific page'} · Release {thread.release}</Text>
           {thread.messages.map(m => <Box key={m.id} p="12px" bg={m.kind === 'AI' ? 'blue.50' : m.kind === 'SYSTEM' ? 'gray.50' : 'gray.100'} borderRadius="md">
             <Text fontSize="xs" fontWeight="bold" mb="4px">{m.kind === 'AI' ? 'AI assistant' : m.kind === 'SYSTEM' ? 'Update' : m.authorId === String(userId) ? 'You' : 'Reviewer'}</Text><Text whiteSpace="pre-wrap">{m.body}</Text>
           </Box>)}
