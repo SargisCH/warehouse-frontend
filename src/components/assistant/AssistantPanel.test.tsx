@@ -1,5 +1,9 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { createInstance } from 'i18next';
+import { I18nextProvider } from 'react-i18next';
+import en from '../../translations/en/common.json';
+import am from '../../translations/am/common.json';
 import { ChakraProvider } from '@chakra-ui/react';
 import AssistantPanel from './AssistantPanel';
 import * as assistant from 'api/assistant';
@@ -18,8 +22,15 @@ const conversation: assistant.Conversation = {
   updatedAt: '2026-10-19T12:00:00Z', messages: [{ id: 'msg', kind: 'USER', body: 'Add a manager filter', authorId: 'account-1', createdAt: '2026-10-19T12:00:00Z' }],
   plans: [{ id: 'plan-1', version: 1, threadRevision: 1, body: 'Add filter to the sales list', sourceRefs: {} }], runs: [],
 };
-function mount() { return render(<ChakraProvider><AssistantPanel /></ChakraProvider>); }
-beforeEach(() => {
+const i18n = createInstance();
+beforeAll(async () => {
+  await i18n.init({ lng: 'en', interpolation: { escapeValue: false }, resources: {
+    en: { translation: { common: en } }, am: { translation: { common: am } },
+  } });
+});
+function mount() { return render(<I18nextProvider i18n={i18n}><ChakraProvider><AssistantPanel /></ChakraProvider></I18nextProvider>); }
+beforeEach(async () => {
+  await i18n.changeLanguage('en');
   jest.clearAllMocks(); localStorage.clear();
   mock.useAssistantAccessQuery.mockReturnValue({ currentData: { assistantAccess: 'CONTRIBUTOR', aiConfigured: false } } as any);
   mock.useAssistantThreadsQuery.mockReturnValue({ currentData: [] } as any);
@@ -28,6 +39,34 @@ beforeEach(() => {
   action.mockReturnValue({ unwrap: () => Promise.resolve({}) });
   mock.useCreateAssistantThreadMutation.mockReturnValue([create, { isLoading: false }] as any);
   mock.useAssistantActionMutation.mockReturnValue([action, { isLoading: false }] as any);
+});
+
+test('assistant composer follows the selected language without losing its draft', async () => {
+  await i18n.changeLanguage('am');
+  mount();
+  fireEvent.click(screen.getByRole('button', { name: am.assistant.askOrSuggest }));
+  fireEvent.click(await screen.findByRole('button', { name: am.assistant.newMessage }));
+  fireEvent.click(screen.getByRole('button', { name: am.assistant.newRequest, exact: true }));
+  fireEvent.change(screen.getByRole('textbox', { name: am.assistant.yourRequest }), { target: { value: 'Ավելացնել նոր էջ' } });
+  expect(screen.getByText(am.assistant.requestHint)).toBeTruthy();
+  await act(async () => { await i18n.changeLanguage('en'); });
+  expect(screen.getByRole('button', { name: 'New request', exact: true }).getAttribute('aria-pressed')).toBe('true');
+  expect((screen.getByRole('textbox', { name: 'Your request' }) as HTMLTextAreaElement).value).toBe('Ավելացնել նոր էջ');
+});
+
+test('Armenian review labels are translated while the plan content stays unchanged', async () => {
+  await i18n.changeLanguage('am');
+  mock.useAssistantAccessQuery.mockReturnValue({ currentData: { assistantAccess: 'DEVELOPER', aiConfigured: true } } as any);
+  mock.useAssistantThreadsQuery.mockReturnValue({ currentData: [{ ...conversation, preview: 'Add a manager filter' }] } as any);
+  mount();
+  fireEvent.click(screen.getByRole('button', { name: am.assistant.askOrSuggest }));
+  const item = await screen.findByRole('button', { name: /Add a manager filter/ });
+  expect(item.textContent).toContain(am.assistant.status.NEEDS_REVIEW);
+  fireEvent.click(item);
+  expect(await screen.findByText('Add filter to the sales list')).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: am.assistant.approveStart }));
+  expect(screen.getByText(am.assistant.confirmCoding.replace('{{version}}', '1'))).toBeTruthy();
+  expect(action).not.toHaveBeenCalled();
 });
 
 test('regular users do not see the assistant button', () => {
