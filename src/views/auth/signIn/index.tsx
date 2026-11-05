@@ -42,7 +42,11 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { Amplify } from "aws-amplify";
-import { confirmSignIn, signIn as amplifySignIn } from "aws-amplify/auth";
+import {
+  fetchAuthSession,
+  signIn as amplifySignIn,
+  signOut,
+} from "aws-amplify/auth";
 // Custom components
 import DefaultAuth from "layouts/auth/Default";
 // Assets
@@ -118,17 +122,40 @@ function SignIn() {
             onSubmit={async (values, actions) => {
               actions.setStatus(undefined);
               try {
-                const ampData = await amplifySignIn({
-                  username: values.email.trim(),
+                const email = values.email.trim();
+                const credentials = {
+                  username: email,
                   password: values.password,
-                });
+                };
+                const ampData = await amplifySignIn(credentials).catch(
+                  async (error) => {
+                    if (error?.name !== "UserAlreadyAuthenticatedException")
+                      throw error;
+                    const session = await fetchAuthSession();
+                    const signedInEmail =
+                      session.tokens?.idToken?.payload?.email;
+                    if (
+                      session.tokens?.accessToken &&
+                      typeof signedInEmail === "string" &&
+                      signedInEmail.toLowerCase() === email.toLowerCase()
+                    ) {
+                      return {
+                        isSignedIn: true,
+                        nextStep: { signInStep: "DONE" as const },
+                      };
+                    }
+                    // Switching accounts must authenticate the newly entered credentials.
+                    await signOut();
+                    return amplifySignIn(credentials);
+                  }
+                );
                 if (
                   ampData.nextStep.signInStep ===
                   "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED"
                 ) {
                   history.push(`/auth/change-password/${values.email}`);
                 } else if (ampData.isSignedIn) {
-                  const user = await getUser(values.email.trim()).unwrap();
+                  const user = await getUser(email).unwrap();
                   if (!user?.email)
                     throw new Error(
                       "Could not load your Warehouse account. Please try again."
