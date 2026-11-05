@@ -73,12 +73,13 @@ function App() {
         setIsAmplifyLoading(true);
         const res = await fetchAuthSession({ forceRefresh: true });
         const email = res?.tokens?.idToken?.payload?.email || "";
-        setIsAmplifyLoading(false);
         if (email) {
           getUser(email as string);
         }
       } catch (e: any) {
         console.log("eeeeeee", e);
+      } finally {
+        setIsAmplifyLoading(false);
       }
     })();
   }, [getUser, userEmail]);
