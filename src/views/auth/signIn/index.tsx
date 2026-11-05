@@ -115,26 +115,40 @@ function SignIn() {
         >
           <Formik
             initialValues={{ email: "", password: "" }}
-            onSubmit={(values, actions) => {
-              setTimeout(async () => {
-                console.log("login");
-                try {
-                  const ampData = await amplifySignIn({
-                    username: values.email,
-                    password: values.password,
-                  });
-                  if (
-                    ampData.nextStep.signInStep ===
-                    "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED"
-                  ) {
-                    history.push(`/auth/change-password/${values.email}`);
-                  } else if (ampData.isSignedIn) {
-                    getUser(values.email);
-                  }
-                } catch (e) {
-                  console.log("eeeeeeeeeee", e);
+            onSubmit={async (values, actions) => {
+              actions.setStatus(undefined);
+              try {
+                const ampData = await amplifySignIn({
+                  username: values.email.trim(),
+                  password: values.password,
+                });
+                if (
+                  ampData.nextStep.signInStep ===
+                  "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED"
+                ) {
+                  history.push(`/auth/change-password/${values.email}`);
+                } else if (ampData.isSignedIn) {
+                  const user = await getUser(values.email.trim()).unwrap();
+                  if (!user?.email)
+                    throw new Error(
+                      "Could not load your Warehouse account. Please try again."
+                    );
+                } else {
+                  actions.setStatus(
+                    "Additional sign-in verification is required. Contact your administrator to complete account setup."
+                  );
                 }
-              }, 1000);
+              } catch (e: any) {
+                const message = e?.data?.message || e?.message;
+                actions.setStatus(
+                  Array.isArray(message)
+                    ? message.join(", ")
+                    : message ||
+                        "Could not sign in. Check your connection and try again."
+                );
+              } finally {
+                actions.setSubmitting(false);
+              }
             }}
           >
             {(props) =>
@@ -142,6 +156,11 @@ function SignIn() {
                 <FullPageLoader />
               ) : (
                 <Form>
+                  {props.status && (
+                    <Text role="alert" color="red.600" mb="16px">
+                      {props.status}
+                    </Text>
+                  )}
                   <Field name="email">
                     {({ field, form }: { field: any; form: any }) => (
                       <FormControl
