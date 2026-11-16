@@ -128,7 +128,7 @@ const UpsertManager = ({ deliverer = false }: { deliverer?: boolean }) => {
       setError(res.error?.data?.message || "Request failed");
       return;
     }
-    history.push(deliverer ? links.sales : links.managers);
+    history.push(deliverer ? links.deliverers : links.managers);
   };
 
   if (isLoading) {
@@ -273,7 +273,7 @@ const UpsertManager = ({ deliverer = false }: { deliverer?: boolean }) => {
           {t("common.save")}
         </Button>
         {deliverer && (
-          <Button ml={4} type="button" isDisabled={isSubmitting} onClick={() => history.push(links.sales)}>
+          <Button ml={4} type="button" isDisabled={isSubmitting} onClick={() => history.push(links.deliverers)}>
             {t("common.cancel")}
           </Button>
         )}
@@ -297,12 +297,12 @@ const UpsertManager = ({ deliverer = false }: { deliverer?: boolean }) => {
               setError(res.error?.data?.message || "Request failed");
               return;
             }
-            history.push(deliverer ? links.sales : links.managers);
+            history.push(deliverer ? links.deliverers : links.managers);
           }}
           isOpen={isDeleteDialogOpened}
           onClose={() => setIsDeleteDialogOpened(false)}
-          bodyText={t("common.manager.deleteConfirmation")}
-          headerText={t("common.manager.deleteManager")}
+          bodyText={t(deliverer ? "common.deliverer.deleteConfirmation" : "common.manager.deleteConfirmation")}
+          headerText={t(deliverer ? "common.deliverer.delete" : "common.manager.deleteManager")}
         />
       ) : null}
       {error ? (

@@ -32,7 +32,7 @@ import VerifyEmail from "views/auth/verifyEmail";
 import TransactionHistory from "pages/transactionHistory/TransactionHistory";
 import BalanceHistory from "pages/balanceHistory/BalanceHistory";
 import Manager from "pages/manager/Manager";
-import CreateDeliverer from "pages/deliverer/CreateDeliverer";
+import Deliverer from "pages/deliverer/Deliverer";
 import Settings from "pages/profile/Settings";
 import ChangePassword from "views/auth/changePassword";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -222,13 +222,13 @@ const routes: RouteTypeExtended[] = [
         role: [Role.ADMIN],
       },
       {
-        name: "Create deliverer",
+        name: "Deliverers",
         layout: "/admin",
-        path: "/deliverers/create",
-        translationKey: "deliverer.create",
+        path: "/deliverers",
+        translationKey: "deliverer.list",
         exact: true,
         icon: <FontAwesomeIcon icon={faTruck} />,
-        component: CreateDeliverer,
+        component: Deliverer,
         role: [Role.ADMIN],
       },
       {
@@ -731,6 +731,8 @@ export const links = {
   createCredit: "/admin/credit/upsert/",
   credit: (creditId: string | number) => `/admin/credit/upsert/${creditId}`,
   managers: "/admin/manager",
+  deliverers: "/admin/deliverers",
+  deliverer: (id: string | number) => `/admin/deliverers/upsert/${id}`,
   createDeliverer: "/admin/deliverers/create",
   createManager: "/admin/manager/upsert/",
   manager: (managerId: string | number) => `/admin/manager/upsert/${managerId}`,
