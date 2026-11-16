@@ -52,152 +52,162 @@ type ClientListArgs = {
   managerId?: number;
 };
 
-const clientApi = api.injectEndpoints({
-  endpoints: (builder) => ({
-    createClient: builder.mutation({
-      query: (newClient: Partial<Client>) => ({
-        url: "client",
-        method: "POST",
-        body: newClient,
+const clientApi = api
+  .enhanceEndpoints({ addTagTypes: ["Clients"] })
+  .injectEndpoints({
+    endpoints: (builder) => ({
+      createClient: builder.mutation({
+        invalidatesTags: (result, error) => (error ? [] : ["Clients"]),
+        query: (newClient: Partial<Client>) => ({
+          url: "client",
+          method: "POST",
+          body: newClient,
+        }),
       }),
-    }),
-    deleteClient: builder.mutation({
-      query: (id) => ({
-        url: `client/${id}`,
-        method: "DELETE",
-      }),
-    }),
-    updateClient: builder.mutation({
-      query: (newClient: Partial<Client>) => {
-        // «Կոդ» and the joined-in labels are server-owned, so they never go back.
-        const {
-          id,
-          code,
-          clientGroupName,
-          salesZoneName,
-          managerName,
-          ...updatedClient
-        } = newClient;
-        return {
+      deleteClient: builder.mutation({
+        invalidatesTags: (result, error) => (error ? [] : ["Clients"]),
+        query: (id) => ({
           url: `client/${id}`,
-          method: "PATCH",
-          body: updatedClient,
-        };
-      },
-    }),
-    getClient: builder.query<Client[], ClientListArgs | void>({
-      query: (arg: ClientListArgs = {}) => {
-        const queryString = `searchTerm=${arg.searchTerm || ""}&managerId=${
-          arg.managerId || ""
-        }&sortKey=${arg.sortKey || ""}&sortOrder=${arg.sortOrder || ""}`;
-        return {
-          url: `client?${queryString}`,
+          method: "DELETE",
+        }),
+      }),
+      updateClient: builder.mutation({
+        invalidatesTags: (result, error) => (error ? [] : ["Clients"]),
+        query: (newClient: Partial<Client>) => {
+          // «Կոդ» and the joined-in labels are server-owned, so they never go back.
+          const {
+            id,
+            code,
+            clientGroupName,
+            salesZoneName,
+            managerName,
+            ...updatedClient
+          } = newClient;
+          return {
+            url: `client/${id}`,
+            method: "PATCH",
+            body: updatedClient,
+          };
+        },
+      }),
+      getClient: builder.query<Client[], ClientListArgs | void>({
+        providesTags: ["Clients"],
+        query: (arg: ClientListArgs = {}) => {
+          const queryString = `searchTerm=${arg.searchTerm || ""}&managerId=${
+            arg.managerId || ""
+          }&sortKey=${arg.sortKey || ""}&sortOrder=${arg.sortOrder || ""}`;
+          return {
+            url: `client?${queryString}`,
+            method: "GET",
+          };
+        },
+      }),
+      getClientById: builder.query<Client, { clientId: string | number }>({
+        providesTags: ["Clients"],
+        query: (arg: { clientId: string | number }) => ({
+          url: `client/${arg.clientId}`,
           method: "GET",
-        };
-      },
-    }),
-    getClientById: builder.query<Client, { clientId: string | number }>({
-      query: (arg: { clientId: string | number }) => ({
-        url: `client/${arg.clientId}`,
-        method: "GET",
+        }),
+      }),
+      addSale: builder.mutation({
+        query: (newSale: SaleType) => ({
+          url: "sale/create",
+          method: "POST",
+          body: newSale,
+        }),
+      }),
+      returnSale: builder.mutation({
+        query: (args: {
+          saleId: number;
+          returnData: Array<{ stockProductId: number; amount: number }>;
+        }) => ({
+          url: `sale/${args.saleId}/return`,
+          method: "POST",
+          body: args.returnData,
+        }),
+      }),
+      confirmReturn: builder.mutation({
+        query: (args: { saleId: number }) => ({
+          url: `sale/${args.saleId}/return/confirm`,
+          method: "POST",
+          body: {},
+        }),
+      }),
+      confirmReturnById: builder.mutation({
+        query: (args: { saleId: number; returnId: number }) => ({
+          url: `sale/return/confirm/${args.returnId}`,
+          method: "POST",
+          body: {},
+        }),
+      }),
+      disposeReturnById: builder.mutation({
+        query: (args: { saleId: number; returnId: number }) => ({
+          url: `sale/${args.saleId}/return/dispose/${args.returnId}`,
+          method: "POST",
+          body: {},
+        }),
+      }),
+      disposeReturn: builder.mutation({
+        query: (args: { saleId: number }) => ({
+          url: `sale/${args.saleId}/return/dispose`,
+          method: "POST",
+          body: {},
+        }),
+      }),
+      cancelSale: builder.mutation({
+        query: (args: { saleId: number }) => ({
+          url: `sale/${args.saleId}/cancel`,
+          method: "POST",
+        }),
+      }),
+      getSaleById: builder.query<SaleType, { id: string | number }>({
+        query: (arg: { id: string | number }) => ({
+          url: `sale/${arg.id}`,
+          method: "GET",
+        }),
+      }),
+      getSale: builder.query<
+        { saleList: SaleReturnType[]; totalPages: number }[],
+        { query: string }
+      >({
+        query: ({ query }: { query: string }) => ({
+          url: `sale/${query}`,
+          method: "GET",
+        }),
+      }),
+      getReturnSale: builder.query<
+        {
+          returnDaleList: {
+            stockProduct: { product: { name: string; id: number }; id: number };
+          }[];
+        },
+        { query: string }
+      >({
+        query: ({ query }: { query: string }) => ({
+          url: `sale/return${query}`,
+          method: "GET",
+        }),
+      }),
+      getLatestSaleForProduct: builder.query<
+        { saleItem: SaleItem | undefined },
+        { stockProductId: number }
+      >({
+        query: (arg: { stockProductId: number }) => ({
+          url: `sale/latest/${arg.stockProductId}`,
+          method: "GET",
+        }),
+      }),
+      getReturnedSaleBySaleId: builder.query<
+        SaleReturnType,
+        { saleId: number }
+      >({
+        query: (arg: { saleId: number }) => ({
+          url: `sale/return/${arg.saleId}`,
+          method: "GET",
+        }),
       }),
     }),
-    addSale: builder.mutation({
-      query: (newSale: SaleType) => ({
-        url: "sale/create",
-        method: "POST",
-        body: newSale,
-      }),
-    }),
-    returnSale: builder.mutation({
-      query: (args: {
-        saleId: number;
-        returnData: Array<{ stockProductId: number; amount: number }>;
-      }) => ({
-        url: `sale/${args.saleId}/return`,
-        method: "POST",
-        body: args.returnData,
-      }),
-    }),
-    confirmReturn: builder.mutation({
-      query: (args: { saleId: number }) => ({
-        url: `sale/${args.saleId}/return/confirm`,
-        method: "POST",
-        body: {},
-      }),
-    }),
-    confirmReturnById: builder.mutation({
-      query: (args: { saleId: number; returnId: number }) => ({
-        url: `sale/return/confirm/${args.returnId}`,
-        method: "POST",
-        body: {},
-      }),
-    }),
-    disposeReturnById: builder.mutation({
-      query: (args: { saleId: number; returnId: number }) => ({
-        url: `sale/${args.saleId}/return/dispose/${args.returnId}`,
-        method: "POST",
-        body: {},
-      }),
-    }),
-    disposeReturn: builder.mutation({
-      query: (args: { saleId: number }) => ({
-        url: `sale/${args.saleId}/return/dispose`,
-        method: "POST",
-        body: {},
-      }),
-    }),
-    cancelSale: builder.mutation({
-      query: (args: { saleId: number }) => ({
-        url: `sale/${args.saleId}/cancel`,
-        method: "POST",
-      }),
-    }),
-    getSaleById: builder.query<SaleType, { id: string | number }>({
-      query: (arg: { id: string | number }) => ({
-        url: `sale/${arg.id}`,
-        method: "GET",
-      }),
-    }),
-    getSale: builder.query<
-      { saleList: SaleReturnType[]; totalPages: number }[],
-      { query: string }
-    >({
-      query: ({ query }: { query: string }) => ({
-        url: `sale/${query}`,
-        method: "GET",
-      }),
-    }),
-    getReturnSale: builder.query<
-      {
-        returnDaleList: {
-          stockProduct: { product: { name: string; id: number }; id: number };
-        }[];
-      },
-      { query: string }
-    >({
-      query: ({ query }: { query: string }) => ({
-        url: `sale/return${query}`,
-        method: "GET",
-      }),
-    }),
-    getLatestSaleForProduct: builder.query<
-      { saleItem: SaleItem | undefined },
-      { stockProductId: number }
-    >({
-      query: (arg: { stockProductId: number }) => ({
-        url: `sale/latest/${arg.stockProductId}`,
-        method: "GET",
-      }),
-    }),
-    getReturnedSaleBySaleId: builder.query<SaleReturnType, { saleId: number }>({
-      query: (arg: { saleId: number }) => ({
-        url: `sale/return/${arg.saleId}`,
-        method: "GET",
-      }),
-    }),
-  }),
-});
+  });
 
 export const {
   useCreateClientMutation,

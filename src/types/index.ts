@@ -66,6 +66,7 @@ export type SalesZone = {
   name: string;
   // «Մենեջեր»: the agent responsible for the zone.
   managerId: number | null;
+  delivererId: number | null;
   // «Փակվել է»
   isClosed: boolean;
   // «Կուտակիչ»: the zone this one nests under - itself a sales zone.
@@ -135,6 +136,7 @@ export type Client = {
   clientGroupId: number | null;
   salesZoneId: number | null;
   managerId: number | null;
+  delivererId: number | null;
   // «Գնացուցակ» and the credit terms.
   priceListId?: number | null;
   paymentType?: string | null;

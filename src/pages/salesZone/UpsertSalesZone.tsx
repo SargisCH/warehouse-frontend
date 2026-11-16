@@ -31,6 +31,7 @@ import { links } from "routes";
 const ValidationSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
   managerId: z.string().optional(),
+  delivererId: z.string().optional(),
   // «Փակվել է»
   isClosed: z.boolean(),
   // «Կուտակիչ»: another sales zone this one nests under.
@@ -86,6 +87,7 @@ const UpsertSalesZone = () => {
     defaultValues: {
       name: "",
       managerId: "",
+      delivererId: "",
       isClosed: false,
       parentId: "",
     },
@@ -102,6 +104,9 @@ const UpsertSalesZone = () => {
           reset({
             name: res.data.name,
             managerId: res.data.managerId ? String(res.data.managerId) : "",
+            delivererId: res.data.delivererId
+              ? String(res.data.delivererId)
+              : "",
             isClosed: res.data.isClosed,
             parentId: res.data.parentId ? String(res.data.parentId) : "",
           });
@@ -114,6 +119,7 @@ const UpsertSalesZone = () => {
     const data = {
       name: values.name,
       managerId: values.managerId ? Number(values.managerId) : null,
+      delivererId: values.delivererId ? Number(values.delivererId) : null,
       isClosed: values.isClosed,
       parentId: values.parentId ? Number(values.parentId) : null,
     };
@@ -195,6 +201,36 @@ const UpsertSalesZone = () => {
                   options={managerOptions}
                 />
                 <FormErrorMessage>{errors.managerId?.message}</FormErrorMessage>
+              </FormControl>
+            )}
+          />
+          <Controller
+            name="delivererId"
+            control={control}
+            render={({ field }) => (
+              <FormControl isInvalid={!!errors.delivererId}>
+                <FormLabel>{t("common.manager.deliverer")}</FormLabel>
+                <Select
+                  isClearable={true}
+                  placeholder={t("common.manager.selectDeliverer")}
+                  styles={{
+                    control: (baseStyles) => ({
+                      ...baseStyles,
+                      ...getErrorStyles(!!errors.delivererId),
+                    }),
+                  }}
+                  value={
+                    managerOptions.find((op) => op.value === field.value) ??
+                    null
+                  }
+                  onChange={(valueSelected) => {
+                    field.onChange(valueSelected?.value ?? "");
+                  }}
+                  options={managerOptions}
+                />
+                <FormErrorMessage>
+                  {errors.delivererId?.message}
+                </FormErrorMessage>
               </FormControl>
             )}
           />

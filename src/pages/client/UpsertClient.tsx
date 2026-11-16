@@ -56,6 +56,7 @@ const ValidationSchema = z.object({
   clientGroupId: z.string().optional(),
   salesZoneId: z.string().optional(),
   managerId: z.string().optional(),
+  delivererId: z.string().optional(),
   // «Գնացուցակ», «Վճարման տեսակ» and the credit terms.
   priceListId: z.string().optional(),
   paymentType: z.string().optional(),
@@ -147,6 +148,7 @@ const UpsertClient = () => {
       clientGroupId: "",
       salesZoneId: "",
       managerId: "",
+      delivererId: "",
       priceListId: "",
       paymentType: "",
       paymentTermDays: "0",
@@ -177,6 +179,9 @@ const UpsertClient = () => {
               ? String(res.data.salesZoneId)
               : "",
             managerId: res.data.managerId ? String(res.data.managerId) : "",
+            delivererId: res.data.delivererId
+              ? String(res.data.delivererId)
+              : "",
             priceListId: res.data.priceListId
               ? String(res.data.priceListId)
               : "",
@@ -203,6 +208,7 @@ const UpsertClient = () => {
       clientGroupId: values.clientGroupId ? Number(values.clientGroupId) : null,
       salesZoneId: values.salesZoneId ? Number(values.salesZoneId) : null,
       managerId: values.managerId ? Number(values.managerId) : null,
+      delivererId: values.delivererId ? Number(values.delivererId) : null,
       priceListId: values.priceListId ? Number(values.priceListId) : null,
       paymentType: values.paymentType || null,
       paymentTermDays: Number(values.paymentTermDays || 0),
@@ -257,6 +263,7 @@ const UpsertClient = () => {
       | "clientGroupId"
       | "salesZoneId"
       | "managerId"
+      | "delivererId"
       | "priceListId"
       | "paymentType",
     labelKey: string,
@@ -340,6 +347,12 @@ const UpsertClient = () => {
             "managerId",
             "common.client.manager",
             "common.client.selectManager",
+            managerOptions,
+          )}
+          {selectField(
+            "delivererId",
+            "common.manager.deliverer",
+            "common.manager.selectDeliverer",
             managerOptions,
           )}
         </Flex>
