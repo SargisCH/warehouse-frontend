@@ -7,9 +7,10 @@ type ListArgs = {
   sortOrder?: string;
 };
 
-const managerApi = api.injectEndpoints({
+const managerApi = api.enhanceEndpoints({ addTagTypes: ["Managers"] }).injectEndpoints({
   endpoints: (builder) => ({
     createManager: builder.mutation({
+      invalidatesTags: (result, error) => error ? [] : ["Managers"],
       query: (newManager: Partial<Manager>) => ({
         url: "manager",
         method: "POST",
@@ -41,6 +42,7 @@ const managerApi = api.injectEndpoints({
       },
     }),
     getManagers: builder.query<Manager[], ListArgs | void>({
+      providesTags: ["Managers"],
       query: (arg: ListArgs = {}) => {
         const queryString = `searchTerm=${arg.searchTerm || ""}&sortKey=${
           arg.sortKey || ""
@@ -59,6 +61,7 @@ const managerApi = api.injectEndpoints({
     }),
     // Who can be an «առաքիչ»: every manager of the tenant.
     getDeliverers: builder.query<Manager[], void>({
+      providesTags: ["Managers"],
       query: () => ({
         url: "manager/deliverers",
         method: "GET",

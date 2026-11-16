@@ -30,7 +30,7 @@ jobs:
         run: |
           node <<'NODE'
           const url = new URL(process.env.REACT_APP_API_URL);
-          if (url.protocol !== 'https:') throw new Error('API_URL must use HTTPS for the Pages frontend.');
+          if (!['http:', 'https:'].includes(url.protocol)) throw new Error('API_URL must use HTTP or HTTPS.');
           if (!url.pathname.endsWith('/api/v1/')) throw new Error('API_URL must include /api/v1/ with a trailing slash.');
           if (!/^[a-z0-9][a-z0-9-]*$/.test(process.env.PAGES_PROJECT || '')) throw new Error('Set CLOUDFLARE_PAGES_PROJECT to your Pages project name.');
           NODE

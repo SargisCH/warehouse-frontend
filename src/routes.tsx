@@ -15,6 +15,7 @@ import DataTables from "views/admin/dataTables";
 import RTL from "views/admin/rtl";
 import Inventory from "pages/inventory/Inventory";
 import InventoryEntry from "pages/inventoryEntry/InventoryEntry";
+import Units from "pages/unit/Units";
 import Product from "pages/product/Product";
 import Warehouse from "pages/warehouse/Warehouse";
 import InventorySupplier from "pages/inventorySupplier/InventorySupplier";
@@ -31,6 +32,7 @@ import VerifyEmail from "views/auth/verifyEmail";
 import TransactionHistory from "pages/transactionHistory/TransactionHistory";
 import BalanceHistory from "pages/balanceHistory/BalanceHistory";
 import Manager from "pages/manager/Manager";
+import CreateDeliverer from "pages/deliverer/CreateDeliverer";
 import Settings from "pages/profile/Settings";
 import ChangePassword from "views/auth/changePassword";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -127,6 +129,16 @@ const routes: RouteTypeExtended[] = [
         role: [Role.ADMIN],
       },
       {
+        name: "Units",
+        layout: "/admin",
+        path: "/units",
+        translationKey: "unitManagement.title",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faList} />,
+        component: Units,
+        role: [Role.ADMIN],
+      },
+      {
         name: "Products",
         layout: "/admin",
         translationKey: "products",
@@ -207,6 +219,16 @@ const routes: RouteTypeExtended[] = [
         exact: true,
         icon: <FontAwesomeIcon icon={faMapMarkedAlt} />,
         component: SalesZone,
+        role: [Role.ADMIN],
+      },
+      {
+        name: "Create deliverer",
+        layout: "/admin",
+        path: "/deliverers/create",
+        translationKey: "deliverer.create",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faTruck} />,
+        component: CreateDeliverer,
         role: [Role.ADMIN],
       },
       {
@@ -662,6 +684,8 @@ export const links = {
   product: "/admin/products",
   productItem: (productId: string | number) =>
     `/admin/products/upsert/${productId}`,
+  units: "/admin/units",
+  createUnit: "/admin/units/create",
   createProduct: "/admin/products/upsert/",
   addInStock: "/admin/products/addInStock/",
   updateStock: (id: number) => `/admin/products/stockProduct/${id}/`,
@@ -707,6 +731,7 @@ export const links = {
   createCredit: "/admin/credit/upsert/",
   credit: (creditId: string | number) => `/admin/credit/upsert/${creditId}`,
   managers: "/admin/manager",
+  createDeliverer: "/admin/deliverers/create",
   createManager: "/admin/manager/upsert/",
   manager: (managerId: string | number) => `/admin/manager/upsert/${managerId}`,
   transactionHistories: "/admin/transactionHistory",

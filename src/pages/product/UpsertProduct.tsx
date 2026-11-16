@@ -24,14 +24,15 @@ import {
 } from "api/product";
 import AlertDialog from "components/alertDialog/AlertDialog";
 import { useEffect, useState } from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory, useLocation, useParams } from "react-router-dom";
 import Select from "react-select";
 import { links } from "../../routes";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { generateKey } from "helpers/generateKey";
 import { useTranslation } from "react-i18next";
-import { useGetUnitsQuery } from "api/unit";
+import { Unit } from "api/unit";
+import { UnitSelect } from "components/documents/UnitSelect";
 import { useGetProductGroupQuery } from "api/productGroup";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 
@@ -79,10 +80,15 @@ const UpsertProduct = (props: { create: boolean }) => {
   const [updateProduct] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
   const history = useHistory();
+  const location = useLocation<{
+    productDraft?: { values: ProductFormType; ingredientsOpened: boolean };
+    createdUnit?: Unit;
+    targetField?: "unitId" | `ingredients.${number}.unitId`;
+  }>();
+  const [returnState] = useState(() => location.state);
   const { t } = useTranslation();
   const [getProductById, { isLoading }] = useLazyGetProductByIdQuery();
   const { data: productResponse } = useGetProductQuery(undefined);
-  const { data: units = [] } = useGetUnitsQuery();
   const { data: productGroups = [] } = useGetProductGroupQuery();
   const products = productResponse?.data || [];
   const getLabel = (
@@ -92,10 +98,6 @@ const UpsertProduct = (props: { create: boolean }) => {
     const selectedLabel = options.find((op) => String(op.value) === id)?.label;
     return selectedLabel ?? "";
   };
-  const unitOptions = units.map((unit) => ({
-    label: t(`common.units.${unit.name}`),
-    value: String(unit.id),
-  }));
   const getOptions = (options: OptionData[]) => {
     return options.map((op) => ({ label: op.name, value: String(op.id) }));
   };
@@ -104,6 +106,8 @@ const UpsertProduct = (props: { create: boolean }) => {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    getValues,
+    setValue,
   } = useForm<ProductFormType>({
     resolver: zodResolver(ValidationSchema),
     defaultValues: {
@@ -125,6 +129,20 @@ const UpsertProduct = (props: { create: boolean }) => {
   const isMobile = useBreakpointValue({ base: true, md: false });
   useEffect(() => {
     (async () => {
+      if (returnState?.productDraft) {
+        reset(returnState.productDraft.values);
+        setIngredientsOpened(returnState.productDraft.ingredientsOpened);
+        if (returnState.createdUnit && returnState.targetField) {
+          setValue(
+            returnState.targetField,
+            String(returnState.createdUnit.id),
+            { shouldDirty: true, shouldValidate: true },
+          );
+        }
+        // Consume navigation data so subsequent visits load the saved product normally.
+        history.replace(location.pathname + location.search, undefined);
+        return;
+      }
       if (params.productId) {
         const productItemRes = await getProductById({
           productId: params.productId,
@@ -152,7 +170,29 @@ const UpsertProduct = (props: { create: boolean }) => {
         }
       }
     })();
-  }, [params.productId, getProductById, reset]);
+  }, [
+    params.productId,
+    getProductById,
+    reset,
+    returnState,
+    setValue,
+    history,
+    location.pathname,
+    location.search,
+  ]);
+
+  const createUnit = (
+    targetField: "unitId" | `ingredients.${number}.unitId`,
+  ) => {
+    const productDraft = { values: getValues(), ingredientsOpened };
+    const returnTo = location.pathname + location.search;
+    history.replace(returnTo, { productDraft });
+    history.push(links.createUnit, {
+      returnTo,
+      returnState: { productDraft },
+      targetField,
+    });
+  };
   const onSubmit = async (values: ProductFormType) => {
     const postData = {
       ...values,
@@ -250,21 +290,11 @@ const UpsertProduct = (props: { create: boolean }) => {
             render={({ field }) => (
               <FormControl isInvalid={!!errors.unitId}>
                 <FormLabel>{t("common.unit")}</FormLabel>
-                <Select
-                  styles={{
-                    control: (baseStyles) => ({
-                      ...baseStyles,
-                      ...getErrorStyles(!!errors.unitId),
-                    }),
-                  }}
-                  value={{
-                    label: getLabel(String(field.value), unitOptions),
-                    value: field.value,
-                  }}
-                  onChange={(valueSelected) => {
-                    field.onChange(valueSelected.value);
-                  }}
-                  options={unitOptions}
+                <UnitSelect
+                  value={String(field.value)}
+                  onChange={field.onChange}
+                  onCreate={() => createUnit("unitId")}
+                  invalid={!!errors.unitId}
                 />
                 <FormErrorMessage>{errors.unitId?.message}</FormErrorMessage>
               </FormControl>
@@ -442,21 +472,13 @@ const UpsertProduct = (props: { create: boolean }) => {
                     render={({ field }) => (
                       <FormControl isInvalid={!!unitIdError}>
                         <FormLabel>{t("common.unit")}</FormLabel>
-                        <Select
-                          styles={{
-                            control: (baseStyles) => ({
-                              ...baseStyles,
-                              ...getErrorStyles(!!unitIdError),
-                            }),
-                          }}
-                          value={{
-                            label: getLabel(String(field.value), unitOptions),
-                            value: field.value,
-                          }}
-                          onChange={(valueSelected) => {
-                            field.onChange(valueSelected.value);
-                          }}
-                          options={unitOptions}
+                        <UnitSelect
+                          value={String(field.value)}
+                          onChange={field.onChange}
+                          onCreate={() =>
+                            createUnit(`ingredients.${index}.unitId`)
+                          }
+                          invalid={!!unitIdError}
                         />
                         <FormErrorMessage>
                           {unitIdError?.message.toString()}
