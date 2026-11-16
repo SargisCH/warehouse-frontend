@@ -42,14 +42,14 @@ export default function QuantityDetailsModal({
                   <span>{detail.warehouseName}</span>
                   <span>
                     {detail.quantity}{" "}
-                    {t(`common.units.${quantityDetails.unit.name}`)}
+                    {t(`common.units.${quantityDetails.unit.name}`, { defaultValue: quantityDetails.unit.name })}
                   </span>
                 </Flex>
               ))}
             </VStack>
             <Box mt={4} textAlign="right">
               {t("common.total")}: {quantityDetails.totalStock}{" "}
-              {t(`common.units.${quantityDetails.unit.name}`)}
+              {t(`common.units.${quantityDetails.unit.name}`, { defaultValue: quantityDetails.unit.name })}
             </Box>
           </ModalBody>
         </>

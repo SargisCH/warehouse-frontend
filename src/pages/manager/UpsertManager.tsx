@@ -44,7 +44,7 @@ const getErrorStyles = (error: boolean) => {
   return {};
 };
 
-const UpsertManager = () => {
+const UpsertManager = ({ deliverer = false }: { deliverer?: boolean }) => {
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
   const [error, setError] = useState("");
   // «Կոդ» is assigned by the server; shown once the record exists.
@@ -128,7 +128,7 @@ const UpsertManager = () => {
       setError(res.error?.data?.message || "Request failed");
       return;
     }
-    history.push(links.managers);
+    history.push(deliverer ? links.sales : links.managers);
   };
 
   if (isLoading) {
@@ -164,7 +164,7 @@ const UpsertManager = () => {
                 <Input
                   {...field}
                   type="text"
-                  placeholder={t("common.manager.namePlaceholder")}
+                  placeholder={t(deliverer ? "common.deliverer.namePlaceholder" : "common.manager.namePlaceholder")}
                 />
                 <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
               </FormControl>
@@ -181,7 +181,7 @@ const UpsertManager = () => {
                 <Input
                   {...field}
                   type="email"
-                  placeholder={t("common.manager.emailPlaceholder")}
+                  placeholder={t(deliverer ? "common.deliverer.emailPlaceholder" : "common.manager.emailPlaceholder")}
                 />
                 <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
               </FormControl>
@@ -233,7 +233,8 @@ const UpsertManager = () => {
               </FormControl>
             )}
           />
-          <Controller
+          {!deliverer && (
+            <Controller
             name="delivererId"
             control={control}
             render={({ field }) => (
@@ -263,13 +264,19 @@ const UpsertManager = () => {
                 </FormErrorMessage>
               </FormControl>
             )}
-          />
+            />
+          )}
         </Flex>
       </Flex>
       <Box mt={5}>
         <Button colorScheme="teal" type="submit" isLoading={isSubmitting}>
           {t("common.save")}
         </Button>
+        {deliverer && (
+          <Button ml={4} type="button" isDisabled={isSubmitting} onClick={() => history.push(links.sales)}>
+            {t("common.cancel")}
+          </Button>
+        )}
         {params.managerId ? (
           <Button
             ml={4}
@@ -290,7 +297,7 @@ const UpsertManager = () => {
               setError(res.error?.data?.message || "Request failed");
               return;
             }
-            history.push(links.managers);
+            history.push(deliverer ? links.sales : links.managers);
           }}
           isOpen={isDeleteDialogOpened}
           onClose={() => setIsDeleteDialogOpened(false)}

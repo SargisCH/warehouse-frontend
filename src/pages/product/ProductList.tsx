@@ -148,7 +148,7 @@ function ProductList() {
 
   const options = useMemo(() => {
     const unitOptions = transformOptions(units, {
-      label: (unit) => t(`common.units.${unit.name}`),
+      label: (unit) => t(`common.units.${unit.name}`, { defaultValue: unit.name }),
       value: "id",
     });
     return {
