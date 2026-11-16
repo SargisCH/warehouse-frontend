@@ -157,6 +157,13 @@
     "addTransaction": "Add Transaction"
   },
   "deliverer": {
+    "retry": "Retry",
+    "list": "Deliverers",
+    "edit": "Edit deliverer",
+    "delete": "Delete deliverer",
+    "deleteConfirmation": "Are you sure you want to delete this deliverer?",
+    "empty": "No deliverers found.",
+    "loadError": "Could not load the list. Please try again.",
     "create": "Create deliverer",
     "namePlaceholder": "Deliverer name",
     "emailPlaceholder": "Deliverer email"

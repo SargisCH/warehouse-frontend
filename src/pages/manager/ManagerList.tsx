@@ -1,5 +1,9 @@
 import { useEffect } from "react";
 import {
+  Alert,
+  AlertIcon,
+  Button,
+  Spinner,
   Box,
   Flex,
   Input,
@@ -32,9 +36,8 @@ import { TableAddButton } from "components/tableAddButton/TableAddButton";
 import { useTranslation } from "react-i18next";
 
 const columnHelper = createColumnHelper<Manager>();
-let searchTimeoutId: ReturnType<typeof setTimeout>;
 
-function ManagerList() {
+function ManagerList({ deliverer = false }: { deliverer?: boolean }) {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [searchFilter, setSearchFilter] = React.useState("");
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -52,11 +55,17 @@ function ManagerList() {
     queryObject.sortOrder = sorting[0].desc ? "desc" : "asc";
   }
 
-  const { data: managers = [], refetch } = useGetManagersQuery(queryObject);
+  const {
+    data: managers = [],
+    refetch,
+    isLoading,
+    isError,
+  } = useGetManagersQuery(queryObject);
 
   useEffect(() => {
-    refetch();
-  }, [refetch]);
+    const timeout = setTimeout(() => setSearchFilter(searchTerm), 500);
+    return () => clearTimeout(timeout);
+  }, [searchTerm]);
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
@@ -64,10 +73,6 @@ function ManagerList() {
 
   const handleSearchTermChange = (e: any) => {
     setSearchTerm(e.target.value);
-    clearTimeout(searchTimeoutId);
-    searchTimeoutId = setTimeout(() => {
-      setSearchFilter(e.target.value);
-    }, 500);
   };
 
   const header = (label: string) => () => (
@@ -115,12 +120,16 @@ function ManagerList() {
       header: header(t("common.salesZone.salesZone")),
       cell: textCell,
     }),
-    columnHelper.accessor("delivererName", {
-      id: "delivererName",
-      enableSorting: false,
-      header: header(t("common.manager.deliverer")),
-      cell: textCell,
-    }),
+    ...(!deliverer
+      ? [
+          columnHelper.accessor("delivererName", {
+            id: "delivererName",
+            enableSorting: false,
+            header: header(t("common.manager.deliverer")),
+            cell: textCell,
+          }),
+        ]
+      : []),
   ];
 
   const table = useReactTable({
@@ -152,11 +161,19 @@ function ManagerList() {
             fontWeight="700"
             lineHeight="100%"
           >
-            {t("common.manager.managerList")}
+            {t(
+              deliverer
+                ? "common.deliverer.list"
+                : "common.manager.managerList",
+            )}
           </Text>
           <TableAddButton
-            label={t("common.manager.addManager")}
-            link={links.createManager}
+            label={t(
+              deliverer
+                ? "common.deliverer.create"
+                : "common.manager.addManager",
+            )}
+            link={deliverer ? links.createDeliverer : links.createManager}
           />
         </Flex>
         <Flex marginTop={"20px"} justifyContent="flex-start">
@@ -169,6 +186,15 @@ function ManagerList() {
           </Box>
         </Flex>
       </Box>
+      {isError && (
+        <Alert status="error">
+          <AlertIcon />
+          {t("common.deliverer.loadError")}
+          <Button ml={4} onClick={() => refetch()}>
+            {t("common.deliverer.retry")}
+          </Button>
+        </Alert>
+      )}
       <Box>
         <Table variant="simple" color="gray.500" mb="24px" mt="12px">
           <Thead>
@@ -204,12 +230,34 @@ function ManagerList() {
             ))}
           </Thead>
           <Tbody>
+            {isLoading && (
+              <Tr>
+                <Td colSpan={columns.length}>
+                  <Spinner />
+                </Td>
+              </Tr>
+            )}
+            {!isLoading && !isError && !managers.length && (
+              <Tr>
+                <Td colSpan={columns.length}>
+                  {t(
+                    deliverer
+                      ? "common.deliverer.empty"
+                      : "common.manager.noDeliverers",
+                  )}
+                </Td>
+              </Tr>
+            )}
             {table.getRowModel().rows.map((row) => (
               <Tr
                 key={row.id}
                 cursor="pointer"
                 onClick={() => {
-                  history.push(links.manager(row.original.id));
+                  history.push(
+                    deliverer
+                      ? links.deliverer(row.original.id)
+                      : links.manager(row.original.id),
+                  );
                 }}
               >
                 {row.getVisibleCells().map((cell) => (
