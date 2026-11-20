@@ -90,7 +90,18 @@
     "note": "Note",
     "priceList": "Price list",
     "price": "Price",
-    "total": "Total amount"
+    "total": "Total amount",
+    "selectWarehouse": "Select a warehouse",
+    "selectPriceList": "Select a price list",
+    "selectProduct": "Select a product",
+    "noOptions": "No options",
+    "validation": {
+      "warehouseRequired": "Warehouse is required.",
+      "dateRequired": "Date is required.",
+      "productRequired": "Product is required.",
+      "quantityRequired": "Quantity is required.",
+      "productsRequired": "Add at least one product."
+    }
   },
   "suppliers": "Suppliers",
   "supplier": {

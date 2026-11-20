@@ -11,7 +11,7 @@ export default function Supply() {
 
   return (
     <Box>
-      <h1>{t("supply.title")}</h1>
+      <h1>{t("common.supply.title")}</h1>
       <Switch>
         <Route path={`${match.path}`} exact={true}>
           <SupplyList />
