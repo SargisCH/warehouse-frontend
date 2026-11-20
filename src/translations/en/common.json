@@ -420,6 +420,52 @@
     "incomplete": "Fill in the source, destination and at least one product",
     "deleteConfirmation": "The goods will be moved back to the source. Continue?"
   },
+  "companyAssets": {
+    "title": "Company Assets",
+    "cash": "Company cash",
+    "balance": "Company cash balance",
+    "condition": "Condition",
+    "conditions": {
+      "NEW": "New",
+      "USED": "Used"
+    },
+    "status": "Status",
+    "active": "Active",
+    "sold": "Sold",
+    "acquiredOn": "Acquisition date",
+    "purchasePrice": "Purchase price",
+    "totalSpent": "Total spent",
+    "description": "Description",
+    "repairs": "Repairs",
+    "receipts": "Money received",
+    "reason": "Reason",
+    "amount": "Amount",
+    "cashPaid": "Paid from company cash",
+    "cashReceived": "Received into company cash",
+    "cashRecorded": "Recorded",
+    "noCashMovement": "No cash movement",
+    "back": "Back to assets",
+    "actions": {
+      "asset": "Add asset",
+      "repair": "Add repair",
+      "receipt": "Record money received",
+      "opening": "Set opening cash balance"
+    },
+    "kinds": {
+      "SALE": "Asset sale",
+      "REFUND": "Supplier refund"
+    },
+    "openingHelp": "Enter the cash the company held when tracking started on {{date}}. You can set this once.",
+    "existingHelp": "For an asset the company already owned, clear this checkbox to avoid deducting the purchase price again.",
+    "invalidDate": "Check the acquisition and entry dates. Cash movements must be dated on or after the start of company cash tracking.",
+    "invalidAmount": "Enter a valid amount with up to two decimal places. Repairs and money received must be greater than zero.",
+    "missingText": "Enter the required name or description.",
+    "alreadySold": "This asset has already been sold.",
+    "openingAlreadySet": "An opening cash balance has already been recorded.",
+    "saveError": "Could not save the entry. Please try again.",
+    "loadError": "Could not load assets.",
+    "cashError": "Could not load the company cash balance."
+  },
   "managerCash": {
     "title": "Manager Cash Receipts",
     "entryType": "Entry type",

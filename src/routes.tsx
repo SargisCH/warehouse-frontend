@@ -82,6 +82,7 @@ import SalesAnalysis from "pages/report/SalesAnalysis";
 import SalesComparison from "pages/report/SalesComparison";
 import ClientStatement from "pages/report/ClientStatement";
 import ClientBalances from "pages/report/ClientBalances";
+import CompanyAssets from "pages/companyAssets/CompanyAssets";
 import ManagerCash from "pages/managerCash/ManagerCash";
 import ManagerBalances from "pages/report/ManagerBalances";
 import ManagerStockReport from "pages/report/ManagerStockReport";
@@ -118,6 +119,16 @@ const routes: RouteTypeExtended[] = [
     translationKey: "warehouse.warehouse",
     role: [],
     nestedRoutes: [
+      {
+        name: "Company Assets",
+        layout: "/admin",
+        path: "/company-assets",
+        translationKey: "companyAssets.title",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faBox} />,
+        component: CompanyAssets,
+        role: [Role.ADMIN],
+      },
       {
         name: "Groups",
         layout: "/admin",
