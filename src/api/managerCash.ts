@@ -24,7 +24,7 @@ const managerCashApi = api.injectEndpoints({
     }),
     createManagerCashEntry: builder.mutation<unknown, CashEntryInput>({
       query: (body) => ({ url: "manager-cash", method: "POST", body }),
-      invalidatesTags: (_result, error) => (error ? [] : ["ManagerCash"]),
+      invalidatesTags: (_result, error) => (error ? [] : ["ManagerCash", "CompanyCash"]),
     }),
   }),
 });

@@ -67,7 +67,7 @@ const saleApi = api.injectEndpoints({
       }),
     }),
     createSale: builder.mutation({
-      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash"],
+      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash"],
       query: (newSale: Partial<Sale> & { items: unknown[]; cashCollectedByManager?: boolean }) => ({
         url: "sale",
         method: "POST",
@@ -75,7 +75,7 @@ const saleApi = api.injectEndpoints({
       }),
     }),
     deleteSale: builder.mutation({
-      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash"],
+      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash"],
       query: (id) => ({
         url: `sale/${id}`,
         method: "DELETE",
@@ -95,7 +95,7 @@ const saleApi = api.injectEndpoints({
     }),
     // «Կատարել վճարում» - omit the amount to settle the whole remainder.
     paySale: builder.mutation({
-      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash"],
+      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash"],
       query: (arg: {
         saleId: string | number;
         amount?: string;

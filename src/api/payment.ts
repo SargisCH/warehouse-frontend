@@ -32,7 +32,7 @@ const paymentApi = api.injectEndpoints({
     }),
     // «Վճարում». Without allocations the oldest debts are settled first.
     createPayment: builder.mutation({
-      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash"],
+      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash"],
       query: (body: {
         documentDate?: string;
         managerId?: number | null;
@@ -46,7 +46,7 @@ const paymentApi = api.injectEndpoints({
     }),
     // «Վճարում գնորդին»
     createRefund: builder.mutation({
-      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash"],
+      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash"],
       query: (body: {
         documentDate?: string;
         managerId?: number | null;
@@ -57,7 +57,7 @@ const paymentApi = api.injectEndpoints({
       }) => ({ url: "payment/refund", method: "POST", body }),
     }),
     deletePayment: builder.mutation({
-      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash"],
+      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash"],
       query: (id: number | string) => ({
         url: `payment/${id}`,
         method: "DELETE",
