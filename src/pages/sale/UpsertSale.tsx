@@ -23,7 +23,7 @@ import {
   Tr,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import Select from "react-select";
 import { useTranslation } from "react-i18next";
@@ -40,7 +40,7 @@ import { useGetManagersQuery } from "api/manager";
 import { useGetClientQuery } from "api/client";
 import {
   useGetPriceListsQuery,
-  useLazyGetPriceListEntriesQuery,
+  useGetPriceListEntriesQuery,
 } from "api/priceList";
 import AlertDialog from "components/alertDialog/AlertDialog";
 import { DataGrid } from "components/documents/DataGrid";
@@ -115,14 +115,13 @@ const UpsertSale = () => {
   const [snapshot, setSnapshot] = useState<ClientSnapshot | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerSearch, setPickerSearch] = useState("");
-  const [pickerRows, setPickerRows] = useState<PriceListEntry[]>([]);
+  const [pickerQuery, setPickerQuery] = useState("");
   const [stock, setStock] = useState<Record<number, string>>({});
 
   const [createSale] = useCreateSaleMutation();
   const [deleteSale] = useDeleteSaleMutation();
   const [paying, setPaying] = useState(false);
   const [getSnapshot] = useLazyGetClientSnapshotQuery();
-  const [getEntries] = useLazyGetPriceListEntriesQuery();
   const [getManagerStock] = useLazyGetManagerStockQuery();
   const [getSaleById] = useLazyGetSaleByIdQuery();
 
@@ -233,19 +232,29 @@ const UpsertSale = () => {
     })();
   }, [managerId, getManagerStock]);
 
-  const openPicker = useCallback(async () => {
-    const listId = priceListId || snapshot?.priceListId;
-    if (!listId) {
-      setError(t("common.sale.pickPriceListFirst"));
-      return;
-    }
-    const res = await getEntries({
-      priceListId: listId,
-      searchTerm: pickerSearch,
-    });
-    setPickerRows(res.data ?? []);
-    setPickerOpen(true);
-  }, [priceListId, snapshot, pickerSearch, getEntries, t]);
+  const pickerListId = priceListId || snapshot?.priceListId || "";
+  const searchTerm = pickerSearch.trim();
+  const { currentData: pickerRows = [], isFetching: pickerLoading, isError: pickerError } =
+    useGetPriceListEntriesQuery(
+      { priceListId: pickerListId, searchTerm: pickerQuery },
+      { skip: !pickerOpen || !pickerListId || Boolean(saleId) },
+    );
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setPickerQuery(searchTerm), 200);
+    return () => window.clearTimeout(timeout);
+  }, [searchTerm]);
+
+  const openPicker = () => setPickerOpen(true);
+  const pickerMessage = !pickerListId
+    ? t("common.sale.pickPriceListFirst")
+    : pickerLoading || pickerQuery !== searchTerm
+      ? t("common.sale.loadingProducts")
+      : pickerError
+        ? t("common.sale.productSearchError")
+        : pickerRows.length === 0
+          ? t("common.sale.noMatchingProducts")
+          : "";
 
   const addLine = (entry: PriceListEntry) => {
     setLines((current) =>
@@ -474,8 +483,14 @@ const UpsertSale = () => {
                   size="sm"
                   width="200px"
                   placeholder={t("common.searchTerm")}
+                  aria-label={t("common.searchTerm")}
+                  aria-controls={pickerOpen ? "sale-product-picker" : undefined}
                   value={pickerSearch}
-                  onChange={(e) => setPickerSearch(e.target.value)}
+                  onFocus={openPicker}
+                  onChange={(e) => {
+                    setPickerSearch(e.target.value);
+                    openPicker();
+                  }}
                 />
                 <Button size="sm" colorScheme="teal" onClick={openPicker}>
                   {t("common.sale.addFromPriceList")}
@@ -484,8 +499,9 @@ const UpsertSale = () => {
             ) : null}
           </Flex>
 
-          {pickerOpen ? (
+          {pickerOpen && !readOnly ? (
             <Box
+              id="sale-product-picker"
               borderWidth="1px"
               rounded="md"
               p="8px"
@@ -501,32 +517,38 @@ const UpsertSale = () => {
                   {t("common.close")}
                 </Button>
               </Flex>
-              <Table size="sm">
-                <Thead>
-                  <Tr>
-                    <Th>{t("common.sale.productCode")}</Th>
-                    <Th>{t("common.sale.productName")}</Th>
-                    <Th>{t("common.sale.inStock")}</Th>
-                    <Th>{t("common.sale.price")}</Th>
-                    <Th />
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {pickerRows.map((entry) => (
-                    <Tr key={entry.productId}>
-                      <Td>{entry.productCode}</Td>
-                      <Td>{entry.productName}</Td>
-                      <Td>{stock[entry.productId] ?? "0.000"}</Td>
-                      <Td>{money(entry.price)}</Td>
-                      <Td>
-                        <Button size="xs" onClick={() => addLine(entry)}>
-                          {t("common.add")}
-                        </Button>
-                      </Td>
+              {pickerMessage ? (
+                <Text role="status" fontSize="sm" py="8px">
+                  {pickerMessage}
+                </Text>
+              ) : (
+                <Table size="sm">
+                  <Thead>
+                    <Tr>
+                      <Th>{t("common.sale.productCode")}</Th>
+                      <Th>{t("common.sale.productName")}</Th>
+                      <Th>{t("common.sale.inStock")}</Th>
+                      <Th>{t("common.sale.price")}</Th>
+                      <Th />
                     </Tr>
-                  ))}
-                </Tbody>
-              </Table>
+                  </Thead>
+                  <Tbody>
+                    {pickerRows.map((entry) => (
+                      <Tr key={entry.productId}>
+                        <Td>{entry.productCode}</Td>
+                        <Td>{entry.productName}</Td>
+                        <Td>{stock[entry.productId] ?? "0.000"}</Td>
+                        <Td>{money(entry.price)}</Td>
+                        <Td>
+                          <Button size="xs" onClick={() => addLine(entry)}>
+                            {t("common.add")}
+                          </Button>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              )}
             </Box>
           ) : null}
 
