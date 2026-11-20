@@ -34,7 +34,6 @@ import { useHistory } from "react-router-dom";
 import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
 import { useTranslation } from "react-i18next";
-import { useGetDocumentQuery } from "api/document";
 import { useGetWarehouseQuery } from "api/warehouse";
 
 type RowObj = Supply;
@@ -61,12 +60,7 @@ function SupplyList() {
   }
 
   const { data: supplyArray = [], refetch } = useGetSuppliesQuery(queryObject);
-  const { data: documentsData } = useGetDocumentQuery();
   const { data: warehousesData } = useGetWarehouseQuery();
-
-  const getDocumentName = (id: number) => {
-    return documentsData?.find((doc) => doc.id === id)?.name || "N/A";
-  };
 
   const getWarehouseName = (id: number) => {
     return warehousesData?.find((wh) => wh.id === id)?.name || "N/A";
@@ -106,7 +100,7 @@ function SupplyList() {
         return (
           <Flex align="center">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              {getDocumentName(info.getValue())}
+              {info.row.original.document?.name ?? "—"}
             </Text>
           </Flex>
         );

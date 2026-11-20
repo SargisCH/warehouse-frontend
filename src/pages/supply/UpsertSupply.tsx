@@ -15,7 +15,6 @@ import {
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCreateSupplyMutation } from "api/supply";
-import { useGetDocumentQuery } from "api/document";
 import { useGetWarehouseQuery } from "api/warehouse";
 import { useGetProductQuery } from "api/product";
 import {
@@ -35,7 +34,6 @@ import { useTranslation } from "react-i18next";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 
 const ValidationSchema = z.object({
-  documentId: z.string().min(1, { message: "Document is required." }),
   warehouseId: z.string().min(1, { message: "Warehouse is required." }),
   documentDate: z.string().min(1, { message: "Date is required." }),
   receiver: z.string().optional(),
@@ -73,7 +71,6 @@ const UpsertSupply = () => {
   const { t } = useTranslation();
   const isMobile = useBreakpointValue({ base: true, md: false });
 
-  const { data: documents = [] } = useGetDocumentQuery();
   const { data: warehouses = [] } = useGetWarehouseQuery();
   const { data: productsData } = useGetProductQuery(undefined);
   const products = productsData?.data || [];
@@ -92,7 +89,6 @@ const UpsertSupply = () => {
   } = useForm<SupplyFormType>({
     resolver: zodResolver(ValidationSchema),
     defaultValues: {
-      documentId: "",
       warehouseId: "",
       documentDate: today(),
       receiver: "",
@@ -162,7 +158,6 @@ const UpsertSupply = () => {
     return options.map((op) => ({ label: op.name, value: String(op.id) }));
   };
 
-  const documentOptions = getOptions(documents as OptionData[]);
   const warehouseOptions = getOptions(warehouses as OptionData[]);
   const productOptions = getOptions(products as OptionData[]);
 
@@ -174,7 +169,6 @@ const UpsertSupply = () => {
     }));
 
     const data: Partial<Supply> = {
-      documentId: Number(values.documentId),
       warehouseId: Number(values.warehouseId),
       documentDate: values.documentDate,
       receiver: values.receiver || undefined,
@@ -195,34 +189,6 @@ const UpsertSupply = () => {
     <Box>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Flex gap="20px" flexDirection={isMobile ? "column" : "row"}>
-          <Controller
-            name="documentId"
-            control={control}
-            render={({ field }) => (
-              <FormControl isInvalid={!!errors.documentId}>
-                <FormLabel>{t("supply.document")}</FormLabel>
-                <Select
-                  styles={{
-                    control: (baseStyles) => ({
-                      ...baseStyles,
-                      ...getErrorStyles(!!errors.documentId),
-                    }),
-                  }}
-                  value={{
-                    label: getLabel(String(field.value), documentOptions),
-                    value: field.value,
-                  }}
-                  onChange={(valueSelected) => {
-                    field.onChange(valueSelected.value);
-                  }}
-                  options={documentOptions}
-                />
-                <FormErrorMessage>
-                  {errors.documentId?.message}
-                </FormErrorMessage>
-              </FormControl>
-            )}
-          />
           <Controller
             name="warehouseId"
             control={control}

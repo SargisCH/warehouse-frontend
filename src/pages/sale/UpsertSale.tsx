@@ -36,7 +36,6 @@ import {
   usePaySaleMutation,
 } from "api/sale";
 import { useGetManagersQuery } from "api/manager";
-import { useGetDocumentQuery } from "api/document";
 import { useGetClientQuery } from "api/client";
 import {
   useGetPriceListsQuery,
@@ -103,7 +102,6 @@ const UpsertSale = () => {
   // Set once the user picks a payment type, so the buyer's default stops
   // overriding it.
   const [paymentTypeTouched, setPaymentTypeTouched] = useState(false);
-  const [documentId, setDocumentId] = useState("");
   // «Սեյվ տալուց բերել պատուհան որ վճարվածա արդեն»: the save waits here for
   // the amount actually paid.
   const [paidPrompt, setPaidPrompt] = useState<{
@@ -129,11 +127,6 @@ const UpsertSale = () => {
   const { data: managers = [] } = useGetManagersQuery();
   const { data: clients = [] } = useGetClientQuery();
   const { data: priceLists = [] } = useGetPriceListsQuery();
-  const { data: documents = [] } = useGetDocumentQuery();
-  const documentOptions = documents.map((d: any) => ({
-    label: d.name,
-    value: String(d.id),
-  }));
   // «Պատճենել» opens a new document filled from an existing one.
   const copyFrom = new URLSearchParams(history.location.search).get("copyFrom");
 
@@ -178,7 +171,6 @@ const UpsertSale = () => {
       const sale = res.data;
       if (saleId) setLoaded(sale);
       else setPaymentTypeTouched(true);
-      setDocumentId(sale.documentId ? String(sale.documentId) : "");
       setManagerId(String(sale.managerId));
       setDelivererId(sale.delivererId ? String(sale.delivererId) : "");
       setClientId(String(sale.clientId));
@@ -309,7 +301,6 @@ const UpsertSale = () => {
       clientId: Number(clientId),
       delivererId: delivererId ? Number(delivererId) : null,
       priceListId: priceListId ? Number(priceListId) : null,
-      documentId: documentId ? Number(documentId) : null,
       paymentType,
       note: note || null,
       isReturn,
@@ -348,7 +339,6 @@ const UpsertSale = () => {
       setLines([]);
       setNote("");
       setPriceListId("");
-      setDocumentId("");
     }
     setPaymentTypeTouched(false);
   };
@@ -660,19 +650,6 @@ const UpsertSale = () => {
                 setPaymentType(v?.value ?? "CASH");
                 setPaymentTypeTouched(true);
               }}
-            />
-          </FormControl>
-          <FormControl width="220px">
-            <FormLabel>{t("common.sale.documentGroup")}</FormLabel>
-            <Select
-              isDisabled={readOnly}
-              isClearable
-              placeholder={t("common.sale.documentGroup")}
-              options={documentOptions}
-              value={
-                documentOptions.find((o) => o.value === documentId) ?? null
-              }
-              onChange={(v) => setDocumentId(v?.value ?? "")}
             />
           </FormControl>
           <FormControl width="300px">

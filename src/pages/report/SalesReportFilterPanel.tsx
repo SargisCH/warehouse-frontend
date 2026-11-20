@@ -6,7 +6,6 @@ import { useGetClientQuery } from "api/client";
 import { useGetClientGroupsQuery } from "api/clientGroup";
 import { useGetManagersQuery } from "api/manager";
 import { useGetSalesZonesQuery } from "api/salesZone";
-import { useGetDocumentQuery } from "api/document";
 import { OptionSelect } from "components/documents/OptionSelect";
 import { PAYMENT_TYPES, SalesReportFilters } from "types";
 
@@ -24,7 +23,6 @@ export function SalesReportFilterPanel({ value, onChange }: Props) {
   const { data: clientGroups = [] } = useGetClientGroupsQuery();
   const { data: managers = [] } = useGetManagersQuery();
   const { data: salesZones = [] } = useGetSalesZonesQuery();
-  const { data: documents = [] } = useGetDocumentQuery();
   // «Արտադրող» is free text on the product, so the choices are those in use.
   const manufacturerOptions = Array.from(
     new Set(
@@ -103,14 +101,6 @@ export function SalesReportFilterPanel({ value, onChange }: Props) {
       key: "delivererIds",
       label: t("common.sale.deliverer"),
       options: managerOptions,
-    },
-    {
-      key: "documentIds",
-      label: t("common.sale.documentGroup"),
-      options: documents.map((d: any) => ({
-        label: d.name,
-        value: String(d.id),
-      })),
     },
   ];
 
