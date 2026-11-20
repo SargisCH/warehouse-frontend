@@ -418,6 +418,10 @@
     "sender": "Sender",
     "receiver": "Receiver",
     "incomplete": "Fill in the source, destination and at least one product",
+    "insufficientStock": "There is not enough stock in the source warehouse.",
+    "confirmNegativeStock": "Continue with the transfer? The source warehouse will show a negative balance for any items with insufficient stock.",
+    "continueTransfer": "Yes, continue",
+    "saveError": "Could not save the transfer.",
     "deleteConfirmation": "The goods will be moved back to the source. Continue?"
   },
   "companyAssets": {
