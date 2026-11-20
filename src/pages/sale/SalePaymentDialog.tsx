@@ -37,7 +37,7 @@ export default function SalePaymentDialog({
   const [error, setError] = useState("");
   const [pay, { isLoading }] = usePaySaleMutation();
 
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (isLoading) return;
     const result = await pay({
