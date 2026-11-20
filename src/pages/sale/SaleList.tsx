@@ -1,3 +1,4 @@
+import SalePaymentDialog from "./SalePaymentDialog";
 import {
   Badge,
   Box,
@@ -21,10 +22,9 @@ import Select from "react-select";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 
-import { SaleFilters, useGetSalesQuery, usePaySaleMutation } from "api/sale";
+import { SaleFilters, useGetSalesQuery } from "api/sale";
 import { useGetClientQuery } from "api/client";
 import { useGetClientGroupsQuery } from "api/clientGroup";
-import AlertDialog from "components/alertDialog/AlertDialog";
 import { useGetManagersQuery, useGetDeliverersQuery } from "api/manager";
 import { useGetSalesZonesQuery } from "api/salesZone";
 import Card from "components/card/Card";
@@ -134,8 +134,6 @@ function SaleList({ isReturn = false }: Props) {
   );
 
   const [payTarget, setPayTarget] = useState<Sale | null>(null);
-  const [error, setError] = useState("");
-  const [paySale] = usePaySaleMutation();
 
   // «Ֆիլտերների սյուներ, ավելացնել ֆիլտերներն կամ հանել» - the filters are
   // chosen and ordered the same way the columns are.
@@ -448,34 +446,13 @@ function SaleList({ isReturn = false }: Props) {
         </Flex>
       ) : null}
       {payTarget ? (
-        <AlertDialog
-          isOpen={Boolean(payTarget)}
+        <SalePaymentDialog
+          sale={payTarget}
           onClose={() => setPayTarget(null)}
-          headerText={t("common.sale.pay")}
-          bodyText={t("common.sale.payConfirmation", {
-            code: payTarget.code,
-            amount: formatMoney(payTarget.outstanding),
-          })}
-          handleConfirm={async () => {
-            const res: any = await paySale({ saleId: payTarget.id });
+          onPaid={() => {
             setPayTarget(null);
-            if (res?.error) {
-              setError(res.error?.data?.message || "Request failed");
-              return;
-            }
             refetch();
           }}
-        />
-      ) : null}
-      {error ? (
-        <AlertDialog
-          oneButton
-          isOpen={Boolean(error)}
-          onClose={() => setError("")}
-          handleConfirm={() => setError("")}
-          headerText="Warning"
-          bodyText={error}
-          confirmText="OK"
         />
       ) : null}
     </Card>

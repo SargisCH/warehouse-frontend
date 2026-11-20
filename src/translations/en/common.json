@@ -420,6 +420,26 @@
     "incomplete": "Fill in the source, destination and at least one product",
     "deleteConfirmation": "The goods will be moved back to the source. Continue?"
   },
+  "managerCash": {
+    "title": "Manager Cash Receipts",
+    "entryType": "Entry type",
+    "receipt": "Cash handover",
+    "opening": "Opening balance",
+    "selectManager": "Select a manager",
+    "amount": "Amount",
+    "onHand": "Cash on hand",
+    "openingHelp": "Enter the cash the manager held when tracking began. You can record this once, before the first handover.",
+    "insufficient": "The handover exceeds the cash available on that date or a later date.",
+    "invalidAmount": "Enter a valid amount with at most two decimal places. Handovers must be greater than zero.",
+    "invalidDate": "Choose a date between the start of cash tracking and today.",
+    "openingClosed": "An opening balance can only be recorded once, before the first handover.",
+    "saveError": "Could not save the entry. Please try again.",
+    "saved": "Entry saved.",
+    "history": "Cash receipt history",
+    "historyError": "Could not load cash receipt history.",
+    "collectedByManager": "Cash collected by the manager",
+    "paymentError": "Could not record the payment. Check the amount and try again."
+  },
   "report": {
     "reports": "Reports",
     "salesAnalysis": "Sales analysis",

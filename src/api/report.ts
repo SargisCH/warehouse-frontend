@@ -7,6 +7,13 @@ import {
   SalesReportFilters,
 } from "types";
 
+type ManagerBalanceRow = {
+  managerId: number;
+  managerCode: string;
+  managerName: string;
+  balance: string;
+};
+
 const reportApi = api.injectEndpoints({
   endpoints: (builder) => ({
     // «Վաճառքների վերլուծություն»
@@ -72,9 +79,10 @@ const reportApi = api.injectEndpoints({
     }),
     // «Ըստ մենեջերի մնացորդներ»
     getManagerBalances: builder.query<
-      ReportResponse & { date: string },
+      { date: string; rows: ManagerBalanceRow[]; totals: { balance: string } },
       { date?: string }
     >({
+      providesTags: ["ManagerCash"],
       query: (filters) => ({
         url: `report/manager-balances?${toQueryString(filters)}`,
         method: "GET",

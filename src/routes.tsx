@@ -82,6 +82,7 @@ import SalesAnalysis from "pages/report/SalesAnalysis";
 import SalesComparison from "pages/report/SalesComparison";
 import ClientStatement from "pages/report/ClientStatement";
 import ClientBalances from "pages/report/ClientBalances";
+import ManagerCash from "pages/managerCash/ManagerCash";
 import ManagerBalances from "pages/report/ManagerBalances";
 import ManagerStockReport from "pages/report/ManagerStockReport";
 
@@ -280,6 +281,16 @@ const routes: RouteTypeExtended[] = [
         icon: <FontAwesomeIcon icon={faMoneyBill} />,
         component: Payments,
         role: [Role.ADMIN, Role.MANAGER],
+      },
+      {
+        name: "Manager Cash Receipts",
+        layout: "/admin",
+        path: "/manager-cash",
+        translationKey: "managerCash.title",
+        exact: true,
+        icon: <FontAwesomeIcon icon={faMoneyBill} />,
+        component: ManagerCash,
+        role: [Role.ADMIN],
       },
       {
         name: "Repayments",

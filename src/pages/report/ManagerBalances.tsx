@@ -7,11 +7,14 @@ import { DataGrid } from "components/documents/DataGrid";
 import { today } from "helpers/money";
 import { ReportCard } from "./ReportCard";
 
-// «Ըստ մենեջերի մնացորդներ»: what each agent's buyers owe.
+// Cash collected by each manager and still to be handed over.
 export default function ManagerBalances() {
   const { t } = useTranslation();
   const [date, setDate] = useState(today());
-  const { data } = useGetManagerBalancesQuery({ date });
+  const { currentData: data } = useGetManagerBalancesQuery(
+    { date },
+    { skip: !date, refetchOnMountOrArgChange: true }
+  );
 
   return (
     <ReportCard
@@ -30,16 +33,15 @@ export default function ManagerBalances() {
       <DataGrid
         columns={[
           { id: "managerCode", label: t("common.manager.code") },
+          { id: "managerName", label: t("common.sale.manager") },
           {
-            id: "managerName",
-            label: t("common.sale.manager"),
-            render: (row: any) =>
-              row.managerName ?? t("common.report.noManager"),
+            id: "balance",
+            label: t("common.managerCash.onHand"),
+            format: "money",
           },
-          { id: "balance", label: t("common.report.balance"), format: "money" },
         ]}
         rows={data?.rows ?? []}
-        rowKey={(row: any, index) => row.managerId ?? `none-${index}`}
+        rowKey={(row) => row.managerId}
         totals={data?.totals}
         emptyText={t("common.report.noData")}
       />
