@@ -11,6 +11,21 @@ export type StockTransferFilters = {
   managerId?: string;
 };
 
+export type CreateStockTransferInput = {
+  kind: TransferKind;
+  documentDate?: string;
+  fromWarehouseId?: number;
+  toWarehouseId?: number;
+  fromManagerId?: number;
+  toManagerId?: number;
+  sender?: string;
+  receiver?: string;
+  priceListId?: number;
+  note?: string;
+  allowNegativeStock?: boolean;
+  items: Array<{ productId: number; quantity: string; price?: string }>;
+};
+
 const stockTransferApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getStockTransfers: builder.query<StockTransfer[], StockTransferFilters>({
@@ -29,19 +44,11 @@ const stockTransferApi = api.injectEndpoints({
       }),
     }),
     createStockTransfer: builder.mutation({
-      query: (body: {
-        kind: TransferKind;
-        documentDate?: string;
-        fromWarehouseId?: number;
-        toWarehouseId?: number;
-        fromManagerId?: number;
-        toManagerId?: number;
-        sender?: string;
-        receiver?: string;
-        priceListId?: number;
-        note?: string;
-        items: Array<{ productId: number; quantity: string; price?: string }>;
-      }) => ({ url: "stock-transfer", method: "POST", body }),
+      query: (body: CreateStockTransferInput) => ({
+        url: "stock-transfer",
+        method: "POST",
+        body,
+      }),
     }),
     deleteStockTransfer: builder.mutation({
       query: (id: number | string) => ({

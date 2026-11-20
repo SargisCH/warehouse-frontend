@@ -8,12 +8,13 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 
 import {
+  CreateStockTransferInput,
   useCreateStockTransferMutation,
   useDeleteStockTransferMutation,
   useLazyGetStockTransferByIdQuery,
@@ -56,7 +57,9 @@ function UpsertStockTransfer({ kind }: { kind: TransferKind }) {
   const [error, setError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const [createTransfer] = useCreateStockTransferMutation();
+  const [pendingTransfer, setPendingTransfer] = useState<CreateStockTransferInput>();
+  const submitting = useRef(false);
+  const [createTransfer, { isLoading: saving }] = useCreateStockTransferMutation();
   const [deleteTransfer] = useDeleteStockTransferMutation();
   const [getTransfer] = useLazyGetStockTransferByIdQuery();
   const [getEntries] = useLazyGetPriceListEntriesQuery();
@@ -102,7 +105,35 @@ function UpsertStockTransfer({ kind }: { kind: TransferKind }) {
           value: String(m.id),
         }));
 
-  const submit = async () => {
+  const saveTransfer = async (payload: CreateStockTransferInput) => {
+    if (submitting.current) return;
+    submitting.current = true;
+    try {
+      const result = await createTransfer(payload);
+      if ("error" in result) {
+        const data = result.error && "data" in result.error
+          ? (result.error.data as { code?: string; message?: string } | undefined)
+          : undefined;
+        if (
+          payload.kind === "WAREHOUSE" &&
+          !payload.allowNegativeStock &&
+          data?.code === "INSUFFICIENT_WAREHOUSE_STOCK"
+        ) {
+          setPendingTransfer(payload);
+          return;
+        }
+        setError(data?.code === "INSUFFICIENT_WAREHOUSE_STOCK"
+          ? t("common.transfer.insufficientStock")
+          : data?.message || t("common.transfer.saveError"));
+        return;
+      }
+      history.push(setup.list);
+    } finally {
+      submitting.current = false;
+    }
+  };
+
+  const submit = () => {
     const items = lines.filter(
       (line) => line.productId && Number(line.quantity) > 0,
     );
@@ -118,7 +149,7 @@ function UpsertStockTransfer({ kind }: { kind: TransferKind }) {
       side === "warehouse"
         ? { [`${which}WarehouseId`]: Number(id) }
         : { [`${which}ManagerId`]: Number(id) };
-    const res: any = await createTransfer({
+    void saveTransfer({
       kind,
       documentDate,
       ...endpoint(setup.from, "from", from),
@@ -133,11 +164,6 @@ function UpsertStockTransfer({ kind }: { kind: TransferKind }) {
         price: setup.showPrice && line.price ? String(line.price) : undefined,
       })),
     });
-    if (res?.error) {
-      setError(res.error?.data?.message || "Request failed");
-      return;
-    }
-    history.push(setup.list);
   };
 
   const errorDialog = error ? (
@@ -303,7 +329,7 @@ function UpsertStockTransfer({ kind }: { kind: TransferKind }) {
           showPrice={setup.showPrice}
         />
         <Flex gap="12px">
-          <Button colorScheme="teal" onClick={submit}>
+          <Button colorScheme="teal" isLoading={saving} onClick={submit}>
             {t("common.save")}
           </Button>
           <Button variant="ghost" onClick={() => history.push(setup.list)}>
@@ -311,6 +337,20 @@ function UpsertStockTransfer({ kind }: { kind: TransferKind }) {
           </Button>
         </Flex>
       </Flex>
+      {pendingTransfer ? (
+        <AlertDialog
+          isOpen
+          onClose={() => setPendingTransfer(undefined)}
+          headerText={t("common.transfer.insufficientStock")}
+          bodyText={t("common.transfer.confirmNegativeStock")}
+          confirmText={t("common.transfer.continueTransfer")}
+          cancelText={t("common.cancel")}
+          handleConfirm={() => {
+            setPendingTransfer(undefined);
+            void saveTransfer({ ...pendingTransfer, allowNegativeStock: true });
+          }}
+        />
+      ) : null}
       {errorDialog}
     </Box>
   );
