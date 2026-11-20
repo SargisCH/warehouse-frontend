@@ -61,7 +61,7 @@ const priceListApi = api.injectEndpoints({
     >({
       query: (arg: { priceListId: string | number; searchTerm?: string }) => ({
         url: `price-list/${arg.priceListId}/entries?searchTerm=${
-          arg.searchTerm || ""
+          encodeURIComponent(arg.searchTerm || "")
         }`,
         method: "GET",
       }),
