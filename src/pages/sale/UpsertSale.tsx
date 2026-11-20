@@ -113,6 +113,7 @@ const UpsertSale = () => {
   const [note, setNote] = useState("");
   const [lines, setLines] = useState<Line[]>([]);
   const [snapshot, setSnapshot] = useState<ClientSnapshot | null>(null);
+  const pickerHeaderBg = useColorModeValue("white", "gray.800");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerSearch, setPickerSearch] = useState("");
   const [pickerQuery, setPickerQuery] = useState("");
@@ -506,8 +507,6 @@ const UpsertSale = () => {
               rounded="md"
               p="8px"
               mb="12px"
-              maxHeight="300px"
-              overflowY="auto"
             >
               <Flex justify="space-between" mb="8px">
                 <Text fontWeight="700">
@@ -522,32 +521,50 @@ const UpsertSale = () => {
                   {pickerMessage}
                 </Text>
               ) : (
-                <Table size="sm">
-                  <Thead>
-                    <Tr>
-                      <Th>{t("common.sale.productCode")}</Th>
-                      <Th>{t("common.sale.productName")}</Th>
-                      <Th>{t("common.sale.inStock")}</Th>
-                      <Th>{t("common.sale.price")}</Th>
-                      <Th />
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {pickerRows.map((entry) => (
-                      <Tr key={entry.productId}>
-                        <Td>{entry.productCode}</Td>
-                        <Td>{entry.productName}</Td>
-                        <Td>{stock[entry.productId] ?? "0.000"}</Td>
-                        <Td>{money(entry.price)}</Td>
-                        <Td>
-                          <Button size="xs" onClick={() => addLine(entry)}>
-                            {t("common.add")}
-                          </Button>
-                        </Td>
+                <Box maxH="396px" overflow="auto">
+                  {/* One header row and up to ten product rows. */}
+                  <Table
+                    size="sm"
+                    sx={{
+                      "th, td": {
+                        height: "36px",
+                        paddingBlock: 0,
+                        whiteSpace: "nowrap",
+                      },
+                      th: {
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 1,
+                        bg: pickerHeaderBg,
+                      },
+                    }}
+                  >
+                    <Thead>
+                      <Tr>
+                        <Th>{t("common.sale.productCode")}</Th>
+                        <Th>{t("common.sale.productName")}</Th>
+                        <Th>{t("common.sale.inStock")}</Th>
+                        <Th>{t("common.sale.price")}</Th>
+                        <Th />
                       </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
+                    </Thead>
+                    <Tbody>
+                      {pickerRows.map((entry) => (
+                        <Tr key={entry.productId}>
+                          <Td>{entry.productCode}</Td>
+                          <Td>{entry.productName}</Td>
+                          <Td>{stock[entry.productId] ?? "0.000"}</Td>
+                          <Td>{money(entry.price)}</Td>
+                          <Td>
+                            <Button size="xs" onClick={() => addLine(entry)}>
+                              {t("common.add")}
+                            </Button>
+                          </Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </Box>
               )}
             </Box>
           ) : null}
