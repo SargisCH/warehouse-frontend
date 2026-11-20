@@ -67,13 +67,15 @@ const saleApi = api.injectEndpoints({
       }),
     }),
     createSale: builder.mutation({
-      query: (newSale: Partial<Sale> & { items: unknown[] }) => ({
+      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash"],
+      query: (newSale: Partial<Sale> & { items: unknown[]; cashCollectedByManager?: boolean }) => ({
         url: "sale",
         method: "POST",
         body: newSale,
       }),
     }),
     deleteSale: builder.mutation({
+      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash"],
       query: (id) => ({
         url: `sale/${id}`,
         method: "DELETE",
@@ -93,14 +95,22 @@ const saleApi = api.injectEndpoints({
     }),
     // «Կատարել վճարում» - omit the amount to settle the whole remainder.
     paySale: builder.mutation({
+      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash"],
       query: (arg: {
         saleId: string | number;
         amount?: string;
         note?: string;
+        paymentType?: "CASH" | "TRANSFER";
+        cashCollectedByManager?: boolean;
       }) => ({
         url: `sale/${arg.saleId}/pay`,
         method: "POST",
-        body: { amount: arg.amount, note: arg.note },
+        body: {
+          amount: arg.amount,
+          note: arg.note,
+          paymentType: arg.paymentType,
+          cashCollectedByManager: arg.cashCollectedByManager,
+        },
       }),
     }),
     // «Կատարել մարում» - settles debt on the account, never adds to it.

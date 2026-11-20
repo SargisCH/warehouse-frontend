@@ -1,7 +1,9 @@
+import SalePaymentDialog from "./SalePaymentDialog";
 import {
   Badge,
   Box,
   Button,
+  Checkbox,
   Flex,
   FormControl,
   FormLabel,
@@ -33,7 +35,6 @@ import {
   useLazyGetClientSnapshotQuery,
   useLazyGetSaleByIdQuery,
   useLazyGetManagerStockQuery,
-  usePaySaleMutation,
 } from "api/sale";
 import { useGetManagersQuery } from "api/manager";
 import { useGetClientQuery } from "api/client";
@@ -107,6 +108,7 @@ const UpsertSale = () => {
   const [paidPrompt, setPaidPrompt] = useState<{
     keepHeader: boolean;
     amount: string;
+    collected: boolean;
   } | null>(null);
   const [note, setNote] = useState("");
   const [lines, setLines] = useState<Line[]>([]);
@@ -118,7 +120,7 @@ const UpsertSale = () => {
 
   const [createSale] = useCreateSaleMutation();
   const [deleteSale] = useDeleteSaleMutation();
-  const [paySale] = usePaySaleMutation();
+  const [paying, setPaying] = useState(false);
   const [getSnapshot] = useLazyGetClientSnapshotQuery();
   const [getEntries] = useLazyGetPriceListEntriesQuery();
   const [getManagerStock] = useLazyGetManagerStockQuery();
@@ -292,16 +294,22 @@ const UpsertSale = () => {
     setPaidPrompt({
       keepHeader,
       amount: paymentType === "CASH" ? total.toFixed(2) : "0.00",
+      collected: paymentType === "CASH",
     });
   };
 
-  const submit = async (keepHeader: boolean, paidAmount?: string) => {
+  const submit = async (
+    keepHeader: boolean,
+    paidAmount?: string,
+    cashCollectedByManager?: boolean,
+  ) => {
     const body: any = {
       managerId: Number(managerId),
       clientId: Number(clientId),
       delivererId: delivererId ? Number(delivererId) : null,
       priceListId: priceListId ? Number(priceListId) : null,
       paymentType,
+      cashCollectedByManager,
       note: note || null,
       isReturn,
       items: lines.map((line) => ({
@@ -683,14 +691,7 @@ const UpsertSale = () => {
                 isDisabled={
                   isReturn || !loaded || Number(loaded.outstanding) <= 0
                 }
-                onClick={async () => {
-                  const res: any = await paySale({ saleId });
-                  if (res?.error) {
-                    setError(res.error?.data?.message || "Request failed");
-                    return;
-                  }
-                  history.push(isReturn ? links.saleReturns : links.sales);
-                }}
+                onClick={() => setPaying(true)}
               >
                 {t("common.sale.pay")}
               </Button>
@@ -705,6 +706,13 @@ const UpsertSale = () => {
         </Flex>
       </Flex>
 
+      {paying && loaded ? (
+        <SalePaymentDialog
+          sale={loaded}
+          onClose={() => setPaying(false)}
+          onPaid={() => history.push(links.sales)}
+        />
+      ) : null}
       {paidPrompt ? (
         <Modal isOpen onClose={() => setPaidPrompt(null)} isCentered>
           <ModalOverlay />
@@ -725,6 +733,17 @@ const UpsertSale = () => {
                 {t("common.sale.outstanding")}:{" "}
                 {money(total - Number(paidPrompt.amount || 0))}
               </Text>
+              {paymentType !== "TRANSFER" && Number(paidPrompt.amount) > 0 ? (
+                <Checkbox
+                  mt={3}
+                  isChecked={paidPrompt.collected}
+                  onChange={(event) =>
+                    setPaidPrompt({ ...paidPrompt, collected: event.target.checked })
+                  }
+                >
+                  {t("common.managerCash.collectedByManager")}
+                </Checkbox>
+              ) : null}
             </ModalBody>
             <ModalFooter gap="8px">
               <Button variant="ghost" onClick={() => setPaidPrompt(null)}>
@@ -733,9 +752,9 @@ const UpsertSale = () => {
               <Button
                 colorScheme="teal"
                 onClick={() => {
-                  const { keepHeader, amount } = paidPrompt;
+                  const { keepHeader, amount, collected } = paidPrompt;
                   setPaidPrompt(null);
-                  submit(keepHeader, amount);
+                  submit(keepHeader, amount.trim() || "0", collected);
                 }}
               >
                 {t("common.save")}
