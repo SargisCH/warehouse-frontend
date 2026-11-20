@@ -57,7 +57,7 @@ export default function ManagerCash() {
     (row) => String(row.managerId) === managerId
   );
 
-  const save = async (event: FormEvent<HTMLFormElement>) => {
+  const save = async (event: FormEvent) => {
     event.preventDefault();
     if (saving.current) return;
 

@@ -70,7 +70,7 @@ export function AssetForm({
   const isReceipt = mode === "receipt";
   const direction = isReceipt ? "cashReceived" : "cashPaid";
 
-  const save = async (event: FormEvent<HTMLFormElement>) => {
+  const save = async (event: FormEvent) => {
     event.preventDefault();
     if (saving.current) return;
     setError("");
