@@ -280,6 +280,8 @@
     "productCode": "Ապրանքի կոդ",
     "productName": "Ապրանք",
     "searchProducts": "Որոնել ապրանք",
+    "productSearchError": "Չհաջողվեց բեռնել ապրանքները։",
+    "noMatchingProducts": "Համապատասխան ապրանքներ չկան։",
     "deletePriceList": "Ջնջել գնացուցակը",
     "deleteConfirmation": "Վստա՞հ եք, որ ցանկանում եք ջնջել այս գնացուցակը։"
   },

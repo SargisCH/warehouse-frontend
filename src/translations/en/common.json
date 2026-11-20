@@ -280,6 +280,8 @@
     "productCode": "Product code",
     "productName": "Product",
     "searchProducts": "Search products",
+    "productSearchError": "Could not load products.",
+    "noMatchingProducts": "No matching products.",
     "deletePriceList": "Delete price list",
     "deleteConfirmation": "Are you sure you want to delete this price list?"
   },

@@ -6,6 +6,7 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Spinner,
   Table,
   Tbody,
   Td,
@@ -26,6 +27,7 @@ import {
   useLazyGetPriceListByIdQuery,
   useUpdatePriceListMutation,
 } from "api/priceList";
+import { ProductItem } from "api/product";
 import AlertDialog from "components/alertDialog/AlertDialog";
 import { links } from "routes";
 
@@ -50,14 +52,28 @@ const UpsertPriceList = () => {
   const [isClosed, setIsClosed] = useState(false);
   const [rows, setRows] = useState<Row[]>([]);
   const [productSearch, setProductSearch] = useState("");
+  const [productQuery, setProductQuery] = useState("");
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const [createPriceList] = useCreatePriceListMutation();
   const [updatePriceList] = useUpdatePriceListMutation();
   const [deletePriceList] = useDeletePriceListMutation();
   const [getPriceListById] = useLazyGetPriceListByIdQuery();
-  const { data: products = [] } = useGetPriceListProductsQuery({
-    searchTerm: productSearch,
-  });
+  const searchTerm = productSearch.trim();
+  const {
+    currentData: products = [],
+    isFetching,
+    isError,
+  } = useGetPriceListProductsQuery(
+    { searchTerm: productQuery },
+    { skip: !pickerOpen, refetchOnMountOrArgChange: true },
+  );
+  const loadingProducts = isFetching || productQuery !== searchTerm;
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setProductQuery(searchTerm), 200);
+    return () => window.clearTimeout(timeout);
+  }, [searchTerm]);
 
   useEffect(() => {
     (async () => {
@@ -79,7 +95,7 @@ const UpsertPriceList = () => {
     })();
   }, [params.priceListId, getPriceListById]);
 
-  const addProduct = (product: any) =>
+  const addProduct = (product: ProductItem) =>
     setRows((current) =>
       current.some((row) => row.productId === product.id)
         ? current
@@ -168,35 +184,76 @@ const UpsertPriceList = () => {
               size="sm"
               width="220px"
               placeholder={t("common.priceList.searchProducts")}
+              aria-label={t("common.priceList.searchProducts")}
+              aria-controls={
+                pickerOpen ? "price-list-product-picker" : undefined
+              }
               value={productSearch}
-              onChange={(e) => setProductSearch(e.target.value)}
+              onFocus={() => setPickerOpen(true)}
+              onChange={(e) => {
+                setProductSearch(e.target.value);
+                setPickerOpen(true);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") setPickerOpen(false);
+              }}
             />
           </Flex>
 
-          {productSearch ? (
+          {pickerOpen ? (
             <Box
+              id="price-list-product-picker"
               borderWidth="1px"
               rounded="md"
               p="8px"
               mb="12px"
-              maxHeight="220px"
-              overflowY="auto"
             >
-              <Table size="sm">
-                <Tbody>
-                  {products.map((product: any) => (
-                    <Tr key={product.id}>
-                      <Td>{product.sku}</Td>
-                      <Td>{product.name}</Td>
-                      <Td width="80px">
-                        <Button size="xs" onClick={() => addProduct(product)}>
-                          {t("common.add")}
-                        </Button>
-                      </Td>
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
+              <Flex justify="flex-end" mb="8px">
+                <Button size="xs" onClick={() => setPickerOpen(false)}>
+                  {t("common.close")}
+                </Button>
+              </Flex>
+              {loadingProducts ? (
+                <Spinner size="sm" />
+              ) : isError || !products.length ? (
+                <Text role="status" fontSize="sm" py="8px">
+                  {t(
+                    isError
+                      ? "common.priceList.productSearchError"
+                      : "common.priceList.noMatchingProducts"
+                  )}
+                </Text>
+              ) : (
+                <Box maxH="360px" overflow="auto">
+                  <Table
+                    size="sm"
+                    sx={{
+                      td: {
+                        height: "36px",
+                        paddingBlock: 0,
+                        whiteSpace: "nowrap",
+                      },
+                    }}
+                  >
+                    <Tbody>
+                      {products.map((product) => (
+                        <Tr key={product.id}>
+                          <Td>{product.sku}</Td>
+                          <Td>{product.name}</Td>
+                          <Td width="80px">
+                            <Button
+                              size="xs"
+                              onClick={() => addProduct(product)}
+                            >
+                              {t("common.add")}
+                            </Button>
+                          </Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </Box>
+              )}
             </Box>
           ) : null}
 
