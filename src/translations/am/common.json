@@ -90,7 +90,18 @@
     "note": "Մեկնաբանություն",
     "priceList": "Գնացուցակի տեսակ",
     "price": "Գին",
-    "total": "Ընդհանուր գումար"
+    "total": "Ընդհանուր գումար",
+    "selectWarehouse": "Ընտրեք պահեստը",
+    "selectPriceList": "Ընտրեք գնացուցակը",
+    "selectProduct": "Ընտրեք ապրանքը",
+    "noOptions": "Տարբերակներ չկան",
+    "validation": {
+      "warehouseRequired": "Ընտրեք պահեստը։",
+      "dateRequired": "Նշեք ամսաթիվը։",
+      "productRequired": "Ընտրեք ապրանքը։",
+      "quantityRequired": "Մուտքագրեք քանակը։",
+      "productsRequired": "Ավելացրեք առնվազն մեկ ապրանք։"
+    }
   },
   "suppliers": "Մատակարարներ",
   "supplier": {

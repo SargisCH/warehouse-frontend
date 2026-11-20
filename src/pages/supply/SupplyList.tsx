@@ -63,7 +63,7 @@ function SupplyList() {
   const { data: warehousesData } = useGetWarehouseQuery();
 
   const getWarehouseName = (id: number) => {
-    return warehousesData?.find((wh) => wh.id === id)?.name || "N/A";
+    return warehousesData?.find((wh) => wh.id === id)?.name ?? "—";
   };
 
   useEffect(() => {
@@ -93,7 +93,7 @@ function SupplyList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          {t("supply.document").toUpperCase()}
+          {t("common.supply.document").toUpperCase()}
         </Text>
       ),
       cell: (info: any) => {
@@ -115,7 +115,7 @@ function SupplyList() {
           fontSize={{ sm: "10px", lg: "12px" }}
           color="gray.400"
         >
-          {t("supply.warehouse").toUpperCase()}
+          {t("common.supply.warehouse").toUpperCase()}
         </Text>
       ),
       cell: (info: any) => {
@@ -209,10 +209,10 @@ function SupplyList() {
               fontWeight="700"
               lineHeight="100%"
             >
-              {t("supply.supplyList")}
+              {t("common.supply.supplyList")}
             </Text>
             <TableAddButton
-              label={t("supply.addSupply")}
+              label={t("common.supply.addSupply")}
               link={links.createSupply}
             />
           </Flex>
@@ -279,10 +279,10 @@ function SupplyList() {
             fontWeight="700"
             lineHeight="100%"
           >
-            {t("supply.supplyList")}
+            {t("common.supply.supplyList")}
           </Text>
           <TableAddButton
-            label={t("supply.addSupply")}
+            label={t("common.supply.addSupply")}
             link={links.createSupply}
           />
         </Flex>

@@ -4,7 +4,6 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Spinner,
   NumberInput,
   NumberInputField,
   useBreakpointValue,
@@ -34,20 +33,20 @@ import { useTranslation } from "react-i18next";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 
 const ValidationSchema = z.object({
-  warehouseId: z.string().min(1, { message: "Warehouse is required." }),
-  documentDate: z.string().min(1, { message: "Date is required." }),
+  warehouseId: z.string().min(1, { message: "common.supply.validation.warehouseRequired" }),
+  documentDate: z.string().min(1, { message: "common.supply.validation.dateRequired" }),
   receiver: z.string().optional(),
   note: z.string().optional(),
   priceListId: z.string().optional(),
   products: z
     .array(
       z.object({
-        productId: z.string().min(1, { message: "Product is required" }),
-        amount: z.string().min(1, { message: "Amount is required" }),
+        productId: z.string().min(1, { message: "common.supply.validation.productRequired" }),
+        amount: z.string().min(1, { message: "common.supply.validation.quantityRequired" }),
         price: z.string().optional(),
       }),
     )
-    .min(1, { message: "At least one product is required." }),
+    .min(1, { message: "common.supply.validation.productsRequired" }),
 });
 
 type SupplyFormType = z.infer<typeof ValidationSchema>;
@@ -82,7 +81,6 @@ const UpsertSupply = () => {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-    reset,
     watch,
     setValue,
     getValues,
@@ -131,6 +129,7 @@ const UpsertSupply = () => {
     0,
   );
 
+  const productsError = errors.products?.root?.message ?? errors.products?.message;
   const { fields, append, remove } = useFieldArray({
     control,
     name: "products",
@@ -145,14 +144,6 @@ const UpsertSupply = () => {
       console.error("Create supply error:", error);
     }
   }, [isSuccess, isError, history, error]);
-
-  const getLabel = (
-    id: string,
-    options: { label: string; value: string }[],
-  ) => {
-    const selectedLabel = options.find((op) => String(op.value) === id)?.label;
-    return selectedLabel ?? "";
-  };
 
   const getOptions = (options: OptionData[]) => {
     return options.map((op) => ({ label: op.name, value: String(op.id) }));
@@ -194,25 +185,26 @@ const UpsertSupply = () => {
             control={control}
             render={({ field }) => (
               <FormControl isInvalid={!!errors.warehouseId}>
-                <FormLabel>{t("supply.warehouse")}</FormLabel>
+                <FormLabel>{t("common.supply.warehouse")}</FormLabel>
                 <Select
+                  placeholder={t("common.supply.selectWarehouse")}
+                  noOptionsMessage={() => t("common.supply.noOptions")}
                   styles={{
                     control: (baseStyles) => ({
                       ...baseStyles,
                       ...getErrorStyles(!!errors.warehouseId),
                     }),
                   }}
-                  value={{
-                    label: getLabel(String(field.value), warehouseOptions),
-                    value: field.value,
-                  }}
+                  value={
+                    warehouseOptions.find((option) => option.value === field.value) ?? null
+                  }
                   onChange={(valueSelected) => {
                     field.onChange(valueSelected.value);
                   }}
                   options={warehouseOptions}
                 />
                 <FormErrorMessage>
-                  {errors.warehouseId?.message}
+                  {errors.warehouseId?.message && t(errors.warehouseId.message)}
                 </FormErrorMessage>
               </FormControl>
             )}
@@ -225,8 +217,11 @@ const UpsertSupply = () => {
             control={control}
             render={({ field }) => (
               <FormControl isInvalid={!!errors.documentDate}>
-                <FormLabel>{t("supply.documentDate")}</FormLabel>
+                <FormLabel>{t("common.supply.documentDate")}</FormLabel>
                 <Input type="date" {...field} />
+                <FormErrorMessage>
+                  {errors.documentDate?.message && t(errors.documentDate.message)}
+                </FormErrorMessage>
               </FormControl>
             )}
           />
@@ -235,7 +230,7 @@ const UpsertSupply = () => {
             control={control}
             render={({ field }) => (
               <FormControl>
-                <FormLabel>{t("supply.receiver")}</FormLabel>
+                <FormLabel>{t("common.supply.receiver")}</FormLabel>
                 <Input {...field} />
               </FormControl>
             )}
@@ -250,9 +245,11 @@ const UpsertSupply = () => {
               }));
               return (
                 <FormControl>
-                  <FormLabel>{t("supply.priceList")}</FormLabel>
+                  <FormLabel>{t("common.supply.priceList")}</FormLabel>
                   <Select
                     isClearable
+                    placeholder={t("common.supply.selectPriceList")}
+                    noOptionsMessage={() => t("common.supply.noOptions")}
                     options={options}
                     value={options.find((o) => o.value === field.value) ?? null}
                     onChange={(picked) => field.onChange(picked?.value ?? "")}
@@ -266,7 +263,7 @@ const UpsertSupply = () => {
             control={control}
             render={({ field }) => (
               <FormControl>
-                <FormLabel>{t("supply.note")}</FormLabel>
+                <FormLabel>{t("common.supply.note")}</FormLabel>
                 <Input {...field} />
               </FormControl>
             )}
@@ -274,7 +271,7 @@ const UpsertSupply = () => {
         </Flex>
 
         <Text fontSize="xl" fontWeight="bold" mt={6} mb={3}>
-          {t("supply.productsToSupply")}
+          {t("common.supply.productsToSupply")}
         </Text>
         {fields.map((row, index) => {
           const productErrors = errors.products;
@@ -293,18 +290,19 @@ const UpsertSupply = () => {
                 control={control}
                 render={({ field }) => (
                   <FormControl isInvalid={!!productIdError}>
-                    <FormLabel>{t("supply.product")}</FormLabel>
+                    <FormLabel>{t("common.supply.product")}</FormLabel>
                     <Select
+                      placeholder={t("common.supply.selectProduct")}
+                      noOptionsMessage={() => t("common.supply.noOptions")}
                       styles={{
                         control: (baseStyles) => ({
                           ...baseStyles,
                           ...getErrorStyles(!!productIdError),
                         }),
                       }}
-                      value={{
-                        label: getLabel(String(field.value), productOptions),
-                        value: field.value,
-                      }}
+                      value={
+                        productOptions.find((option) => option.value === field.value) ?? null
+                      }
                       onChange={(valueSelected) => {
                         field.onChange(valueSelected.value);
                         const listPrice =
@@ -319,7 +317,7 @@ const UpsertSupply = () => {
                       options={productOptions}
                     />
                     <FormErrorMessage>
-                      {productIdError?.message}
+                      {productIdError?.message && t(productIdError.message)}
                     </FormErrorMessage>
                   </FormControl>
                 )}
@@ -329,17 +327,17 @@ const UpsertSupply = () => {
                 control={control}
                 render={({ field }) => (
                   <FormControl isInvalid={!!quantityError}>
-                    <FormLabel>{t("supply.quantity")}</FormLabel>
+                    <FormLabel>{t("common.supply.quantity")}</FormLabel>
                     <NumberInput value={field.value} min={0} precision={3}>
                       <NumberInputField
-                        placeholder={t("supply.quantityPlaceholder")}
+                        placeholder={t("common.supply.quantityPlaceholder")}
                         onChange={(e) => {
                           field.onChange(e.target.value);
                         }}
                       />
                     </NumberInput>
                     <FormErrorMessage>
-                      {quantityError?.message}
+                      {quantityError?.message && t(quantityError.message)}
                     </FormErrorMessage>
                   </FormControl>
                 )}
@@ -349,7 +347,7 @@ const UpsertSupply = () => {
                 control={control}
                 render={({ field }) => (
                   <FormControl>
-                    <FormLabel>{t("supply.price")}</FormLabel>
+                    <FormLabel>{t("common.supply.price")}</FormLabel>
                     <Input
                       placeholder="0.00"
                       value={field.value ?? ""}
@@ -365,6 +363,7 @@ const UpsertSupply = () => {
                 marginBottom={1}
               >
                 <Button
+                  aria-label={t("common.add")}
                   background="teal.500"
                   onClick={() => {
                     append({
@@ -386,6 +385,7 @@ const UpsertSupply = () => {
               >
                 <Button
                   isDisabled={index === 0 && fields.length === 1}
+                  aria-label={t("common.delete")}
                   background="red.500"
                   onClick={() => remove(index)}
                 >
@@ -396,14 +396,14 @@ const UpsertSupply = () => {
             </Flex>
           );
         })}
-        {errors.products ? (
+        {productsError ? (
           <Text color="red.500" fontSize="sm" mt={2}>
-            {errors.products.message}
+            {t(productsError)}
           </Text>
         ) : null}
 
         <Text fontWeight="bold" mt="16px">
-          {t("supply.total")}: {formatMoney(total)}
+          {t("common.supply.total")}: {formatMoney(total)}
         </Text>
 
         <Box marginTop={"20px"}>
