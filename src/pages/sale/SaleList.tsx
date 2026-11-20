@@ -24,7 +24,6 @@ import dayjs from "dayjs";
 import { SaleFilters, useGetSalesQuery, usePaySaleMutation } from "api/sale";
 import { useGetClientQuery } from "api/client";
 import { useGetClientGroupsQuery } from "api/clientGroup";
-import { useGetDocumentQuery } from "api/document";
 import AlertDialog from "components/alertDialog/AlertDialog";
 import { useGetManagersQuery, useGetDeliverersQuery } from "api/manager";
 import { useGetSalesZonesQuery } from "api/salesZone";
@@ -127,15 +126,11 @@ function SaleList({ isReturn = false }: Props) {
 
   const { data: clients = [] } = useGetClientQuery();
   const { data: clientGroups = [] } = useGetClientGroupsQuery();
-  const { data: documents = [] } = useGetDocumentQuery();
   const clientOptions = clients.map((c) =>
     option(`${c.code} — ${c.name}`, String(c.id)),
   );
   const clientGroupOptions = clientGroups.map((g) =>
     option(g.name, String(g.id)),
-  );
-  const documentOptions = documents.map((d: any) =>
-    option(d.name, String(d.id)),
   );
 
   const [payTarget, setPayTarget] = useState<Sale | null>(null);
@@ -157,7 +152,6 @@ function SaleList({ isReturn = false }: Props) {
       { id: "location", label: t("common.sale.location") },
       { id: "delivererId", label: t("common.sale.deliverer") },
       { id: "paymentType", label: t("common.sale.paymentType") },
-      { id: "documentId", label: t("common.sale.documentGroup") },
       { id: "onlyWithBalance", label: t("common.sale.onlyWithBalance") },
       { id: "externalStatus", label: t("common.sale.externalStatus") },
     ],
@@ -247,12 +241,6 @@ function SaleList({ isReturn = false }: Props) {
           "paymentType",
           t("common.sale.paymentType"),
           paymentOptions,
-        );
-      case "documentId":
-        return selectFilter(
-          "documentId",
-          t("common.sale.documentGroup"),
-          documentOptions,
         );
       case "location":
       case "externalStatus":

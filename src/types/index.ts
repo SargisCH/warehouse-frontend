@@ -318,7 +318,8 @@ export type Supply = {
   id: number;
   code?: string | null;
   documentDate?: string;
-  documentId: number;
+  documentId?: number | null;
+  document?: { name: string } | null;
   warehouseId: number;
   // «Ընդունող»
   receiver?: string | null;

@@ -64,7 +64,6 @@ import ForgotPassword from "views/auth/forgotPassword";
 import { resetPassword } from "aws-amplify/auth";
 import ConfirmResetPassword from "views/auth/ConfirmResetPassword";
 import ProductGroup from "pages/productGroup/ProductGroup";
-import Document from "pages/document/Document";
 import Supplier from "pages/supplier/Supplier";
 import Supply from "pages/supply/Supply";
 import ClientGroup from "pages/clientGroup/ClientGroup";
@@ -159,15 +158,6 @@ const routes: RouteTypeExtended[] = [
         role: [Role.ADMIN],
       },
     ],
-  },
-  {
-    name: "Documents",
-    layout: "/admin",
-    path: "/documents",
-    icon: <FontAwesomeIcon icon={faFile} />,
-    translationKey: "documents",
-    component: Document,
-    role: [Role.ADMIN, Role.MANAGER],
   },
   {
     name: "Suppliers",
@@ -756,10 +746,6 @@ export const links = {
   salesZone: (salesZoneId: string | number) =>
     `/admin/sales-zones/upsert/${salesZoneId}`,
   createSalesZone: "/admin/sales-zones/upsert/",
-  documents: "/admin/documents",
-  document: (documentId: string | number) =>
-    `/admin/documents/upsert/${documentId}`,
-  createDocument: "/admin/documents/upsert/",
   payments: "/admin/payments",
   payment: (paymentId: string | number) =>
     `/admin/payments/upsert/${paymentId}`,

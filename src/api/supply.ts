@@ -18,6 +18,7 @@ const supplyApi = api.injectEndpoints({
         sortOrder?: string;
       } | void
     >({
+      transformResponse: (response: { data: Supply[] }) => response.data,
       query: (
         arg: {
           searchTerm?: string;
