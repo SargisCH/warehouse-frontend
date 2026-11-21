@@ -33,7 +33,7 @@ import {
   useCreateSaleMutation,
   useDeleteSaleMutation,
   useLazyGetClientSnapshotQuery,
-  useLazyGetSaleByIdQuery,
+  useLazyGetSaleDetailsQuery,
   useLazyGetManagerStockQuery,
 } from "api/sale";
 import { useGetManagersQuery } from "api/manager";
@@ -122,7 +122,7 @@ const UpsertSale = () => {
   const [paying, setPaying] = useState(false);
   const [getSnapshot] = useLazyGetClientSnapshotQuery();
   const [getManagerStock] = useLazyGetManagerStockQuery();
-  const [getSaleById] = useLazyGetSaleByIdQuery();
+  const [getSaleDetails] = useLazyGetSaleDetailsQuery();
 
   const { data: managers = [] } = useGetManagersQuery();
   const { data: clients = [] } = useGetClientQuery();
@@ -161,7 +161,16 @@ const UpsertSale = () => {
     (async () => {
       const sourceId = saleId || copyFrom;
       if (!sourceId) return;
-      const res = await getSaleById({ saleId: sourceId });
+      const numericId = Number(sourceId);
+      if (
+        !/^\d+$/.test(sourceId) ||
+        !Number.isSafeInteger(numericId) ||
+        numericId <= 0
+      ) {
+        setError(t("common.sale.loadSaleError"));
+        return;
+      }
+      const res = await getSaleDetails({ saleId: numericId });
       if (!res.data) {
         if (saleId) setError(t("common.sale.loadSaleError"));
         return;
@@ -187,7 +196,7 @@ const UpsertSale = () => {
         })),
       );
     })();
-  }, [saleId, copyFrom, getSaleById, t]);
+  }, [saleId, copyFrom, getSaleDetails, t]);
 
   // «Գնորդ նշելուց բերել ինչքան պարտք ունի» and the last purchase date.
   useEffect(() => {

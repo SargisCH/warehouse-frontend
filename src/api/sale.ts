@@ -60,7 +60,7 @@ const saleApi = api.injectEndpoints({
         method: "GET",
       }),
     }),
-    getSaleById: builder.query<Sale, { saleId: string | number }>({
+    getSaleDetails: builder.query<Sale, { saleId: string | number }>({
       query: (arg: { saleId: string | number }) => ({
         url: `sale/${arg.saleId}`,
         method: "GET",
@@ -164,8 +164,8 @@ const saleApi = api.injectEndpoints({
 export const {
   useGetSalesQuery,
   useLazyGetSalesQuery,
-  useGetSaleByIdQuery,
-  useLazyGetSaleByIdQuery,
+  useGetSaleDetailsQuery,
+  useLazyGetSaleDetailsQuery,
   useCreateSaleMutation,
   useDeleteSaleMutation,
   useLazyCopySaleQuery,
