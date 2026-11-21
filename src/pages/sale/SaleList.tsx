@@ -17,7 +17,7 @@ import {
 } from "@chakra-ui/react";
 import * as React from "react";
 import { useMemo, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import Select from "react-select";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
@@ -55,11 +55,18 @@ const formatMoney = (value?: string | null) =>
 function SaleList({ isReturn = false }: Props) {
   const { t } = useTranslation();
   const history = useHistory();
+  const { search } = useLocation();
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [filters, setFilters] = useState<SaleFilters>({});
+  const [filters, setFilters] = useState<SaleFilters>(() => {
+    const query = new URLSearchParams(search);
+    return {
+      managerId: query.get("managerId") || undefined,
+      dateTo: query.get("dateTo") || undefined,
+    };
+  });
 
   const { data: managers = [] } = useGetManagersQuery();
   const { data: salesZones = [] } = useGetSalesZonesQuery();
@@ -112,6 +119,7 @@ function SaleList({ isReturn = false }: Props) {
       { id: "clientGroupName", label: t("common.payment.clientGroup") },
       { id: "paymentType", label: t("common.sale.paymentType") },
       { id: "totalAmount", label: t("common.sale.totalAmount") },
+      { id: "products", label: t("common.sale.products") },
       { id: "paidAmount", label: t("common.sale.paidAmount") },
       { id: "outstanding", label: t("common.sale.outstanding") },
       { id: "externalStatus", label: t("common.sale.externalStatus") },
@@ -280,6 +288,17 @@ function SaleList({ isReturn = false }: Props) {
         });
       case "totalAmount":
         return formatMoney(sale.totalAmount);
+      case "products":
+        return sale.items?.length ? (
+          <Box as="ul" m={0} listStyleType="none">
+            {sale.items.map((item) => (
+              <Box as="li" key={item.id ?? item.productId} whiteSpace="nowrap">
+                {item.productName || item.productCode || item.productId}
+                {" × "}{item.quantity} · {formatMoney(item.amount)}
+              </Box>
+            ))}
+          </Box>
+        ) : "—";
       case "paidAmount":
         return formatMoney(sale.settledAmount ?? sale.paidAmount);
       case "outstanding":
@@ -391,9 +410,9 @@ function SaleList({ isReturn = false }: Props) {
                     fontSize={{ sm: "14px" }}
                     borderColor="transparent"
                   >
-                    <Text color={textColor} fontSize="sm" fontWeight="700">
+                    <Box color={textColor} fontSize="sm" fontWeight="700">
                       {cellFor(sale, columnId)}
-                    </Text>
+                    </Box>
                   </Td>
                 ))}
                 {/* «Տաբլում կնոպկեք»: Պատճենել, Կատարել վճարում */}

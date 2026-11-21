@@ -11,7 +11,8 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { FormEvent, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
+import { links } from "routes";
 import { useTranslation } from "react-i18next";
 import { useGetManagersQuery } from "api/manager";
 import { useGetManagerBalancesQuery } from "api/report";
@@ -38,6 +39,7 @@ export type ManagerCashPrefill = {
 
 export default function ManagerCash() {
   const { t } = useTranslation();
+  const navigation = useHistory();
   const { state: prefill } = useLocation<ManagerCashPrefill | undefined>();
   const [kind, setKind] = useState<"RECEIPT" | "OPENING">("RECEIPT");
   const [managerId, setManagerId] = useState(prefill ? String(prefill.managerId) : "");
@@ -200,6 +202,20 @@ export default function ManagerCash() {
               {t("common.save")}
             </Button>
           </Flex>
+          {managerId && (
+            <Button
+              alignSelf="flex-start"
+              variant="outline"
+              isDisabled={isLoading}
+              onClick={() => {
+                const filters = new URLSearchParams({ managerId });
+                if (kind === "RECEIPT" && date) filters.set("dateTo", date);
+                navigation.push(`${links.sales}?${filters.toString()}`);
+              }}
+            >
+              {t("common.managerCash.viewManagerSales")}
+            </Button>
+          )}
           {kind === "OPENING" ? (
             <Text fontSize="sm">{t("common.managerCash.openingHelp")}</Text>
           ) : managerId && !loadingBalance && balance ? (
