@@ -7,9 +7,11 @@ import {
   FormLabel,
   Input,
   Select,
+  Spinner,
   Text,
 } from "@chakra-ui/react";
 import { FormEvent, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useGetManagersQuery } from "api/manager";
 import { useGetManagerBalancesQuery } from "api/report";
@@ -28,12 +30,19 @@ const cashErrors: Record<string, string> = {
   OPENING_ALREADY_CLOSED: "openingClosed",
 };
 
+export type ManagerCashPrefill = {
+  managerId: number;
+  date: string;
+  amount: string;
+};
+
 export default function ManagerCash() {
   const { t } = useTranslation();
+  const { state: prefill } = useLocation<ManagerCashPrefill | undefined>();
   const [kind, setKind] = useState<"RECEIPT" | "OPENING">("RECEIPT");
-  const [managerId, setManagerId] = useState("");
-  const [date, setDate] = useState(today);
-  const [amount, setAmount] = useState("");
+  const [managerId, setManagerId] = useState(prefill ? String(prefill.managerId) : "");
+  const [date, setDate] = useState(prefill?.date ?? today());
+  const [amount, setAmount] = useState(prefill?.amount ?? "");
   const [note, setNote] = useState("");
   const [feedback, setFeedback] = useState<{
     key: string;
@@ -45,12 +54,9 @@ export default function ManagerCash() {
   const { currentData: balances, isFetching: loadingBalance } =
     useGetManagerBalancesQuery(
       { date },
-      {
-        skip: kind === "OPENING" || !date,
-        refetchOnMountOrArgChange: true,
-      }
+      { skip: kind === "OPENING" || !managerId || !date, refetchOnMountOrArgChange: true },
     );
-  const { data: history = [], isError: historyError } =
+  const { data: history = [], isLoading: historyLoading, isError: historyError } =
     useGetManagerCashHistoryQuery();
   const [create, { isLoading }] = useCreateManagerCashEntryMutation();
   const balance = balances?.rows.find(
@@ -122,6 +128,7 @@ export default function ManagerCash() {
                   setKind(
                     event.target.value === "OPENING" ? "OPENING" : "RECEIPT"
                   );
+                  setAmount("");
                   setFeedback(undefined);
                 }}
               >
@@ -139,7 +146,10 @@ export default function ManagerCash() {
                 value={managerId}
                 isDisabled={isLoading}
                 placeholder={t("common.managerCash.selectManager")}
-                onChange={(event) => setManagerId(event.target.value)}
+                onChange={(event) => {
+                  setManagerId(event.target.value);
+                  setAmount("");
+                }}
               >
                 {managers.map((manager) => (
                   <option key={manager.id} value={manager.id}>
@@ -156,7 +166,10 @@ export default function ManagerCash() {
                   value={date}
                   max={today()}
                   isDisabled={isLoading}
-                  onChange={(event) => setDate(event.target.value)}
+                  onChange={(event) => {
+                    setDate(event.target.value);
+                    setAmount("");
+                  }}
                 />
               </FormControl>
             ) : null}
@@ -211,6 +224,8 @@ export default function ManagerCash() {
           <AlertIcon />
           {t("common.managerCash.historyError")}
         </Alert>
+      ) : historyLoading ? (
+        <Spinner size="sm" label={t("common.managerCash.loadingReceipts")} />
       ) : (
         <DataGrid
           columns={[
@@ -239,7 +254,7 @@ export default function ManagerCash() {
           ]}
           rows={history}
           rowKey={(row) => row.id}
-          emptyText={t("common.report.noData")}
+          emptyText={t("common.managerCash.noReceipts")}
         />
       )}
     </ReportCard>
