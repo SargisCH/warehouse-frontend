@@ -689,6 +689,7 @@ const routes: RouteTypeExtended[] = [
 ];
 
 export const links = {
+  managerCash: "/admin/manager-cash",
   inventory: "/admin/inventory",
   inventoryItem: (inventoryId: string | number) =>
     `/admin/inventory/upsert/${inventoryId}`,
