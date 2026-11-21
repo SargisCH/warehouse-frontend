@@ -314,6 +314,7 @@
     "loadingProducts": "Ապրանքները բեռնվում են…",
     "productSearchError": "Չհաջողվեց բեռնել ապրանքները։",
     "noMatchingProducts": "Համապատասխան ապրանքներ չկան։",
+    "invalidProductQuantity": "Մուտքագրեք ոչ բացասական քանակ՝ առավելագույնը երեք տասնորդական նիշով։",
     "paymentType": "Վճարման տեսակ",
     "externalStatus": "Այլ համակարգ ուղարկման վիճակ",
     "onlyWithBalance": "Միայն մնացորդ ունեցողները",

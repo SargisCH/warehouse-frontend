@@ -314,6 +314,7 @@
     "loadingProducts": "Loading products…",
     "productSearchError": "Could not load products.",
     "noMatchingProducts": "No matching products.",
+    "invalidProductQuantity": "Enter a nonnegative quantity with up to three decimal places.",
     "paymentType": "Payment type",
     "externalStatus": "External send status",
     "onlyWithBalance": "Only with outstanding balance",

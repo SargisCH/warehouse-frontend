@@ -48,7 +48,6 @@ import {
   Allocation,
   ClientSnapshot,
   PAYMENT_TYPES,
-  PriceListEntry,
   Sale,
 } from "types";
 import { links } from "routes";
@@ -113,10 +112,8 @@ const UpsertSale = () => {
   const [note, setNote] = useState("");
   const [lines, setLines] = useState<Line[]>([]);
   const [snapshot, setSnapshot] = useState<ClientSnapshot | null>(null);
-  const pickerHeaderBg = useColorModeValue("white", "gray.800");
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [pickerSearch, setPickerSearch] = useState("");
-  const [pickerQuery, setPickerQuery] = useState("");
+  const productHeaderBg = useColorModeValue("white", "gray.800");
+  const [productSearch, setProductSearch] = useState("");
   const [stock, setStock] = useState<Record<number, string>>({});
 
   const [createSale] = useCreateSaleMutation();
@@ -156,11 +153,6 @@ const UpsertSale = () => {
     label: t(`common.sale.paymentTypes.${type}`),
     value: type,
   }));
-
-  const total = useMemo(
-    () => lines.reduce((sum, line) => sum + lineAmount(line), 0),
-    [lines],
-  );
 
   // Load an existing document when the route carries one, or the document
   // being copied - editable then, since it becomes a new one.
@@ -217,7 +209,7 @@ const UpsertSale = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId, getSnapshot]);
 
-  // What the agent is carrying, so the picker can show it beside each product.
+  // What the agent is carrying, so the product table can show it beside each product.
   useEffect(() => {
     (async () => {
       if (!managerId) {
@@ -233,59 +225,67 @@ const UpsertSale = () => {
     })();
   }, [managerId, getManagerStock]);
 
-  const pickerListId = priceListId || snapshot?.priceListId || "";
-  const searchTerm = pickerSearch.trim();
-  const { currentData: pickerRows = [], isFetching: pickerLoading, isError: pickerError } =
-    useGetPriceListEntriesQuery(
-      { priceListId: pickerListId, searchTerm: pickerQuery },
-      { skip: !pickerOpen || !pickerListId || Boolean(saleId) },
-    );
+  const activePriceListId = priceListId || snapshot?.priceListId || "";
+  const readOnly = Boolean(saleId);
+  const {
+    currentData: priceListProducts,
+    isFetching: loadingProducts,
+    isError: productError,
+  } = useGetPriceListEntriesQuery(
+    { priceListId: activePriceListId },
+    { skip: readOnly || !activePriceListId },
+  );
+  const tableLines = useMemo(() => {
+    if (readOnly || !activePriceListId) return lines;
 
-  useEffect(() => {
-    const timeout = window.setTimeout(() => setPickerQuery(searchTerm), 200);
-    return () => window.clearTimeout(timeout);
-  }, [searchTerm]);
-
-  const openPicker = () => setPickerOpen(true);
-  const pickerMessage = !pickerListId
+    const drafts = new Map(lines.map((line) => [line.productId, line]));
+    const listed = (priceListProducts ?? []).map((product): Line => {
+      const draft = drafts.get(product.productId);
+      drafts.delete(product.productId);
+      return {
+        productId: product.productId,
+        productCode: product.productCode,
+        productName: product.productName,
+        unitName: product.unitName,
+        quantity: draft?.quantity ?? "",
+        price: draft?.price ?? product.price,
+      };
+    });
+    // Keep copied sale lines if their products were removed from the price list.
+    return copyFrom ? [...listed, ...drafts.values()] : listed;
+  }, [activePriceListId, copyFrom, lines, priceListProducts, readOnly]);
+  const searchTerm = productSearch.trim().toLowerCase();
+  const visibleLines = readOnly
+    ? tableLines
+    : tableLines.filter((line) =>
+        [line.productName, line.productCode].some((value) =>
+          (value ?? "").toLowerCase().includes(searchTerm),
+        ),
+      );
+  const saleLines = tableLines.filter((line) => Number(line.quantity) > 0);
+  const total = saleLines.reduce((sum, line) => sum + lineAmount(line), 0);
+  const productMessage = !activePriceListId && !lines.length
     ? t("common.sale.pickPriceListFirst")
-    : pickerLoading || pickerQuery !== searchTerm
-      ? t("common.sale.loadingProducts")
-      : pickerError
-        ? t("common.sale.productSearchError")
-        : pickerRows.length === 0
+    : productError
+      ? t("common.sale.productSearchError")
+      : loadingProducts && !priceListProducts
+        ? t("common.sale.loadingProducts")
+        : !visibleLines.length
           ? t("common.sale.noMatchingProducts")
           : "";
 
-  const addLine = (entry: PriceListEntry) => {
-    setLines((current) =>
-      current.some((line) => line.productId === entry.productId)
-        ? current
-        : [
-            ...current,
-            {
-              productId: entry.productId,
-              productCode: entry.productCode,
-              productName: entry.productName,
-              unitName: entry.unitName,
-              quantity: "1",
-              price: entry.price,
-            },
-          ],
-    );
-  };
-
-  const updateLine = (productId: number, patch: Partial<Line>) =>
-    setLines((current) =>
-      current.map((line) =>
-        line.productId === productId ? { ...line, ...patch } : line,
-      ),
-    );
-
-  const removeLine = (productId: number) =>
-    setLines((current) =>
-      current.filter((line) => line.productId !== productId),
-    );
+  const updateLine = (
+    line: Line,
+    patch: Partial<Pick<Line, "quantity" | "price">>,
+  ) =>
+    setLines((current) => {
+      const updated = { ...line, ...patch };
+      return current.some((entry) => entry.productId === line.productId)
+        ? current.map((entry) =>
+            entry.productId === line.productId ? updated : entry,
+          )
+        : [...current, updated];
+    });
 
   /**
    * «Հիշել և նոր» keeps the agent, the date and the zone and clears the rest,
@@ -293,7 +293,13 @@ const UpsertSale = () => {
    */
   /** Save first asks what was paid; a return has nothing to ask. */
   const askPaid = (keepHeader: boolean) => {
-    if (!managerId || !clientId || !lines.length) {
+    if (tableLines.some(({ quantity }) =>
+      quantity.trim() !== "" && !/^\d+(\.\d{1,3})?$/.test(quantity.trim()),
+    )) {
+      setError(t("common.sale.invalidProductQuantity"));
+      return;
+    }
+    if (!managerId || !clientId || !saleLines.length) {
       setError(t("common.sale.incompleteSale"));
       return;
     }
@@ -317,14 +323,14 @@ const UpsertSale = () => {
       managerId: Number(managerId),
       clientId: Number(clientId),
       delivererId: delivererId ? Number(delivererId) : null,
-      priceListId: priceListId ? Number(priceListId) : null,
+      priceListId: activePriceListId ? Number(activePriceListId) : null,
       paymentType,
       cashCollectedByManager,
       note: note || null,
       isReturn,
-      items: lines.map((line) => ({
+      items: saleLines.map((line) => ({
         productId: line.productId,
-        quantity: String(line.quantity),
+        quantity: line.quantity.trim(),
         price: String(line.price),
       })),
     };
@@ -358,10 +364,9 @@ const UpsertSale = () => {
       setNote("");
       setPriceListId("");
     }
+    setProductSearch("");
     setPaymentTypeTouched(false);
   };
-
-  const readOnly = Boolean(saleId);
 
   return (
     <Box>
@@ -426,9 +431,17 @@ const UpsertSale = () => {
               placeholder={t("common.sale.selectPriceList")}
               options={priceListOptions}
               value={
-                priceListOptions.find((o) => o.value === priceListId) ?? null
+                priceListOptions.find((o) => o.value === String(activePriceListId)) ?? null
               }
-              onChange={(v) => setPriceListId(v?.value ?? "")}
+              onChange={(v) => {
+                const nextListId = v?.value ?? "";
+                const nextActiveListId = nextListId || snapshot?.priceListId || "";
+                if (String(nextActiveListId) !== String(activePriceListId)) {
+                  setLines([]);
+                  setProductSearch("");
+                }
+                setPriceListId(nextListId);
+              }}
             />
           </FormControl>
         </Flex>
@@ -479,153 +492,82 @@ const UpsertSale = () => {
               {t("common.sale.products")}
             </Text>
             {!readOnly ? (
-              <Flex gap="8px">
-                <Input
-                  size="sm"
-                  width="200px"
-                  placeholder={t("common.searchTerm")}
-                  aria-label={t("common.searchTerm")}
-                  aria-controls={pickerOpen ? "sale-product-picker" : undefined}
-                  value={pickerSearch}
-                  onFocus={openPicker}
-                  onChange={(e) => {
-                    setPickerSearch(e.target.value);
-                    openPicker();
-                  }}
-                />
-                <Button size="sm" colorScheme="teal" onClick={openPicker}>
-                  {t("common.sale.addFromPriceList")}
-                </Button>
-              </Flex>
+              <Input
+                size="sm"
+                width="200px"
+                placeholder={t("common.searchTerm")}
+                aria-label={t("common.searchTerm")}
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+              />
             ) : null}
           </Flex>
 
-          {pickerOpen && !readOnly ? (
-            <Box
-              id="sale-product-picker"
-              borderWidth="1px"
-              rounded="md"
-              p="8px"
-              mb="12px"
-            >
-              <Flex justify="space-between" mb="8px">
-                <Text fontWeight="700">
-                  {t("common.sale.priceListProducts")}
-                </Text>
-                <Button size="xs" onClick={() => setPickerOpen(false)}>
-                  {t("common.close")}
-                </Button>
-              </Flex>
-              {pickerMessage ? (
-                <Text role="status" fontSize="sm" py="8px">
-                  {pickerMessage}
-                </Text>
-              ) : (
-                <Box maxH="396px" overflow="auto">
-                  {/* One header row and up to ten product rows. */}
-                  <Table
-                    size="sm"
-                    sx={{
-                      "th, td": {
-                        height: "36px",
-                        paddingBlock: 0,
-                        whiteSpace: "nowrap",
-                      },
-                      th: {
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 1,
-                        bg: pickerHeaderBg,
-                      },
-                    }}
-                  >
-                    <Thead>
-                      <Tr>
-                        <Th>{t("common.sale.productCode")}</Th>
-                        <Th>{t("common.sale.productName")}</Th>
-                        <Th>{t("common.sale.inStock")}</Th>
-                        <Th>{t("common.sale.price")}</Th>
-                        <Th />
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {pickerRows.map((entry) => (
-                        <Tr key={entry.productId}>
-                          <Td>{entry.productCode}</Td>
-                          <Td>{entry.productName}</Td>
-                          <Td>{stock[entry.productId] ?? "0.000"}</Td>
-                          <Td>{money(entry.price)}</Td>
-                          <Td>
-                            <Button size="xs" onClick={() => addLine(entry)}>
-                              {t("common.add")}
-                            </Button>
-                          </Td>
-                        </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
-                </Box>
-              )}
+          {!readOnly && productMessage ? (
+            <Text role="status" fontSize="sm" py="8px">
+              {productMessage}
+            </Text>
+          ) : (
+            <Box maxH={readOnly ? undefined : "396px"} overflow="auto">
+              <Table
+                size="sm"
+                variant="simple"
+                sx={readOnly ? undefined : {
+                  "th, td": {
+                    height: "36px",
+                    paddingBlock: 0,
+                    whiteSpace: "nowrap",
+                  },
+                  th: { position: "sticky", top: 0, bg: productHeaderBg, zIndex: 1 },
+                }}
+              >
+                <Thead>
+                  <Tr>
+                    <Th>{t("common.sale.productCode")}</Th>
+                    <Th>{t("common.sale.productName")}</Th>
+                    <Th>{t("common.unit")}</Th>
+                    {!readOnly && <Th>{t("common.sale.inStock")}</Th>}
+                    <Th>{t("common.sale.quantity")}</Th>
+                    <Th>{t("common.sale.price")}</Th>
+                    <Th>{t("common.sale.amount")}</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {visibleLines.map((line) => (
+                    <Tr key={line.productId}>
+                      <Td>{line.productCode}</Td>
+                      <Td>{line.productName}</Td>
+                      <Td>{line.unitName}</Td>
+                      {!readOnly && <Td>{stock[line.productId] ?? "0.000"}</Td>}
+                      <Td>
+                        <Input
+                          size="sm"
+                          width="90px"
+                          inputMode="decimal"
+                          aria-label={`${t("common.sale.quantity")} · ${line.productName ?? line.productCode ?? line.productId}`}
+                          isDisabled={readOnly}
+                          value={line.quantity}
+                          onChange={(e) => updateLine(line, { quantity: e.target.value })}
+                        />
+                      </Td>
+                      <Td>
+                        <Input
+                          size="sm"
+                          width="110px"
+                          inputMode="decimal"
+                          aria-label={`${t("common.sale.price")} · ${line.productName ?? line.productCode ?? line.productId}`}
+                          isDisabled={readOnly}
+                          value={line.price}
+                          onChange={(e) => updateLine(line, { price: e.target.value })}
+                        />
+                      </Td>
+                      <Td>{line.quantity.trim() ? money(lineAmount(line)) : "—"}</Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
             </Box>
-          ) : null}
-
-          <Table size="sm" variant="simple">
-            <Thead>
-              <Tr>
-                <Th>{t("common.sale.productCode")}</Th>
-                <Th>{t("common.sale.productName")}</Th>
-                <Th>{t("common.unit")}</Th>
-                <Th>{t("common.sale.quantity")}</Th>
-                <Th>{t("common.sale.price")}</Th>
-                <Th>{t("common.sale.amount")}</Th>
-                <Th />
-              </Tr>
-            </Thead>
-            <Tbody>
-              {lines.map((line) => (
-                <Tr key={line.productId}>
-                  <Td>{line.productCode}</Td>
-                  <Td>{line.productName}</Td>
-                  <Td>{line.unitName}</Td>
-                  <Td>
-                    <Input
-                      size="sm"
-                      width="90px"
-                      isDisabled={readOnly}
-                      value={line.quantity}
-                      onChange={(e) =>
-                        updateLine(line.productId, { quantity: e.target.value })
-                      }
-                    />
-                  </Td>
-                  <Td>
-                    <Input
-                      size="sm"
-                      width="110px"
-                      isDisabled={readOnly}
-                      value={line.price}
-                      onChange={(e) =>
-                        updateLine(line.productId, { price: e.target.value })
-                      }
-                    />
-                  </Td>
-                  <Td>{money(lineAmount(line))}</Td>
-                  <Td>
-                    {!readOnly ? (
-                      <Button
-                        size="xs"
-                        colorScheme="red"
-                        variant="ghost"
-                        onClick={() => removeLine(line.productId)}
-                      >
-                        {t("common.delete")}
-                      </Button>
-                    ) : null}
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
+          )}
 
           <Flex justify="flex-end" mt="8px" gap="16px">
             <Text fontWeight="700" color={textColor}>
