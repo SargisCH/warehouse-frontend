@@ -59,6 +59,7 @@ type Line = {
   unitName: string | null;
   quantity: string;
   price: string;
+  amount?: string;
 };
 
 const money = (value?: string | number | null) =>
@@ -161,7 +162,10 @@ const UpsertSale = () => {
       const sourceId = saleId || copyFrom;
       if (!sourceId) return;
       const res = await getSaleById({ saleId: sourceId });
-      if (!res.data) return;
+      if (!res.data) {
+        if (saleId) setError(t("common.sale.loadSaleError"));
+        return;
+      }
       const sale = res.data;
       if (saleId) setLoaded(sale);
       else setPaymentTypeTouched(true);
@@ -179,10 +183,11 @@ const UpsertSale = () => {
           unitName: item.unitName ?? null,
           quantity: item.quantity,
           price: item.price,
+          amount: item.amount,
         })),
       );
     })();
-  }, [saleId, copyFrom, getSaleById]);
+  }, [saleId, copyFrom, getSaleById, t]);
 
   // «Գնորդ նշելուց բերել ինչքան պարտք ունի» and the last purchase date.
   useEffect(() => {
@@ -561,7 +566,11 @@ const UpsertSale = () => {
                           onChange={(e) => updateLine(line, { price: e.target.value })}
                         />
                       </Td>
-                      <Td>{line.quantity.trim() ? money(lineAmount(line)) : "—"}</Td>
+                      <Td>
+                        {readOnly && line.amount != null
+                          ? money(line.amount)
+                          : line.quantity.trim() ? money(lineAmount(line)) : "—"}
+                      </Td>
                     </Tr>
                   ))}
                 </Tbody>
@@ -571,7 +580,7 @@ const UpsertSale = () => {
 
           <Flex justify="flex-end" mt="8px" gap="16px">
             <Text fontWeight="700" color={textColor}>
-              {t("common.sale.totalAmount")}: {money(total)}
+              {t("common.sale.totalAmount")}: {money(readOnly ? loaded?.totalAmount : total)}
             </Text>
           </Flex>
         </Box>
