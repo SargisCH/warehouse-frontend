@@ -46,7 +46,7 @@ jobs:
           CI: 'false'
           GENERATE_SOURCEMAP: 'false'
           REACT_APP_API_URL: ${{ secrets.API_URL }}
-          REACT_APP_RELEASE: ${{ github.sha }}
+          REACT_APP_RELEASE: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Deploy prebuilt assets
         uses: cloudflare/wrangler-action@v4
         with:

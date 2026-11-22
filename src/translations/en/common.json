@@ -1,4 +1,8 @@
 {
+  "releaseUpdate": {
+    "message": "A new version is available.",
+    "refresh": "Refresh"
+  },
   "creditList": "Credit List",
   "supplyOrders": "Supply Orders",
   "inventories": "Inventories",
