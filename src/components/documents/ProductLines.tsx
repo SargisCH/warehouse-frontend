@@ -14,7 +14,7 @@ import {
 import Select from "react-select";
 import { useTranslation } from "react-i18next";
 import { useGetProductQuery } from "api/product";
-import { formatMoney, lineAmount } from "helpers/money";
+import { formatMoney, formatQuantity, lineAmount } from "helpers/money";
 
 export type ProductLine = {
   key: number;
@@ -163,7 +163,7 @@ export function ProductLines({
         )}
         <Flex gap="20px">
           <Text fontSize="sm" fontWeight="700">
-            {t("common.sale.quantity")}: {totalQuantity.toFixed(3)}
+            {t("common.sale.quantity")}: {formatQuantity(totalQuantity)}
           </Text>
           {showPrice ? (
             <Text fontSize="sm" fontWeight="700">

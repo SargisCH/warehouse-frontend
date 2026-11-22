@@ -17,7 +17,7 @@ import {
   Tr,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -39,6 +39,8 @@ type Row = {
   price: string;
 };
 
+const visibleProductCount = 10;
+
 const UpsertPriceList = () => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -54,6 +56,8 @@ const UpsertPriceList = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [productSearch, setProductSearch] = useState("");
   const [productQuery, setProductQuery] = useState("");
+  const [productPickerMaxHeight, setProductPickerMaxHeight] = useState<string>();
+  const productTableRef = useRef<HTMLTableElement>(null);
   const [productToFocus, setProductToFocus] = useState<number | null>(null);
   const [loadedPriceListId, setLoadedPriceListId] = useState<string>();
 
@@ -74,6 +78,38 @@ const UpsertPriceList = () => {
     { refetchOnMountOrArgChange: true },
   );
   const loadingProducts = isFetching || productQuery !== searchTerm;
+
+  useLayoutEffect(() => {
+    const table = productTableRef.current;
+    if (
+      loadingProducts ||
+      isError ||
+      !table ||
+      products.length <= visibleProductCount
+    ) {
+      setProductPickerMaxHeight(undefined);
+      return;
+    }
+
+    const visibleRows = Array.from(table.tBodies[0].rows).slice(
+      0,
+      visibleProductCount,
+    );
+    const lastVisibleRow = visibleRows[visibleRows.length - 1];
+    const updateMaxHeight = () => {
+      const height =
+        lastVisibleRow.getBoundingClientRect().bottom -
+        table.getBoundingClientRect().top;
+      setProductPickerMaxHeight(`${Math.ceil(height)}px`);
+    };
+
+    updateMaxHeight();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(updateMaxHeight);
+    if (table.tHead) observer.observe(table.tHead);
+    visibleRows.forEach((row) => observer.observe(row));
+    return () => observer.disconnect();
+  }, [isError, loadingProducts, products.length]);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setProductQuery(searchTerm), 200);
@@ -197,14 +233,7 @@ const UpsertPriceList = () => {
           {t("common.priceList.isDefaultHint")}
         </Text>
 
-        <Grid
-          templateColumns={{
-            base: "minmax(0, 1fr)",
-            lg: "minmax(0, 2fr) minmax(0, 3fr)",
-          }}
-          gap="16px"
-          alignItems="start"
-        >
+        <Grid templateColumns="minmax(0, 1fr)" gap="16px">
           <Box
             as="section"
             aria-labelledby="price-list-products-heading"
@@ -233,7 +262,7 @@ const UpsertPriceList = () => {
             </Box>
             <Box
               id="price-list-product-picker"
-              maxH="360px"
+              maxH={productPickerMaxHeight}
               overflow="auto"
               aria-busy={loadingProducts}
             >
@@ -250,7 +279,7 @@ const UpsertPriceList = () => {
                   )}
                 </Text>
               ) : (
-                <Table size="sm">
+                <Table ref={productTableRef} size="sm">
                   <Thead>
                     <Tr>
                       <Th>{t("common.priceList.productCode")}</Th>

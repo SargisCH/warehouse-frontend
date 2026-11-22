@@ -9,9 +9,9 @@ export const formatMoney = (value?: string | number | null) =>
 
 export const formatQuantity = (value?: string | number | null) =>
   value === undefined || value === null || value === ""
-    ? "0.000"
+    ? "0"
     : Number(value).toLocaleString(undefined, {
-        minimumFractionDigits: 3,
+        minimumFractionDigits: 0,
         maximumFractionDigits: 3,
       });
 
