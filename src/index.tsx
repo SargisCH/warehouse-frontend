@@ -19,6 +19,7 @@ import i18next from "i18next";
 import common_am from "./translations/am/common.json";
 import common_en from "./translations/en/common.json";
 import FullPageLoader from "components/fullPageLoader/FullPageLoader";
+import ReleaseUpdateBanner from "components/ReleaseUpdateBanner";
 
 i18next.init(
   {
@@ -118,6 +119,7 @@ ReactDOM.render(
       <Provider store={store}>
         <I18nextProvider i18n={i18next}>
           <App />
+          <ReleaseUpdateBanner />
         </I18nextProvider>
       </Provider>
     </React.StrictMode>

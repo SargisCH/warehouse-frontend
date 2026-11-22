@@ -1,4 +1,8 @@
 {
+  "releaseUpdate": {
+    "message": "Նոր տարբերակ է հասանելի։",
+    "refresh": "Թարմացնել"
+  },
   "creditList": "Կրեդիտների լիստ",
   "supplyOrders": "Մատակարարման պատվերներ",
   "inventories": "Հումքեր",
