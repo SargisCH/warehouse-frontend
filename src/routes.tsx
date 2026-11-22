@@ -721,6 +721,7 @@ export const links = {
     `/admin/productGroup/upsert/${productGroupId}`,
   createProductGroup: "/admin/productGroups/upsert/",
   warehouses: "/admin/warehouse",
+  warehouseStock: (id: string | number) => `/admin/warehouse/stock/${id}`,
   warehouseHistory: (id: string | number) => `/admin/warehouse/history/${id}`,
   warehouse: (warehouseId: string | number) =>
     `/admin/warehouse/upsert/${warehouseId}`,

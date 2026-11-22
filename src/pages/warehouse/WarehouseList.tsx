@@ -55,6 +55,25 @@ function WarehouseList() {
       },
     }),
     columnHelper.display({
+      id: "stock",
+      header: () => (
+        <Text fontSize={{ sm: "10px", lg: "12px" }} color="gray.400">
+          {t("common.warehouse.stock")}
+        </Text>
+      ),
+      cell: ({ row }) => (
+        <Button
+          as={Link}
+          to={links.warehouseStock(row.original.id)}
+          size="sm"
+          variant="ghost"
+          onClick={(event) => event.stopPropagation()}
+        >
+          {t("common.warehouse.stock")}
+        </Button>
+      ),
+    }),
+    columnHelper.display({
       id: "history",
       header: () => (
         <Text fontSize={{ sm: "10px", lg: "12px" }} color="gray.400">

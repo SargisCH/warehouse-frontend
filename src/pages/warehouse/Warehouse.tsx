@@ -5,6 +5,7 @@ import { Switch, useRouteMatch } from "react-router-dom";
 import { Route } from "react-router-dom";
 import WarehouseList from "./WarehouseList";
 import UpsertWarehouse from "./UpsertWarehouse";
+import WarehouseStock from "./WarehouseStock";
 
 export default function Warehouse() {
   const match = useRouteMatch();
@@ -17,6 +18,9 @@ export default function Warehouse() {
         </Route>
         <Route path={`${match.path}/history/:id`} exact>
           <StockHistory scope="warehouse" />
+        </Route>
+        <Route path={`${match.path}/stock/:id`} exact>
+          <WarehouseStock />
         </Route>
         <Route path={`${match.path}/upsert/:warehouseId`}>
           <UpsertWarehouse create={false} />

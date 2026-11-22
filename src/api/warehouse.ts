@@ -5,6 +5,20 @@ export type Warehouse = {
   name: string;
 };
 
+type StockQuantity = {
+  quantity: string;
+  unit: { id: number; name: string | null } | null;
+};
+
+type WarehouseStock = {
+  id: number;
+  name: string | null;
+  products: Array<
+    StockQuantity & { id: number; name: string | null; sku: string | null }
+  >;
+  totals: StockQuantity[];
+};
+
 const warehouseApi = api.injectEndpoints({
   endpoints: (builder) => ({
     createWarehouse: builder.mutation({
@@ -47,6 +61,9 @@ const warehouseApi = api.injectEndpoints({
         method: "GET",
       }),
     }),
+    getWarehouseStock: builder.query<WarehouseStock, string>({
+      query: (id) => ({ url: `warehouses/${id}/stock` }),
+    }),
   }),
 });
 
@@ -54,6 +71,7 @@ export const {
   useCreateWarehouseMutation,
   useGetWarehouseQuery,
   useGetWarehouseByIdQuery,
+  useGetWarehouseStockQuery,
   useLazyGetWarehouseByIdQuery,
   useUpdateWarehouseMutation,
   useDeleteWarehouseMutation,

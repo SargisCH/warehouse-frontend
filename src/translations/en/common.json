@@ -17,6 +17,12 @@
   "salesHistory": "Sales History",
   "clients": "Clients",
   "warehouse": {
+    "stock": "Current stock",
+    "stockForWarehouse": "Current stock in {{name}}",
+    "stockLoadError": "Could not load warehouse stock.",
+    "emptyStock": "This warehouse has no current stock. Total: 0.",
+    "totalByUnit": "Total ({{unit}})",
+    "noUnit": "Unspecified unit",
     "warehouse": "Warehouse",
     "list": "Warehouse List",
     "addWarehouse": "Add Warehouse"
@@ -161,6 +167,7 @@
     "fractional": "Fractional",
     "moveToWarehouse": "Set warehouse quantity",
     "totalStock": "Total Stock",
+    "noWarehouseStock": "No warehouse stock recorded.",
     "totalStockTooltip": "Click on the quantity to see details",
     "manufacturer": "Manufacturer"
   },
