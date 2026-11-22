@@ -695,6 +695,7 @@ export const links = {
     `/admin/inventory/upsert/${inventoryId}`,
   createInventory: "/admin/inventory/upsert/",
   product: "/admin/products",
+  productHistory: (id: string | number) => `/admin/products/history/${id}`,
   productItem: (productId: string | number) =>
     `/admin/products/upsert/${productId}`,
   units: "/admin/units",
@@ -720,6 +721,7 @@ export const links = {
     `/admin/productGroup/upsert/${productGroupId}`,
   createProductGroup: "/admin/productGroups/upsert/",
   warehouses: "/admin/warehouse",
+  warehouseHistory: (id: string | number) => `/admin/warehouse/history/${id}`,
   warehouse: (warehouseId: string | number) =>
     `/admin/warehouse/upsert/${warehouseId}`,
   createWarehouse: "/admin/warehouse/upsert/",

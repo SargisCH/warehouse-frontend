@@ -1,4 +1,5 @@
 import {
+  Button,
   Checkbox,
   Flex,
   FlexProps,
@@ -15,6 +16,9 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { createColumnHelper } from "@tanstack/react-table";
 import { FaRegQuestionCircle } from "react-icons/fa";
+
+import { Link } from "react-router-dom";
+import { links } from "routes";
 
 export type RowObj = {
   id: number;
@@ -178,5 +182,20 @@ export default function getProductCoumns(
     //       </Button>
     //     ),
     //   }),
+    columnHelper.display({
+      id: "history",
+      header: () => <Header header={t("common.stockHistory.title")} />,
+      cell: ({ row }) => (
+        <Button
+          as={Link}
+          to={links.productHistory(row.original.id)}
+          size="sm"
+          variant="ghost"
+          onClick={(event) => event.stopPropagation()}
+        >
+          {t("common.stockHistory.title")}
+        </Button>
+      ),
+    }),
   ];
 }

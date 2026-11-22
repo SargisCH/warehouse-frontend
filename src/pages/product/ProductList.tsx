@@ -8,7 +8,6 @@ import {
   MenuItem,
   MenuList,
   Text,
-  useBreakpointValue,
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -187,7 +186,6 @@ function ProductList() {
   const selectedRows = table.getSelectedRowModel().rows;
   // You can then map over selectedRows to get the original data:
   const selectedRowData = selectedRows.map((row) => row.original);
-  const isMobile = useBreakpointValue({ base: true, md: false });
   // const sharedElements =
   //   <>
   //     <Text align={"right"} paddingRight="20">
@@ -196,16 +194,6 @@ function ProductList() {
   //   </>
   // );
 
-  if (isMobile) {
-    return (
-      <Flex justifyContent={"flex-end"} mt="20px" mb="20px">
-        <TableAddButton
-          link={links.createProduct}
-          label={t("common.product.addProduct")}
-        />
-      </Flex>
-    );
-  }
   return (
     <Card
       flexDirection="column"
@@ -214,7 +202,14 @@ function ProductList() {
       overflowX={{ sm: "scroll", lg: "hidden" }}
       position={"static"}
     >
-      <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
+      <Flex
+        px="25px"
+        mb="8px"
+        justifyContent="space-between"
+        align="center"
+        wrap="wrap"
+        gap="8px"
+      >
         <Text
           color={textColor}
           fontSize="22px"
