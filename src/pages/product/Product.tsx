@@ -1,3 +1,4 @@
+import StockHistory from "pages/stockHistory/StockHistory";
 import { Box } from "@chakra-ui/react";
 import { Switch, useRouteMatch } from "react-router-dom";
 import { Route } from "react-router-dom";
@@ -12,6 +13,9 @@ export default function Product() {
       <Switch>
         <Route path={`${match.path}`} exact={true}>
           <ProductList />
+        </Route>
+        <Route path={`${match.path}/history/:id`} exact>
+          <StockHistory scope="product" />
         </Route>
         <Route path={`${match.path}/upsert/:productId`}>
           <UpsertProduct create={false} />

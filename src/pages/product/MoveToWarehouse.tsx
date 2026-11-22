@@ -67,7 +67,7 @@ export default function MoveToWarehouseModal<
   const {
     handleSubmit,
     control,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     reset,
   } = useForm({
     defaultValues: {
@@ -94,14 +94,18 @@ export default function MoveToWarehouseModal<
   }, [selectedRowData, reset]);
   const onSubmit = async (values: FormType) => {
     try {
-      await moveProductMutation(values);
+      await moveProductMutation(values).unwrap();
       if (onConfirm) {
         onConfirm();
       }
+      onClose();
     } catch (e: any) {
-      alert(e?.message || e?.toString());
+      alert(
+        e?.data?.message ||
+          e?.message ||
+          t("common.stockHistory.adjustmentError"),
+      );
     }
-    onClose();
   };
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -192,7 +196,11 @@ export default function MoveToWarehouseModal<
               <Button mr={3} variant="ghost" onClick={onClose}>
                 Close
               </Button>
-              <Button colorScheme="brand" type="submit">
+              <Button
+                colorScheme="brand"
+                type="submit"
+                isLoading={isSubmitting}
+              >
                 {t("common.save")}
               </Button>
             </ModalFooter>

@@ -1,3 +1,4 @@
+import StockHistory from "pages/stockHistory/StockHistory";
 import { Box } from "@chakra-ui/react";
 import { t } from "i18next";
 import { Switch, useRouteMatch } from "react-router-dom";
@@ -13,6 +14,9 @@ export default function Warehouse() {
       <Switch>
         <Route path={`${match.path}`} exact={true}>
           <WarehouseList />
+        </Route>
+        <Route path={`${match.path}/history/:id`} exact>
+          <StockHistory scope="warehouse" />
         </Route>
         <Route path={`${match.path}/upsert/:warehouseId`}>
           <UpsertWarehouse create={false} />

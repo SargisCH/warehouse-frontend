@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Box, Flex, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Button, Flex, Text, useColorModeValue } from "@chakra-ui/react";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -15,6 +15,7 @@ import { links } from "routes";
 import { TableAddButton } from "components/tableAddButton/TableAddButton";
 import { t } from "i18next";
 import CustomTable from "components/table/Table";
+import { Link } from "react-router-dom";
 
 type RowObj = {
   id: number | string;
@@ -52,6 +53,25 @@ function WarehouseList() {
           </Flex>
         );
       },
+    }),
+    columnHelper.display({
+      id: "history",
+      header: () => (
+        <Text fontSize={{ sm: "10px", lg: "12px" }} color="gray.400">
+          {t("common.stockHistory.title")}
+        </Text>
+      ),
+      cell: ({ row }) => (
+        <Button
+          as={Link}
+          to={links.warehouseHistory(row.original.id)}
+          size="sm"
+          variant="ghost"
+          onClick={(event) => event.stopPropagation()}
+        >
+          {t("common.stockHistory.title")}
+        </Button>
+      ),
     }),
   ];
   const table = useReactTable({
