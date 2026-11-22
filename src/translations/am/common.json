@@ -17,6 +17,12 @@
   "salesHistory": "Վաճառքների պատմություն",
   "clients": "Վաճառկետեր",
   "warehouse": {
+    "stock": "Ընթացիկ մնացորդ",
+    "stockForWarehouse": "Ընթացիկ մնացորդը՝ {{name}}",
+    "stockLoadError": "Չհաջողվեց բեռնել պահեստի մնացորդը։",
+    "emptyStock": "Պահեստում մնացորդ չկա։ Ընդամենը՝ 0։",
+    "totalByUnit": "Ընդամենը ({{unit}})",
+    "noUnit": "Չնշված չափման միավոր",
     "warehouse": "Պահեստ",
     "list": "Պահեստների ցանկ",
     "addWarehouse": "Ավելացնել պահեստ"
@@ -161,6 +167,7 @@
     "fractional": "Կոտորակային մաս",
     "moveToWarehouse": "Սահմանել պահեստի քանակը",
     "totalStock": "Առկա",
+    "noWarehouseStock": "Պահեստի մնացորդ գրանցված չէ։",
     "totalStockTooltip": "Մանրամասն տեսնելու համար սեղմեք քանակի վրա",
     "manufacturer": "Արտադրող"
   },

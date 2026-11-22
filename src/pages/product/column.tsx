@@ -19,6 +19,7 @@ import { FaRegQuestionCircle } from "react-icons/fa";
 
 import { Link } from "react-router-dom";
 import { links } from "routes";
+import { formatQuantity } from "helpers/money";
 
 export type RowObj = {
   id: number;
@@ -34,7 +35,7 @@ export type RowObj = {
   inventory?: {
     warehouseId: number;
     warehouseName: string;
-    quantity: number;
+    quantity: number | string;
   }[];
   totalStock?: number;
 };
@@ -139,26 +140,27 @@ export default function getProductCoumns(
     columnHelper.accessor("totalStock", {
       id: "totalStock",
       header: () => <Header header={t("common.product.totalStock")} />,
-      cell: (info) => (
-        <Flex alignItems={"center"} gap={2}>
-          <TextCell
-            text={`${info.getValue() ?? 0} ${t(`common.units.${info.row.original.unit.name}`, { defaultValue: info.row.original.unit.name })}`}
-            color={textColor}
-            textDecoration="underline"
-            onClick={(e) => {
-              e.stopPropagation();
-              cellClickHandlers.totalStock(info.row.original);
-            }}
-          />
-          <Tooltip
-            hasArrow
-            label={t("common.product.totalStockTooltip")}
-            colorScheme={"gray"}
-          >
-            <FontAwesomeIcon icon={faCircleQuestion} />
+      cell: (info) => {
+        const unit = info.row.original.unit?.name;
+        return (
+          <Tooltip hasArrow label={t("common.product.totalStockTooltip")}>
+            <Button
+              variant="link"
+              size="sm"
+              color={textColor}
+              textDecoration="underline"
+              rightIcon={<FontAwesomeIcon icon={faCircleQuestion} />}
+              onClick={(event) => {
+                event.stopPropagation();
+                cellClickHandlers.totalStock(info.row.original);
+              }}
+            >
+              {formatQuantity(info.getValue())}
+              {unit && ` ${t(`common.units.${unit}`, { defaultValue: unit })}`}
+            </Button>
           </Tooltip>
-        </Flex>
-      ),
+        );
+      },
     }),
 
     columnHelper.accessor("group.name", {
