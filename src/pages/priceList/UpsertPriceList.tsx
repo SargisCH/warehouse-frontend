@@ -5,6 +5,7 @@ import {
   Flex,
   FormControl,
   FormLabel,
+  Grid,
   Input,
   Spinner,
   Table,
@@ -41,7 +42,7 @@ type Row = {
 const UpsertPriceList = () => {
   const { t } = useTranslation();
   const history = useHistory();
-  const params = useParams() as any;
+  const { priceListId } = useParams<{ priceListId?: string }>();
   const textColor = useColorModeValue("secondaryGray.900", "white");
 
   const [error, setError] = useState("");
@@ -53,20 +54,24 @@ const UpsertPriceList = () => {
   const [rows, setRows] = useState<Row[]>([]);
   const [productSearch, setProductSearch] = useState("");
   const [productQuery, setProductQuery] = useState("");
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [productToFocus, setProductToFocus] = useState<number | null>(null);
+  const [loadedPriceListId, setLoadedPriceListId] = useState<string>();
 
   const [createPriceList] = useCreatePriceListMutation();
   const [updatePriceList] = useUpdatePriceListMutation();
   const [deletePriceList] = useDeletePriceListMutation();
-  const [getPriceListById] = useLazyGetPriceListByIdQuery();
+  const [getPriceListById, { isError: priceListLoadFailed }] =
+    useLazyGetPriceListByIdQuery();
   const searchTerm = productSearch.trim();
+  const selectedProductIds = new Set(rows.map((row) => row.productId));
+  const canEdit = !priceListId || loadedPriceListId === priceListId;
   const {
     currentData: products = [],
     isFetching,
     isError,
   } = useGetPriceListProductsQuery(
     { searchTerm: productQuery },
-    { skip: !pickerOpen, refetchOnMountOrArgChange: true },
+    { refetchOnMountOrArgChange: true },
   );
   const loadingProducts = isFetching || productQuery !== searchTerm;
 
@@ -76,10 +81,11 @@ const UpsertPriceList = () => {
   }, [searchTerm]);
 
   useEffect(() => {
+    if (!priceListId) return;
+    let active = true;
     (async () => {
-      if (!params.priceListId) return;
-      const res = await getPriceListById({ priceListId: params.priceListId });
-      if (!res.data) return;
+      const res = await getPriceListById({ priceListId });
+      if (!active || !res.data) return;
       setCode(res.data.code);
       setName(res.data.name);
       setIsDefault(res.data.isDefault);
@@ -92,10 +98,25 @@ const UpsertPriceList = () => {
           price: item.price,
         })),
       );
+      setLoadedPriceListId(priceListId);
     })();
-  }, [params.priceListId, getPriceListById]);
+    return () => {
+      active = false;
+    };
+  }, [priceListId, getPriceListById]);
 
-  const addProduct = (product: ProductItem) =>
+  useEffect(() => {
+    if (productToFocus === null) return;
+    const input = document.getElementById(`price-list-price-${productToFocus}`);
+    if (input instanceof HTMLInputElement) {
+      input.focus();
+      input.select();
+    }
+    setProductToFocus(null);
+  }, [productToFocus]);
+
+  const addProduct = (product: ProductItem) => {
+    setProductToFocus(product.id);
     setRows((current) =>
       current.some((row) => row.productId === product.id)
         ? current
@@ -109,6 +130,7 @@ const UpsertPriceList = () => {
             },
           ],
     );
+  };
 
   const onSubmit = async () => {
     if (!name) {
@@ -124,8 +146,8 @@ const UpsertPriceList = () => {
         price: String(row.price || "0"),
       })),
     };
-    const res: any = params.priceListId
-      ? await updatePriceList({ ...body, id: params.priceListId })
+    const res: any = priceListId
+      ? await updatePriceList({ ...body, id: priceListId })
       : await createPriceList(body);
 
     if (res?.error) {
@@ -175,145 +197,202 @@ const UpsertPriceList = () => {
           {t("common.priceList.isDefaultHint")}
         </Text>
 
-        <Box>
-          <Flex justify="space-between" align="center" mb="8px">
-            <Text fontSize="18px" fontWeight="700" color={textColor}>
-              {t("common.priceList.prices")}
-            </Text>
-            <Input
-              size="sm"
-              width="220px"
-              placeholder={t("common.priceList.searchProducts")}
-              aria-label={t("common.priceList.searchProducts")}
-              aria-controls={
-                pickerOpen ? "price-list-product-picker" : undefined
-              }
-              value={productSearch}
-              onFocus={() => setPickerOpen(true)}
-              onChange={(e) => {
-                setProductSearch(e.target.value);
-                setPickerOpen(true);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") setPickerOpen(false);
-              }}
-            />
-          </Flex>
-
-          {pickerOpen ? (
+        <Grid
+          templateColumns={{
+            base: "minmax(0, 1fr)",
+            lg: "minmax(0, 2fr) minmax(0, 3fr)",
+          }}
+          gap="16px"
+          alignItems="start"
+        >
+          <Box
+            as="section"
+            aria-labelledby="price-list-products-heading"
+            borderWidth="1px"
+            rounded="md"
+          >
+            <Box p="12px">
+              <Text
+                as="h2"
+                id="price-list-products-heading"
+                fontSize="18px"
+                fontWeight="700"
+                color={textColor}
+                mb="8px"
+              >
+                {t("common.priceList.availableProducts")}
+              </Text>
+              <Input
+                size="sm"
+                placeholder={t("common.priceList.searchProducts")}
+                aria-label={t("common.priceList.searchProducts")}
+                aria-controls="price-list-product-picker"
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+              />
+            </Box>
             <Box
               id="price-list-product-picker"
-              borderWidth="1px"
-              rounded="md"
-              p="8px"
-              mb="12px"
+              maxH="360px"
+              overflow="auto"
+              aria-busy={loadingProducts}
             >
-              <Flex justify="flex-end" mb="8px">
-                <Button size="xs" onClick={() => setPickerOpen(false)}>
-                  {t("common.close")}
-                </Button>
-              </Flex>
               {loadingProducts ? (
-                <Spinner size="sm" />
+                <Box p="12px">
+                  <Spinner size="sm" />
+                </Box>
               ) : isError || !products.length ? (
-                <Text role="status" fontSize="sm" py="8px">
+                <Text role="status" fontSize="sm" p="12px">
                   {t(
                     isError
                       ? "common.priceList.productSearchError"
-                      : "common.priceList.noMatchingProducts"
+                      : "common.priceList.noMatchingProducts",
                   )}
                 </Text>
               ) : (
-                <Box maxH="360px" overflow="auto">
-                  <Table
-                    size="sm"
-                    sx={{
-                      td: {
-                        height: "36px",
-                        paddingBlock: 0,
-                        whiteSpace: "nowrap",
-                      },
-                    }}
-                  >
-                    <Tbody>
-                      {products.map((product) => (
+                <Table size="sm">
+                  <Thead>
+                    <Tr>
+                      <Th>{t("common.priceList.productCode")}</Th>
+                      <Th>{t("common.priceList.productName")}</Th>
+                      <Th />
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {products.map((product) => {
+                      const isAdded = selectedProductIds.has(product.id);
+                      return (
                         <Tr key={product.id}>
                           <Td>{product.sku}</Td>
                           <Td>{product.name}</Td>
-                          <Td width="80px">
+                          <Td>
                             <Button
                               size="xs"
+                              isDisabled={isAdded || !canEdit}
+                              aria-label={t(
+                                isAdded
+                                  ? "common.priceList.productAlreadyAdded"
+                                  : "common.priceList.addProduct",
+                                {
+                                  product:
+                                    product.name || product.sku || product.id,
+                                },
+                              )}
                               onClick={() => addProduct(product)}
                             >
-                              {t("common.add")}
+                              {isAdded
+                                ? t("common.priceList.added")
+                                : t("common.add")}
                             </Button>
                           </Td>
                         </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
-                </Box>
+                      );
+                    })}
+                  </Tbody>
+                </Table>
               )}
             </Box>
-          ) : null}
+          </Box>
 
-          <Table size="sm" variant="simple">
-            <Thead>
-              <Tr>
-                <Th>{t("common.priceList.productCode")}</Th>
-                <Th>{t("common.priceList.productName")}</Th>
-                <Th>{t("common.priceList.price")}</Th>
-                <Th />
-              </Tr>
-            </Thead>
-            <Tbody>
-              {rows.map((row) => (
-                <Tr key={row.productId}>
-                  <Td>{row.productCode}</Td>
-                  <Td>{row.productName}</Td>
-                  <Td>
-                    <Input
-                      size="sm"
-                      width="120px"
-                      value={row.price}
-                      onChange={(e) =>
-                        setRows((current) =>
-                          current.map((item) =>
-                            item.productId === row.productId
-                              ? { ...item, price: e.target.value }
-                              : item,
-                          ),
-                        )
-                      }
-                    />
-                  </Td>
-                  <Td>
-                    <Button
-                      size="xs"
-                      colorScheme="red"
-                      variant="ghost"
-                      onClick={() =>
-                        setRows((current) =>
-                          current.filter(
-                            (item) => item.productId !== row.productId,
-                          ),
-                        )
-                      }
-                    >
-                      {t("common.delete")}
-                    </Button>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </Box>
+          <Box
+            as="section"
+            aria-labelledby="price-list-prices-heading"
+            borderWidth="1px"
+            rounded="md"
+          >
+            <Text
+              as="h2"
+              id="price-list-prices-heading"
+              fontSize="18px"
+              fontWeight="700"
+              color={textColor}
+              p="12px"
+            >
+              {t("common.priceList.prices")}
+            </Text>
+            {!canEdit ? (
+              <Box p="12px">
+                {priceListLoadFailed ? (
+                  <Text role="alert">{t("common.priceList.loadError")}</Text>
+                ) : (
+                  <Spinner size="sm" />
+                )}
+              </Box>
+            ) : (
+              <Box overflowX="auto">
+                <Table size="sm" variant="simple">
+                  <Thead>
+                    <Tr>
+                      <Th>{t("common.priceList.productCode")}</Th>
+                      <Th>{t("common.priceList.productName")}</Th>
+                      <Th>{t("common.priceList.price")}</Th>
+                      <Th />
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {!rows.length && (
+                      <Tr>
+                        <Td colSpan={4}>{t("common.priceList.emptyPrices")}</Td>
+                      </Tr>
+                    )}
+                    {rows.map((row) => (
+                      <Tr key={row.productId}>
+                        <Td>{row.productCode}</Td>
+                        <Td>{row.productName}</Td>
+                        <Td>
+                          <Input
+                            size="sm"
+                            id={`price-list-price-${row.productId}`}
+                            aria-label={t("common.priceList.priceForProduct", {
+                              product:
+                                row.productName ||
+                                row.productCode ||
+                                row.productId,
+                            })}
+                            inputMode="decimal"
+                            width="120px"
+                            value={row.price}
+                            onChange={(e) =>
+                              setRows((current) =>
+                                current.map((item) =>
+                                  item.productId === row.productId
+                                    ? { ...item, price: e.target.value }
+                                    : item,
+                                ),
+                              )
+                            }
+                          />
+                        </Td>
+                        <Td>
+                          <Button
+                            size="xs"
+                            colorScheme="red"
+                            variant="ghost"
+                            onClick={() =>
+                              setRows((current) =>
+                                current.filter(
+                                  (item) => item.productId !== row.productId,
+                                ),
+                              )
+                            }
+                          >
+                            {t("common.priceList.removeProduct")}
+                          </Button>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </Box>
+            )}
+          </Box>
+        </Grid>
 
         <Flex gap="12px">
-          <Button colorScheme="teal" onClick={onSubmit}>
+          <Button colorScheme="teal" onClick={onSubmit} isDisabled={!canEdit}>
             {t("common.save")}
           </Button>
-          {params.priceListId ? (
+          {priceListId ? (
             <Button
               colorScheme="red"
               onClick={() => setIsDeleteDialogOpened(true)}
@@ -324,10 +403,10 @@ const UpsertPriceList = () => {
         </Flex>
       </Flex>
 
-      {isDeleteDialogOpened ? (
+      {isDeleteDialogOpened && priceListId ? (
         <AlertDialog
           handleConfirm={async () => {
-            const res: any = await deletePriceList(params.priceListId);
+            const res: any = await deletePriceList(priceListId);
             setIsDeleteDialogOpened(false);
             if (res?.error) {
               setError(res.error?.data?.message || "Request failed");
