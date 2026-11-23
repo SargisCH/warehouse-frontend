@@ -252,21 +252,11 @@ export default function CompanyAssets() {
         isError ? (
           <Alert status="error">{t("common.companyAssets.cashError")}</Alert>
         ) : cash ? (
-          <Flex align="center" wrap="wrap" gap={3}>
-            <Text fontWeight="semibold">
-              {t("common.companyAssets.balance")}: {formatMoney(cash.balance)}{" "}
-              AMD
-            </Text>
-            {cash.opening === null ? (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setOpening(true)}
-              >
-                {t("common.companyAssets.actions.opening")}
-              </Button>
-            ) : null}
-          </Flex>
+          cash.opening === null ? (
+            <Button size="sm" variant="outline" onClick={() => setOpening(true)}>
+              {t("common.companyAssets.actions.opening")}
+            </Button>
+          ) : undefined
         ) : (
           <Spinner />
         )
