@@ -45,6 +45,25 @@ type CompanyCash = {
   trackingDate: string;
 };
 
+export type CompanyCashMovement = {
+  id: string;
+  kind: string;
+  documentDate: string;
+  amount: string;
+  description: string | null;
+  comment: string | null;
+  returnOf: string | null;
+  returned: boolean;
+};
+
+type CashEntryInput = {
+  id: string;
+  amount: string;
+  description: string;
+  comment: string;
+  returnOf?: string;
+};
+
 const assetsApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getCompanyAssets: builder.query<AssetRow[], void>({
@@ -58,6 +77,18 @@ const assetsApi = api.injectEndpoints({
     getCompanyCash: builder.query<CompanyCash, void>({
       query: () => ({ url: "company-assets/cash" }),
       providesTags: ["CompanyCash"],
+    }),
+    getCompanyCashHistory: builder.query<CompanyCashMovement[], void>({
+      query: () => ({ url: "company-assets/cash/history" }),
+      providesTags: ["CompanyCash"],
+    }),
+    addCompanyCashEntry: builder.mutation<unknown, CashEntryInput>({
+      query: (body) => ({
+        url: "company-assets/cash/entries",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["CompanyCash"],
     }),
     createCompanyAsset: builder.mutation<{ id: string }, NewAsset>({
       query: (body) => ({ url: "company-assets", method: "POST", body }),
@@ -91,6 +122,8 @@ export const {
   useGetCompanyAssetsQuery,
   useGetCompanyAssetQuery,
   useGetCompanyCashQuery,
+  useGetCompanyCashHistoryQuery,
+  useAddCompanyCashEntryMutation,
   useCreateCompanyAssetMutation,
   useAddCompanyAssetEntryMutation,
   useSetCompanyCashOpeningMutation,

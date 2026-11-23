@@ -488,6 +488,34 @@
     "saveError": "Could not save the transfer.",
     "deleteConfirmation": "The goods will be moved back to the source. Continue?"
   },
+  "companyCash": {
+    "date": "Date",
+    "kind": "Transaction",
+    "comment": "Comment",
+    "action": "Action",
+    "returned": "Returned",
+    "return": "Return cash",
+    "withdraw": "Withdraw cash",
+    "empty": "No cash movements yet.",
+    "historyError": "Could not load cash history.",
+    "missingText": "Enter a description and a comment.",
+    "insufficient": "The withdrawal exceeds the available cash balance.",
+    "returnConflict": "Cash has already been returned for this withdrawal.",
+    "withdrawalMissing": "The original withdrawal was not found.",
+    "saveError": "Could not save the cash movement.",
+    "kinds": {
+      "MANAGER_RECEIPT": "Manager handover",
+      "SALE": "Cash sale",
+      "PAYMENT": "Cash payment",
+      "PAYMENT_REFUND": "Cash refund",
+      "ASSET_PURCHASE": "Asset purchase",
+      "ASSET_REPAIR": "Asset repair",
+      "ASSET_SALE": "Asset sale",
+      "ASSET_REFUND": "Asset refund",
+      "WITHDRAWAL": "Cash withdrawal",
+      "RETURN": "Cash returned"
+    }
+  },
   "companyAssets": {
     "title": "Company Assets",
     "cash": "Company cash",
