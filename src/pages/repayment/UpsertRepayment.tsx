@@ -131,7 +131,7 @@ const UpsertRepayment = () => {
       })),
     });
     if (res?.error) {
-      setError(res.error?.data?.message || "Request failed");
+      setError(res.error?.data?.message || t("common.ui.requestFailed"));
       return;
     }
     history.push(links.repayments);
@@ -148,9 +148,9 @@ const UpsertRepayment = () => {
       isOpen={Boolean(error)}
       onClose={() => setError("")}
       handleConfirm={() => setError("")}
-      headerText="Warning"
+      headerText={t("common.ui.warning")}
       bodyText={error}
-      confirmText="OK"
+      confirmText={t("common.ui.ok")}
     />
   ) : null;
 
@@ -217,7 +217,7 @@ const UpsertRepayment = () => {
               const res: any = await deleteRepayment(existing.id);
               setConfirmDelete(false);
               if (res?.error) {
-                setError(res.error?.data?.message || "Request failed");
+                setError(res.error?.data?.message || t("common.ui.requestFailed"));
                 return;
               }
               history.push(links.repayments);

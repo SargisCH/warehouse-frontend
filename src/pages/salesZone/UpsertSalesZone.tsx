@@ -29,7 +29,7 @@ import Select from "react-select";
 import { links } from "routes";
 
 const ValidationSchema = z.object({
-  name: z.string().min(1, { message: "Name is required." }),
+  name: z.string().min(1, { message: "common.formValidation.nameRequired" }),
   managerId: z.string().optional(),
   delivererId: z.string().optional(),
   // «Փակվել է»
@@ -129,7 +129,7 @@ const UpsertSalesZone = () => {
       : await createSalesZone(data);
 
     if (res?.error) {
-      setError(res.error?.data?.message || "Request failed");
+      setError(res.error?.data?.message || t("common.ui.requestFailed"));
       return;
     }
     history.push(links.salesZones);
@@ -170,7 +170,9 @@ const UpsertSalesZone = () => {
                   type="text"
                   placeholder={t("common.salesZone.namePlaceholder")}
                 />
-                <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+                <FormErrorMessage>
+                  {errors.name?.message && t(errors.name?.message)}
+                </FormErrorMessage>
               </FormControl>
             )}
           />
@@ -200,7 +202,9 @@ const UpsertSalesZone = () => {
                   }}
                   options={managerOptions}
                 />
-                <FormErrorMessage>{errors.managerId?.message}</FormErrorMessage>
+                <FormErrorMessage>
+                  {errors.managerId?.message && t(errors.managerId?.message)}
+                </FormErrorMessage>
               </FormControl>
             )}
           />
@@ -229,7 +233,7 @@ const UpsertSalesZone = () => {
                   options={managerOptions}
                 />
                 <FormErrorMessage>
-                  {errors.delivererId?.message}
+                  {errors.delivererId?.message && t(errors.delivererId?.message)}
                 </FormErrorMessage>
               </FormControl>
             )}
@@ -261,7 +265,9 @@ const UpsertSalesZone = () => {
                 <Text fontSize="sm" color="gray.400" mt="4px">
                   {t("common.salesZone.accumulatorHint")}
                 </Text>
-                <FormErrorMessage>{errors.parentId?.message}</FormErrorMessage>
+                <FormErrorMessage>
+                  {errors.parentId?.message && t(errors.parentId?.message)}
+                </FormErrorMessage>
               </FormControl>
             )}
           />
@@ -306,7 +312,7 @@ const UpsertSalesZone = () => {
             const res: any = await deleteSalesZone(params.salesZoneId);
             setIsDeleteDialogOpened(false);
             if (res?.error) {
-              setError(res.error?.data?.message || "Request failed");
+              setError(res.error?.data?.message || t("common.ui.requestFailed"));
               return;
             }
             history.push(links.salesZones);
@@ -324,8 +330,8 @@ const UpsertSalesZone = () => {
           isOpen={Boolean(error)}
           onClose={() => setError("")}
           bodyText={error}
-          headerText={"Warning"}
-          confirmText="OK"
+          headerText={t("common.ui.warning")}
+          confirmText={t("common.ui.ok")}
         />
       ) : null}
     </Box>

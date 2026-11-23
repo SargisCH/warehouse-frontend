@@ -76,7 +76,7 @@ export default function SalesComparison() {
       explodeKits,
     });
     if (res?.error)
-      setError(res.error?.data?.message?.toString() || "Request failed");
+      setError(res.error?.data?.message?.toString() || t("common.ui.requestFailed"));
   };
 
   // One label column per dimension, then a value column per period × measure.
@@ -236,9 +236,9 @@ export default function SalesComparison() {
           isOpen={Boolean(error)}
           onClose={() => setError("")}
           handleConfirm={() => setError("")}
-          headerText="Warning"
+          headerText={t("common.ui.warning")}
           bodyText={error}
-          confirmText="OK"
+          confirmText={t("common.ui.ok")}
         />
       ) : null}
     </ReportCard>

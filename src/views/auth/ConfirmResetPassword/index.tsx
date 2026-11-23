@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import React, { useEffect } from "react";
 // Chakra imports
 import {
@@ -25,6 +26,7 @@ import { useDispatch } from "react-redux";
 import { setUserData } from "store/slices/userSlice";
 
 export default function ConfirmResetPassword() {
+  const { t } = useTranslation();
   // Chakra color mode
   const params = useParams<{ username: string }>();
   const dispatch = useDispatch();
@@ -46,7 +48,6 @@ export default function ConfirmResetPassword() {
       initialValues={{ code: null, newPassword: "" }}
       onSubmit={async (values, actions) => {
         actions.setSubmitting(false);
-        alert(JSON.stringify(values, null, 2));
         await confirmResetPassword({
           username: params.username,
           confirmationCode: values.code,
@@ -72,7 +73,7 @@ export default function ConfirmResetPassword() {
           >
             <Box me="auto">
               <Heading fontSize="36px" mb="10px">
-                Confirm Reset password
+                {t("common.auth.resetPassword")}
               </Heading>
             </Box>
             <Flex
@@ -98,7 +99,8 @@ export default function ConfirmResetPassword() {
                       fontWeight="500"
                       mb="8px"
                     >
-                      Verification code <Text>*</Text>
+                      {t("common.auth.verificationCode")}
+                      <Text>*</Text>
                     </FormLabel>
                     <Input
                       {...field}
@@ -106,7 +108,7 @@ export default function ConfirmResetPassword() {
                       fontSize="sm"
                       ms={{ base: "0px", md: "0px" }}
                       type="text"
-                      placeholder="code"
+                      placeholder={t("common.auth.verificationCode")}
                       fontWeight="500"
                       size="lg"
                     />
@@ -128,7 +130,8 @@ export default function ConfirmResetPassword() {
                       fontWeight="500"
                       mb="8px"
                     >
-                      New password <Text>*</Text>
+                      {t("common.auth.newPassword")}
+                      <Text>*</Text>
                     </FormLabel>
                     <Input
                       {...field}
@@ -136,7 +139,7 @@ export default function ConfirmResetPassword() {
                       fontSize="sm"
                       ms={{ base: "0px", md: "0px" }}
                       type="password"
-                      placeholder="new password"
+                      placeholder={t("common.auth.newPassword")}
                       fontWeight="500"
                       size="lg"
                     />
@@ -157,7 +160,7 @@ export default function ConfirmResetPassword() {
                   mt="24px"
                   isLoading={props.isSubmitting}
                 >
-                  save
+                  {t("common.auth.resetPassword")}
                 </Button>
               </FormControl>
             </Flex>

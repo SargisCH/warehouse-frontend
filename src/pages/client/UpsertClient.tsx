@@ -34,12 +34,12 @@ const PHONE_REGEX = /^[0-9\s+\-.()]+$/;
 const optionalPhone = z
   .string()
   .refine((value) => !value || PHONE_REGEX.test(value), {
-    message: "Not a valid phone number.",
+    message: "common.formValidation.invalidPhone",
   })
   .optional();
 
 const ValidationSchema = z.object({
-  name: z.string().min(1, { message: "Name is required." }),
+  name: z.string().min(1, { message: "common.formValidation.nameRequired" }),
   legalName: z.string().optional(),
   taxId: z.string().optional(),
   legalAddress: z.string().optional(),
@@ -49,7 +49,7 @@ const ValidationSchema = z.object({
   email: z
     .string()
     .refine((value) => !value || z.string().email().safeParse(value).success, {
-      message: "Not a valid email.",
+      message: "common.formValidation.invalidEmail",
     })
     .optional(),
   clientGroupId: z.string().optional(),
@@ -60,18 +60,20 @@ const ValidationSchema = z.object({
   paymentType: z.string().optional(),
   paymentTermDays: z
     .string()
-    .refine((v) => !v || /^\d+$/.test(v), { message: "Whole days only." })
+    .refine((v) => !v || /^\d+$/.test(v), {
+      message: "common.formValidation.wholeDays",
+    })
     .optional(),
   debtLimit: z
     .string()
     .refine((v) => !v || /^\d+(\.\d{1,2})?$/.test(v), {
-      message: "Not a valid amount.",
+      message: "common.formValidation.invalidAmount",
     })
     .optional(),
   overdueDebtLimit: z
     .string()
     .refine((v) => !v || /^\d+(\.\d{1,2})?$/.test(v), {
-      message: "Not a valid amount.",
+      message: "common.formValidation.invalidAmount",
     })
     .optional(),
 });
@@ -209,7 +211,7 @@ const UpsertClient = () => {
       : await createClient(data);
 
     if (res?.error) {
-      setError(res.error?.data?.message || "Request failed");
+      setError(res.error?.data?.message || t("common.ui.requestFailed"));
       return;
     }
     history.push(links.clients);
@@ -240,7 +242,9 @@ const UpsertClient = () => {
         <FormControl isInvalid={!!errors[fieldName]}>
           <FormLabel>{t(labelKey)}</FormLabel>
           <Input {...field} type={type} placeholder={t(labelKey)} />
-          <FormErrorMessage>{errors[fieldName]?.message}</FormErrorMessage>
+          <FormErrorMessage>
+            {errors[fieldName]?.message && t(errors[fieldName]?.message)}
+          </FormErrorMessage>
         </FormControl>
       )}
     />
@@ -278,7 +282,9 @@ const UpsertClient = () => {
             }}
             options={options}
           />
-          <FormErrorMessage>{errors[fieldName]?.message}</FormErrorMessage>
+          <FormErrorMessage>
+            {errors[fieldName]?.message && t(errors[fieldName]?.message)}
+          </FormErrorMessage>
         </FormControl>
       )}
     />
@@ -378,7 +384,7 @@ const UpsertClient = () => {
             const res: any = await deleteClient(params.clientId);
             setIsDeleteDialogOpened(false);
             if (res?.error) {
-              setError(res.error?.data?.message || "Request failed");
+              setError(res.error?.data?.message || t("common.ui.requestFailed"));
               return;
             }
             history.push(links.clients);
@@ -396,8 +402,8 @@ const UpsertClient = () => {
           isOpen={Boolean(error)}
           onClose={() => setError("")}
           bodyText={error}
-          headerText={"Warning"}
-          confirmText="OK"
+          headerText={t("common.ui.warning")}
+          confirmText={t("common.ui.ok")}
         />
       ) : null}
     </Box>

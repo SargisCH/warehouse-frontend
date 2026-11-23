@@ -23,6 +23,7 @@
   
 */
 
+import { useTranslation } from "react-i18next";
 import React, { useEffect } from "react";
 // Chakra imports
 import {
@@ -51,25 +52,26 @@ import { useHistory } from "react-router-dom";
 function validateEmail(value: string) {
   let error;
   if (!value) {
-    error = "Email is required";
+    error = "common.auth.emailRequired";
   }
   return error;
 }
 function validatePassword(value: string) {
   let error;
   if (!value) {
-    error = "Password is required";
+    error = "common.auth.passwordRequired";
   }
   return error;
 }
 function validateCompanyName(value: string) {
   let error;
   if (!value) {
-    error = "Comapny name is required";
+    error = "common.auth.companyNameRequired";
   }
   return error;
 }
 export default function SignUp() {
+  const { t } = useTranslation();
   // Chakra color mode
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = "gray.400";
@@ -96,7 +98,6 @@ export default function SignUp() {
         initialValues={{ email: "", companyName: "", password: "" }}
         onSubmit={(values, actions) => {
           setTimeout(() => {
-            alert(JSON.stringify(values, null, 2));
             actions.setSubmitting(true);
             signUp({ ...values });
           }, 1000);
@@ -119,7 +120,7 @@ export default function SignUp() {
             >
               <Box mx="auto" textAlign="center">
                 <Heading color={textColor} fontSize="36px" mb="10px">
-                  Sign Up
+                  {t("common.auth.signUp")}
                 </Heading>
                 <Text
                   mb="36px"
@@ -128,7 +129,7 @@ export default function SignUp() {
                   fontWeight="400"
                   fontSize="md"
                 >
-                  Enter your details to sign up!
+                  {t("common.auth.signUpHint")}
                 </Text>
               </Box>
               <Flex
@@ -154,7 +155,8 @@ export default function SignUp() {
                         color={textColor}
                         mb="8px"
                       >
-                        Email<Text color={brandStars}>*</Text>
+                        {t("common.auth.email")}
+                        <Text color={brandStars}>*</Text>
                       </FormLabel>
                       <Input
                         {...field}
@@ -162,11 +164,13 @@ export default function SignUp() {
                         fontSize="sm"
                         ms={{ base: "0px", md: "0px" }}
                         type="email"
-                        placeholder="mail@simmmple.com"
+                        placeholder="name@example.com"
                         fontWeight="500"
                         size="lg"
                       />
-                      <FormErrorMessage>{form.errors.email}</FormErrorMessage>
+                      <FormErrorMessage>
+                        {form.errors.email && t(form.errors.email)}
+                      </FormErrorMessage>
                     </FormControl>
                   )}
                 </Field>
@@ -185,7 +189,8 @@ export default function SignUp() {
                         color={textColor}
                         mb="8px"
                       >
-                        Company Name<Text color={brandStars}>*</Text>
+                        {t("common.auth.companyName")}
+                        <Text color={brandStars}>*</Text>
                       </FormLabel>
                       <Input
                         {...field}
@@ -193,12 +198,12 @@ export default function SignUp() {
                         fontSize="sm"
                         ms={{ base: "0px", md: "0px" }}
                         type="text"
-                        placeholder="Company Name"
+                        placeholder={t("common.auth.companyName")}
                         fontWeight="500"
                         size="lg"
                       />
                       <FormErrorMessage>
-                        {form.errors.companyName}
+                        {form.errors.companyName && t(form.errors.companyName)}
                       </FormErrorMessage>
                     </FormControl>
                   )}
@@ -216,14 +221,15 @@ export default function SignUp() {
                         color={textColor}
                         display="flex"
                       >
-                        Password<Text color={brandStars}>*</Text>
+                        {t("common.auth.password")}
+                        <Text color={brandStars}>*</Text>
                       </FormLabel>
                       <InputGroup size="md">
                         <Input
                           {...field}
                           isRequired={true}
                           fontSize="sm"
-                          placeholder="Min. 8 characters"
+                          placeholder={t("common.auth.passwordHint")}
                           size="lg"
                           type={show ? "text" : "password"}
                           name="password"
@@ -242,7 +248,7 @@ export default function SignUp() {
                         </InputRightElement>
                       </InputGroup>
                       <FormErrorMessage>
-                        {form.errors.password}
+                        {form.errors.password && t(form.errors.password)}
                       </FormErrorMessage>
                     </FormControl>
                   )}
@@ -258,7 +264,7 @@ export default function SignUp() {
                     mt="24px"
                     isLoading={props.isSubmitting}
                   >
-                    Sign Up
+                    {t("common.auth.signUp")}
                   </Button>
                 </FormControl>
               </Flex>

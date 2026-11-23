@@ -141,8 +141,8 @@ const UpsertSupplier = () => {
           isOpen={Boolean(error)}
           onClose={() => setError("")}
           bodyText={error}
-          headerText={"Warning"}
-          confirmText="OK"
+          headerText={t("common.ui.warning")}
+          confirmText={t("common.ui.ok")}
         />
       ) : null}
     </Box>

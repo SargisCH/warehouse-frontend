@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog as AlertDialogChakra,
   AlertDialogBody,
@@ -10,8 +11,8 @@ import {
 import { useRef } from "react";
 
 export default function AlertDialog({
-  confirmText = "Yes",
-  cancelText = "No",
+  confirmText,
+  cancelText,
   isOpen,
   onClose,
   bodyText,
@@ -28,6 +29,7 @@ export default function AlertDialog({
   handleConfirm: () => void;
   oneButton?: boolean;
 }) {
+  const { t } = useTranslation();
   const cancelRef = useRef();
 
   return (
@@ -48,12 +50,12 @@ export default function AlertDialog({
           <AlertDialogFooter>
             {!oneButton ? (
               <Button ref={cancelRef} onClick={onClose}>
-                {cancelText}
+                {cancelText ?? t("common.ui.no")}
               </Button>
             ) : null}
 
             <Button colorScheme="red" onClick={handleConfirm} ml={3}>
-              {confirmText}
+              {confirmText ?? t("common.yes")}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

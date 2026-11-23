@@ -28,7 +28,7 @@ import Select from "react-select";
 import { links } from "routes";
 
 const ValidationSchema = z.object({
-  name: z.string().min(1, { message: "Name is required." }),
+  name: z.string().min(1, { message: "common.formValidation.nameRequired" }),
   // «Կուտակիչ»: the group this one rolls up into.
   parentId: z.string().optional(),
   salesZoneId: z.string().optional(),
@@ -112,7 +112,7 @@ const UpsertClientGroup = () => {
       : await createClientGroup(data);
 
     if (res?.error) {
-      setError(res.error?.data?.message || "Request failed");
+      setError(res.error?.data?.message || t("common.ui.requestFailed"));
       return;
     }
     history.push(links.clientGroups);
@@ -145,7 +145,9 @@ const UpsertClientGroup = () => {
                   type="text"
                   placeholder={t("common.clientGroup.namePlaceholder")}
                 />
-                <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+                <FormErrorMessage>
+                  {errors.name?.message && t(errors.name?.message)}
+                </FormErrorMessage>
               </FormControl>
             )}
           />
@@ -173,7 +175,7 @@ const UpsertClientGroup = () => {
                   options={zoneOptions}
                 />
                 <FormErrorMessage>
-                  {errors.salesZoneId?.message}
+                  {errors.salesZoneId?.message && t(errors.salesZoneId?.message)}
                 </FormErrorMessage>
               </FormControl>
             )}
@@ -222,7 +224,7 @@ const UpsertClientGroup = () => {
             const res: any = await deleteClientGroup(params.clientGroupId);
             setIsDeleteDialogOpened(false);
             if (res?.error) {
-              setError(res.error?.data?.message || "Request failed");
+              setError(res.error?.data?.message || t("common.ui.requestFailed"));
               return;
             }
             history.push(links.clientGroups);
@@ -240,8 +242,8 @@ const UpsertClientGroup = () => {
           isOpen={Boolean(error)}
           onClose={() => setError("")}
           bodyText={error}
-          headerText={"Warning"}
-          confirmText="OK"
+          headerText={t("common.ui.warning")}
+          confirmText={t("common.ui.ok")}
         />
       ) : null}
     </Box>

@@ -187,7 +187,7 @@ const UpsertPriceList = () => {
       : await createPriceList(body);
 
     if (res?.error) {
-      setError(res.error?.data?.message || "Request failed");
+      setError(res.error?.data?.message || t("common.ui.requestFailed"));
       return;
     }
     history.push(links.priceLists);
@@ -438,7 +438,7 @@ const UpsertPriceList = () => {
             const res: any = await deletePriceList(priceListId);
             setIsDeleteDialogOpened(false);
             if (res?.error) {
-              setError(res.error?.data?.message || "Request failed");
+              setError(res.error?.data?.message || t("common.ui.requestFailed"));
               return;
             }
             history.push(links.priceLists);
@@ -457,8 +457,8 @@ const UpsertPriceList = () => {
           isOpen={Boolean(error)}
           onClose={() => setError("")}
           bodyText={error}
-          headerText={"Warning"}
-          confirmText="OK"
+          headerText={t("common.ui.warning")}
+          confirmText={t("common.ui.ok")}
         />
       ) : null}
     </Box>

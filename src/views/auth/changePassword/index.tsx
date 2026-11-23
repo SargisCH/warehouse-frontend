@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import React, { useEffect } from "react";
 // Chakra imports
 import {
@@ -20,6 +21,7 @@ import { useDispatch } from "react-redux";
 import { setUserData } from "store/slices/userSlice";
 
 export default function ChangePassword() {
+  const { t } = useTranslation();
   // Chakra color mode
   const params = useParams<{ email: string }>();
   const dispatch = useDispatch();
@@ -37,7 +39,6 @@ export default function ChangePassword() {
       initialValues={{ password: "" }}
       onSubmit={async (values, actions) => {
         actions.setSubmitting(false);
-        alert(JSON.stringify(values, null, 2));
         actions.setSubmitting(false);
         try {
           const ampData = await confirmSignIn({
@@ -71,10 +72,10 @@ export default function ChangePassword() {
           >
             <Box me="auto">
               <Heading fontSize="36px" mb="10px">
-                Change password
+                {t("common.auth.changePassword")}
               </Heading>
               <Text mb="36px" ms="4px" fontWeight="400" fontSize="md">
-                Enter new password
+                {t("common.auth.newPasswordHint")}
               </Text>
             </Box>
             <Flex
@@ -100,7 +101,8 @@ export default function ChangePassword() {
                       fontWeight="500"
                       mb="8px"
                     >
-                      Password<Text>*</Text>
+                      {t("common.auth.newPassword")}
+                      <Text>*</Text>
                     </FormLabel>
                     <Input
                       {...field}
@@ -108,7 +110,7 @@ export default function ChangePassword() {
                       fontSize="sm"
                       ms={{ base: "0px", md: "0px" }}
                       type="password"
-                      placeholder="New Password"
+                      placeholder={t("common.auth.newPassword")}
                       fontWeight="500"
                       size="lg"
                     />
@@ -127,7 +129,7 @@ export default function ChangePassword() {
                   mt="24px"
                   isLoading={props.isSubmitting}
                 >
-                  Change password
+                  {t("common.auth.changePassword")}
                 </Button>
               </FormControl>
             </Flex>

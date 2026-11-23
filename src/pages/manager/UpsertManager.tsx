@@ -27,8 +27,8 @@ import Select from "react-select";
 import { links } from "routes";
 
 const ValidationSchema = z.object({
-  name: z.string().min(1, { message: "Name is required." }),
-  email: z.string().email({ message: "A valid email is required." }),
+  name: z.string().min(1, { message: "common.formValidation.nameRequired" }),
+  email: z.string().email({ message: "common.formValidation.invalidEmail" }),
   // «Սարքի նույնականացման համար»: read off the handheld, so free-form.
   deviceId: z.string().optional(),
   salesZoneId: z.string().optional(),
@@ -125,7 +125,7 @@ const UpsertManager = ({ deliverer = false }: { deliverer?: boolean }) => {
       : await createManager(data);
 
     if (res?.error) {
-      setError(res.error?.data?.message || "Request failed");
+      setError(res.error?.data?.message || t("common.ui.requestFailed"));
       return;
     }
     history.push(deliverer ? links.deliverers : links.managers);
@@ -166,7 +166,9 @@ const UpsertManager = ({ deliverer = false }: { deliverer?: boolean }) => {
                   type="text"
                   placeholder={t(deliverer ? "common.deliverer.namePlaceholder" : "common.manager.namePlaceholder")}
                 />
-                <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+                <FormErrorMessage>
+                  {errors.name?.message && t(errors.name?.message)}
+                </FormErrorMessage>
               </FormControl>
             )}
           />
@@ -183,7 +185,9 @@ const UpsertManager = ({ deliverer = false }: { deliverer?: boolean }) => {
                   type="email"
                   placeholder={t(deliverer ? "common.deliverer.emailPlaceholder" : "common.manager.emailPlaceholder")}
                 />
-                <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
+                <FormErrorMessage>
+                  {errors.email?.message && t(errors.email?.message)}
+                </FormErrorMessage>
               </FormControl>
             )}
           />
@@ -198,7 +202,9 @@ const UpsertManager = ({ deliverer = false }: { deliverer?: boolean }) => {
                   type="text"
                   placeholder={t("common.manager.deviceIdPlaceholder")}
                 />
-                <FormErrorMessage>{errors.deviceId?.message}</FormErrorMessage>
+                <FormErrorMessage>
+                  {errors.deviceId?.message && t(errors.deviceId?.message)}
+                </FormErrorMessage>
               </FormControl>
             )}
           />
@@ -228,7 +234,7 @@ const UpsertManager = ({ deliverer = false }: { deliverer?: boolean }) => {
                   options={zoneOptions}
                 />
                 <FormErrorMessage>
-                  {errors.salesZoneId?.message}
+                  {errors.salesZoneId?.message && t(errors.salesZoneId?.message)}
                 </FormErrorMessage>
               </FormControl>
             )}
@@ -260,7 +266,7 @@ const UpsertManager = ({ deliverer = false }: { deliverer?: boolean }) => {
                   options={delivererOptions}
                 />
                 <FormErrorMessage>
-                  {errors.delivererId?.message}
+                  {errors.delivererId?.message && t(errors.delivererId?.message)}
                 </FormErrorMessage>
               </FormControl>
             )}
@@ -294,7 +300,7 @@ const UpsertManager = ({ deliverer = false }: { deliverer?: boolean }) => {
             const res: any = await deleteManager(params.managerId);
             setIsDeleteDialogOpened(false);
             if (res?.error) {
-              setError(res.error?.data?.message || "Request failed");
+              setError(res.error?.data?.message || t("common.ui.requestFailed"));
               return;
             }
             history.push(deliverer ? links.deliverers : links.managers);
@@ -312,8 +318,8 @@ const UpsertManager = ({ deliverer = false }: { deliverer?: boolean }) => {
           isOpen={Boolean(error)}
           onClose={() => setError("")}
           bodyText={error}
-          headerText={"Warning"}
-          confirmText="OK"
+          headerText={t("common.ui.warning")}
+          confirmText={t("common.ui.ok")}
         />
       ) : null}
     </Box>

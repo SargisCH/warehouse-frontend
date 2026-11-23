@@ -175,9 +175,9 @@ function UpsertStockTransfer({ kind }: { kind: TransferKind }) {
       isOpen={Boolean(error)}
       onClose={() => setError("")}
       handleConfirm={() => setError("")}
-      headerText="Warning"
+      headerText={t("common.ui.warning")}
       bodyText={error}
-      confirmText="OK"
+      confirmText={t("common.ui.ok")}
     />
   ) : null;
 
@@ -254,7 +254,7 @@ function UpsertStockTransfer({ kind }: { kind: TransferKind }) {
               const res: any = await deleteTransfer(existing.id);
               setConfirmDelete(false);
               if (res?.error) {
-                setError(res.error?.data?.message || "Request failed");
+                setError(res.error?.data?.message || t("common.ui.requestFailed"));
                 return;
               }
               history.push(setup.list);

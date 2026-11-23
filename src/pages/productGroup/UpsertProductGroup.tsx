@@ -109,7 +109,7 @@ const UpsertProductGroup = (props: { create: boolean }) => {
           }}
           isOpen={isDeleteDialogOpened}
           onClose={() => setIsDeleteDialogOpened(false)}
-          bodyText={`Are you sure? You can't undo this action afterwards.`}
+          bodyText={t("common.ui.confirmDelete")}
           headerText={t("common.productGroups.deleteHeaderText")}
         />
       ) : null}
