@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   Button,
   Drawer,
@@ -58,6 +59,7 @@ const debounceParams = (updateFn: () => void) => {
 };
 
 export default function FilterDrawer({ header, filters }: Props) {
+  const { t } = useTranslation();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const location = useLocation();
   const history = useHistory();
@@ -186,7 +188,7 @@ export default function FilterDrawer({ header, filters }: Props) {
 
           <DrawerFooter>
             <Button variant="outline" mr={3} onClick={onClose}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               variant="solid"
@@ -196,9 +198,9 @@ export default function FilterDrawer({ header, filters }: Props) {
                 history.replace({ pathname: location.pathname, search: "" });
               }}
             >
-              Reset
+              {t("common.ui.reset")}
             </Button>
-            <Button colorScheme="brand">Save</Button>
+            <Button colorScheme="brand">{t("common.save")}</Button>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>

@@ -21,6 +21,7 @@
 
 */
 
+import { useTranslation } from "react-i18next";
 import React, { useEffect } from "react";
 import { NavLink, useHistory } from "react-router-dom";
 // Chakra imports
@@ -60,6 +61,7 @@ import { setUserData } from "store/slices/userSlice";
 import FullPageLoader from "components/fullPageLoader/FullPageLoader";
 
 function SignIn() {
+  const { t } = useTranslation();
   // Chakra color mode
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = "gray.400";
@@ -94,7 +96,7 @@ function SignIn() {
       >
         <Box me="auto">
           <Heading color={textColor} fontSize="36px" mb="10px">
-            Sign In
+            {t("common.auth.signIn")}
           </Heading>
           <Text
             mb="36px"
@@ -103,7 +105,7 @@ function SignIn() {
             fontWeight="400"
             fontSize="md"
           >
-            Enter your email and password to sign in!
+            {t("common.auth.signInHint")}
           </Text>
         </Box>
         <Flex
@@ -158,11 +160,11 @@ function SignIn() {
                   const user = await getUser(email).unwrap();
                   if (!user?.email)
                     throw new Error(
-                      "Could not load your Warehouse account. Please try again."
+                      t("common.auth.accountLoadFailed")
                     );
                 } else {
                   actions.setStatus(
-                    "Additional sign-in verification is required. Contact your administrator to complete account setup."
+                    t("common.auth.additionalVerification")
                   );
                 }
               } catch (e: any) {
@@ -171,7 +173,7 @@ function SignIn() {
                   Array.isArray(message)
                     ? message.join(", ")
                     : message ||
-                        "Could not sign in. Check your connection and try again."
+                        t("common.auth.signInFailed")
                 );
               } finally {
                 actions.setSubmitting(false);
@@ -201,7 +203,8 @@ function SignIn() {
                           color={textColor}
                           mb="8px"
                         >
-                          Email<Text color={brandStars}>*</Text>
+                          {t("common.auth.email")}
+                          <Text color={brandStars}>*</Text>
                         </FormLabel>
                         <Input
                           {...field}
@@ -209,7 +212,7 @@ function SignIn() {
                           fontSize="sm"
                           ms={{ base: "0px", md: "0px" }}
                           type="email"
-                          placeholder="mail@simmmple.com"
+                          placeholder="name@example.com"
                           fontWeight="500"
                           size="lg"
                         />
@@ -232,14 +235,15 @@ function SignIn() {
                           color={textColor}
                           display="flex"
                         >
-                          Password<Text color={brandStars}>*</Text>
+                          {t("common.auth.password")}
+                          <Text color={brandStars}>*</Text>
                         </FormLabel>
                         <InputGroup size="md">
                           <Input
                             {...field}
                             isRequired={true}
                             fontSize="sm"
-                            placeholder="Min. 8 characters"
+                            placeholder={t("common.auth.passwordHint")}
                             size="lg"
                             type={show ? "text" : "password"}
                             name="password"
@@ -277,7 +281,7 @@ function SignIn() {
                         color={textColor}
                         fontSize="sm"
                       >
-                        Keep me logged in
+                        {t("common.auth.rememberMe")}
                       </FormLabel>
                     </FormControl>
                     <NavLink to="/auth/forgot-password">
@@ -287,7 +291,7 @@ function SignIn() {
                         w="124px"
                         fontWeight="500"
                       >
-                        Forgot password?
+                        {t("common.auth.forgotPasswordLink")}
                       </Text>
                     </NavLink>
                   </Flex>
@@ -301,7 +305,7 @@ function SignIn() {
                     mb="24px"
                     isLoading={props.isSubmitting}
                   >
-                    Sign In
+                    {t("common.auth.signIn")}
                   </Button>
                 </Form>
               )
@@ -315,7 +319,7 @@ function SignIn() {
             mt="0px"
           >
             <Text color={textColorDetails} fontWeight="400" fontSize="14px">
-              Not registered yet?
+              {t("common.auth.noAccount")}
               <NavLink to="/auth/sign-up">
                 <Text
                   color={textColorBrand}
@@ -323,7 +327,7 @@ function SignIn() {
                   ms="5px"
                   fontWeight="500"
                 >
-                  Create an Account
+                  {t("common.auth.createAccount")}
                 </Text>
               </NavLink>
             </Text>

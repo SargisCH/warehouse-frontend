@@ -38,19 +38,19 @@ const parseIngredientQuantity = (value: string) =>
   Number(value.trim().replace(",", "."));
 
 const ValidationSchema = z.object({
-  name: z.string().min(1, { message: "Name is required." }),
-  officialName: z.string().min(1, { message: "Official is required." }),
+  name: z.string().min(1, { message: "common.formValidation.nameRequired" }),
+  officialName: z.string().min(1, { message: "common.formValidation.officialNameRequired" }),
   // «Արտադրող»
   manufacturer: z.string().optional(),
-  unitId: z.string().min(1, { message: "Unit is required." }),
-  productGroupId: z.string().min(1, { message: "Product Grop is required." }),
+  unitId: z.string().min(1, { message: "common.formValidation.unitRequired" }),
+  productGroupId: z.string().min(1, { message: "common.formValidation.productGroupRequired" }),
   fractional: z.boolean().optional(),
   returnable: z.boolean().optional(),
   forSale: z.boolean().optional(),
   ingredients: z
     .array(
       z.object({
-        unitId: z.string().min(1, { message: "unit is required" }),
+        unitId: z.string().min(1, { message: "common.formValidation.unitRequired" }),
         quantity: z
           .string()
           .refine(
@@ -59,7 +59,7 @@ const ValidationSchema = z.object({
               parseIngredientQuantity(value) > 0,
             { message: "common.invalidKitQuantity" },
           ),
-        productId: z.string().min(1, { message: "Product is required" }),
+        productId: z.string().min(1, { message: "common.formValidation.productRequired" }),
       }),
     )
     .optional(),
@@ -252,7 +252,7 @@ const UpsertProduct = (props: { create: boolean }) => {
                 <Input {...field} placeholder={t("common.name")} />
                 {errors.name ? (
                   <FormErrorMessage>
-                    {errors.name?.message.toString()}
+                    {errors.name?.message && t(errors.name?.message)}
                   </FormErrorMessage>
                 ) : null}
               </FormControl>
@@ -270,7 +270,7 @@ const UpsertProduct = (props: { create: boolean }) => {
                 />
                 {errors.officialName ? (
                   <FormErrorMessage>
-                    {errors.officialName.message}
+                    {errors.officialName.message && t(errors.officialName.message)}
                   </FormErrorMessage>
                 ) : null}
               </FormControl>
@@ -304,7 +304,9 @@ const UpsertProduct = (props: { create: boolean }) => {
                   onCreate={() => createUnit("unitId")}
                   invalid={!!errors.unitId}
                 />
-                <FormErrorMessage>{errors.unitId?.message}</FormErrorMessage>
+                <FormErrorMessage>
+                  {errors.unitId?.message && t(errors.unitId?.message)}
+                </FormErrorMessage>
               </FormControl>
             )}
           />
@@ -334,7 +336,7 @@ const UpsertProduct = (props: { create: boolean }) => {
                   options={getOptions(productGroups as OptionData[])}
                 />
                 <FormErrorMessage>
-                  {errors.productGroupId?.message}
+                  {errors.productGroupId?.message && t(errors.productGroupId?.message)}
                 </FormErrorMessage>
               </FormControl>
             )}
@@ -448,7 +450,7 @@ const UpsertProduct = (props: { create: boolean }) => {
                           options={getOptions(products as OptionData[])}
                         />
                         <FormErrorMessage>
-                          {productIdError?.message}
+                          {productIdError?.message && t(productIdError?.message)}
                         </FormErrorMessage>
                       </FormControl>
                     )}
@@ -481,7 +483,7 @@ const UpsertProduct = (props: { create: boolean }) => {
                           invalid={!!unitIdError}
                         />
                         <FormErrorMessage>
-                          {unitIdError?.message.toString()}
+                          {unitIdError?.message && t(unitIdError?.message)}
                         </FormErrorMessage>
                       </FormControl>
                     )}
@@ -541,8 +543,8 @@ const UpsertProduct = (props: { create: boolean }) => {
           }}
           isOpen={isDeleteDialogOpened}
           onClose={() => setIsDeleteDialogOpened(false)}
-          bodyText={`Are you sure? You can't undo this action afterwards.`}
-          headerText={`Delete Product`}
+          bodyText={t("common.ui.confirmDelete")}
+          headerText={t("common.product.deleteProduct")}
         />
       ) : null}
     </Box>

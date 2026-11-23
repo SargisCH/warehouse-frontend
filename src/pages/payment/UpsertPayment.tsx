@@ -155,7 +155,7 @@ const UpsertPayment = ({ isRefund = false }: Props) => {
             })),
         });
     if (res?.error) {
-      setError(res.error?.data?.message || "Request failed");
+      setError(res.error?.data?.message || t("common.ui.requestFailed"));
       return;
     }
     history.push(listLink);
@@ -276,7 +276,7 @@ const UpsertPayment = ({ isRefund = false }: Props) => {
               const res: any = await deletePayment(existing.id);
               setConfirmDelete(false);
               if (res?.error) {
-                setError(res.error?.data?.message || "Request failed");
+                setError(res.error?.data?.message || t("common.ui.requestFailed"));
                 return;
               }
               history.push(listLink);
@@ -289,9 +289,9 @@ const UpsertPayment = ({ isRefund = false }: Props) => {
             isOpen={Boolean(error)}
             onClose={() => setError("")}
             handleConfirm={() => setError("")}
-            headerText="Warning"
+            headerText={t("common.ui.warning")}
             bodyText={error}
-            confirmText="OK"
+            confirmText={t("common.ui.ok")}
           />
         ) : null}
       </Box>
@@ -486,9 +486,9 @@ const UpsertPayment = ({ isRefund = false }: Props) => {
           isOpen={Boolean(error)}
           onClose={() => setError("")}
           handleConfirm={() => setError("")}
-          headerText="Warning"
+          headerText={t("common.ui.warning")}
           bodyText={error}
-          confirmText="OK"
+          confirmText={t("common.ui.ok")}
         />
       ) : null}
     </Box>

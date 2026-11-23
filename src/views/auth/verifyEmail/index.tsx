@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import React, { useEffect } from "react";
 // Chakra imports
 import {
@@ -16,6 +17,7 @@ import { Field, Form, Formik } from "formik"; // Custom components
 import { useVerifyEmailMutation } from "api/auth";
 import { useHistory, useParams } from "react-router-dom";
 export default function VerifyEmail() {
+  const { t } = useTranslation();
   const history = useHistory();
   // Chakra color mode
   const [verifyEmailRequest, { data = {} }] = useVerifyEmailMutation();
@@ -54,10 +56,10 @@ export default function VerifyEmail() {
           >
             <Box me="auto">
               <Heading fontSize="36px" mb="10px">
-                Sign Up
+                {t("common.auth.verifyEmail")}
               </Heading>
               <Text mb="36px" ms="4px" fontWeight="400" fontSize="md">
-                Enter your details to sign up!
+                {t("common.auth.verifyEmailHint")}
               </Text>
             </Box>
             <Flex
@@ -83,7 +85,8 @@ export default function VerifyEmail() {
                       fontWeight="500"
                       mb="8px"
                     >
-                      Code<Text>*</Text>
+                      {t("common.auth.verificationCode")}
+                      <Text>*</Text>
                     </FormLabel>
                     <Input
                       {...field}
@@ -91,7 +94,7 @@ export default function VerifyEmail() {
                       fontSize="sm"
                       ms={{ base: "0px", md: "0px" }}
                       type="text"
-                      placeholder="Code"
+                      placeholder={t("common.auth.verificationCode")}
                       fontWeight="500"
                       size="lg"
                     />
@@ -110,7 +113,7 @@ export default function VerifyEmail() {
                   mt="24px"
                   isLoading={props.isSubmitting}
                 >
-                  Sign Up
+                  {t("common.auth.verifyEmail")}
                 </Button>
               </FormControl>
             </Flex>

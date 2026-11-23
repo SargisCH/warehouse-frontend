@@ -27,11 +27,11 @@ import Select from "react-select";
 import * as z from "zod";
 
 const ValidationSchema = z.object({
-  warehouseId: z.string().min(1, { message: "Warehouse is required" }),
+  warehouseId: z.string().min(1, { message: "common.formValidation.warehouseRequired" }),
   products: z.array(
     z.object({
-      productId: z.number().min(1, { message: "Product is required" }),
-      quantity: z.number().min(1, { message: "Quantity is required" }),
+      productId: z.number().min(1, { message: "common.formValidation.productRequired" }),
+      quantity: z.number().min(1, { message: "common.formValidation.quantityRequired" }),
     }),
   ),
 });
@@ -138,7 +138,7 @@ export default function MoveToWarehouseModal<
                     options={warehouseOptions}
                   />
                   <FormErrorMessage>
-                    {errors.warehouseId?.message.toString()}
+                    {errors.warehouseId?.message && t(errors.warehouseId?.message)}
                   </FormErrorMessage>
                 </FormControl>
               )}
@@ -166,7 +166,7 @@ export default function MoveToWarehouseModal<
                             disabled={true}
                           />
                           <FormErrorMessage>
-                            {productIdError?.message.toString()}
+                            {productIdError?.message && t(productIdError?.message)}
                           </FormErrorMessage>
                         </FormControl>
                       )}
@@ -179,7 +179,7 @@ export default function MoveToWarehouseModal<
                           <FormLabel>{t("common.amount")}</FormLabel>
                           <NumberInput value={field.value}>
                             <NumberInputField
-                              placeholder={"quantity"}
+                              placeholder={t("common.sale.quantity")}
                               onChange={(e) => {
                                 field.onChange(Number(e.target.value));
                               }}
@@ -194,7 +194,7 @@ export default function MoveToWarehouseModal<
             </Flex>
             <ModalFooter>
               <Button mr={3} variant="ghost" onClick={onClose}>
-                Close
+                {t("common.close")}
               </Button>
               <Button
                 colorScheme="brand"

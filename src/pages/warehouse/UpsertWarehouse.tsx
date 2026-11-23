@@ -24,7 +24,7 @@ import { links } from "routes";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const ValidationSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
+  name: z.string().min(1, { message: "common.formValidation.nameRequired" }),
 });
 
 type WarehouseType = z.infer<typeof ValidationSchema>;
@@ -102,7 +102,9 @@ const UpsertWarehouse = (props: { create: boolean }) => {
                 value={field.value}
                 onChange={(e) => field.onChange(e.target.value)}
               />
-              <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+              <FormErrorMessage>
+                {errors.name?.message && t(errors.name?.message)}
+              </FormErrorMessage>
             </FormControl>
           )}
         />
@@ -129,7 +131,7 @@ const UpsertWarehouse = (props: { create: boolean }) => {
           }}
           isOpen={isDeleteDialogOpened}
           onClose={() => setIsDeleteDialogOpened(false)}
-          bodyText={`Are you sure? You can't undo this action afterwards.`}
+          bodyText={t("common.ui.confirmDelete")}
           headerText={t("common.warehouses.deleteHeaderText")}
         />
       ) : null}

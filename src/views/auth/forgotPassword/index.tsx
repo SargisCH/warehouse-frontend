@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import React, { useEffect } from "react";
 // Chakra imports
 import {
@@ -24,6 +25,7 @@ import { useDispatch } from "react-redux";
 import { setUserData } from "store/slices/userSlice";
 
 export default function ForgotPassword() {
+  const { t } = useTranslation();
   // Chakra color mode
   const params = useParams<{ email: string }>();
   const dispatch = useDispatch();
@@ -36,7 +38,7 @@ export default function ForgotPassword() {
     switch (nextStep.resetPasswordStep) {
       case "CONFIRM_RESET_PASSWORD_WITH_CODE":
         const codeDeliveryDetails = nextStep.codeDeliveryDetails;
-        alert("Verification code sent to the email");
+        alert(t("common.auth.codeSent"));
         history.push(`/auth/reset-password/${username}`);
         console.log(
           `Confirmation code was sent to ${codeDeliveryDetails.deliveryMedium}`,
@@ -53,7 +55,6 @@ export default function ForgotPassword() {
       initialValues={{ username: "" }}
       onSubmit={async (values, actions) => {
         actions.setSubmitting(false);
-        alert(JSON.stringify(values, null, 2));
         const data = await resetPassword({ username: values.username });
         handleResetPasswordNextSteps(data, values.username);
         actions.setSubmitting(false);
@@ -76,7 +77,7 @@ export default function ForgotPassword() {
           >
             <Box me="auto">
               <Heading fontSize="36px" mb="10px">
-                Forgot password
+                {t("common.auth.resetPassword")}
               </Heading>
             </Box>
             <Flex
@@ -102,7 +103,8 @@ export default function ForgotPassword() {
                       fontWeight="500"
                       mb="8px"
                     >
-                      username or email<Text>*</Text>
+                      {t("common.auth.usernameOrEmail")}
+                      <Text>*</Text>
                     </FormLabel>
                     <Input
                       {...field}
@@ -110,7 +112,7 @@ export default function ForgotPassword() {
                       fontSize="sm"
                       ms={{ base: "0px", md: "0px" }}
                       type="useranme"
-                      placeholder="username"
+                      placeholder={t("common.auth.usernameOrEmail")}
                       fontWeight="500"
                       size="lg"
                     />
@@ -129,7 +131,7 @@ export default function ForgotPassword() {
                   mt="24px"
                   isLoading={props.isSubmitting}
                 >
-                  save
+                  {t("common.auth.sendCode")}
                 </Button>
               </FormControl>
             </Flex>

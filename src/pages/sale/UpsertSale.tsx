@@ -362,7 +362,7 @@ const UpsertSale = () => {
 
     const res: any = await createSale(body);
     if (res?.error) {
-      setError(res.error?.data?.message || "Request failed");
+      setError(res.error?.data?.message || t("common.ui.requestFailed"));
       return;
     }
 
@@ -783,7 +783,7 @@ const UpsertSale = () => {
           onClose={() => setSavedNotice(null)}
           bodyText={savedNotice}
           headerText={t("common.sale.saved")}
-          confirmText="OK"
+          confirmText={t("common.ui.ok")}
         />
       ) : null}
 
@@ -793,7 +793,7 @@ const UpsertSale = () => {
             const res: any = await deleteSale(saleId);
             setIsDeleteDialogOpened(false);
             if (res?.error) {
-              setError(res.error?.data?.message || "Request failed");
+              setError(res.error?.data?.message || t("common.ui.requestFailed"));
               return;
             }
             history.push(isReturn ? links.saleReturns : links.sales);
@@ -812,8 +812,8 @@ const UpsertSale = () => {
           isOpen={Boolean(error)}
           onClose={() => setError("")}
           bodyText={error}
-          headerText={"Warning"}
-          confirmText="OK"
+          headerText={t("common.ui.warning")}
+          confirmText={t("common.ui.ok")}
         />
       ) : null}
     </Box>
