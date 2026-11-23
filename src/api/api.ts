@@ -32,6 +32,15 @@ const baseQueryAuthorized: BaseQueryFn<
 // initialize an empty api service that we'll inject endpoints into later as needed
 export const api = createApi({
   baseQuery: baseQueryAuthorized,
-  tagTypes: ["ManagerCash", "CompanyCash", "CompanyAssets"],
+  tagTypes: [
+    "ManagerCash",
+    "CompanyCash",
+    "CompanyAssets",
+    "ClientBalance",
+    "Repayments",
+    "StockTransfers",
+    "ManagerStock",
+    "WarehouseStock",
+  ],
   endpoints: () => ({}),
 });

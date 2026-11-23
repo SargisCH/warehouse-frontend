@@ -32,7 +32,7 @@ const paymentApi = api.injectEndpoints({
     }),
     // «Վճարում». Without allocations the oldest debts are settled first.
     createPayment: builder.mutation({
-      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash"],
+      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash", "ClientBalance"],
       query: (body: {
         documentDate?: string;
         managerId?: number | null;
@@ -46,7 +46,7 @@ const paymentApi = api.injectEndpoints({
     }),
     // «Վճարում գնորդին»
     createRefund: builder.mutation({
-      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash"],
+      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash", "ClientBalance"],
       query: (body: {
         documentDate?: string;
         managerId?: number | null;
@@ -57,7 +57,7 @@ const paymentApi = api.injectEndpoints({
       }) => ({ url: "payment/refund", method: "POST", body }),
     }),
     deletePayment: builder.mutation({
-      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash"],
+      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash", "ClientBalance"],
       query: (id: number | string) => ({
         url: `payment/${id}`,
         method: "DELETE",
@@ -68,6 +68,7 @@ const paymentApi = api.injectEndpoints({
       ClientOpenItems,
       { clientId: string | number }
     >({
+      providesTags: ["ClientBalance"],
       query: (arg) => ({
         url: `payment/client/${arg.clientId}/open`,
         method: "GET",
@@ -77,6 +78,7 @@ const paymentApi = api.injectEndpoints({
       MoneyListResponse<Repayment>,
       MoneyFilters | void
     >({
+      providesTags: ["Repayments"],
       query: (filters: MoneyFilters = {}) => ({
         url: `repayment?${toQueryString(filters)}`,
         method: "GET",
@@ -86,9 +88,12 @@ const paymentApi = api.injectEndpoints({
       Repayment,
       { repaymentId: string | number }
     >({
+      providesTags: ["Repayments"],
       query: (arg) => ({ url: `repayment/${arg.repaymentId}`, method: "GET" }),
     }),
     createRepayment: builder.mutation({
+      invalidatesTags: (_result, error) =>
+        error ? [] : ["ClientBalance", "Repayments"],
       query: (body: {
         documentDate?: string;
         clientId: number;
@@ -99,6 +104,8 @@ const paymentApi = api.injectEndpoints({
       }) => ({ url: "repayment", method: "POST", body }),
     }),
     deleteRepayment: builder.mutation({
+      invalidatesTags: (_result, error) =>
+        error ? [] : ["ClientBalance", "Repayments"],
       query: (id: number | string) => ({
         url: `repayment/${id}`,
         method: "DELETE",

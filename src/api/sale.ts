@@ -55,19 +55,21 @@ const toQueryString = (filters: SaleFilters = {}) => {
 const saleApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getSales: builder.query<SaleListResponse, SaleFilters | void>({
+      providesTags: ["ClientBalance"],
       query: (filters: SaleFilters = {}) => ({
         url: `sale?${toQueryString(filters)}`,
         method: "GET",
       }),
     }),
     getSaleDetails: builder.query<Sale, { saleId: string | number }>({
+      providesTags: ["ClientBalance"],
       query: (arg: { saleId: string | number }) => ({
         url: `sale/${arg.saleId}`,
         method: "GET",
       }),
     }),
     createSale: builder.mutation({
-      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash"],
+      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash", "ClientBalance"],
       query: (newSale: Partial<Sale> & { items: unknown[]; cashCollectedByManager?: boolean }) => ({
         url: "sale",
         method: "POST",
@@ -75,7 +77,7 @@ const saleApi = api.injectEndpoints({
       }),
     }),
     deleteSale: builder.mutation({
-      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash"],
+      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash", "ClientBalance"],
       query: (id) => ({
         url: `sale/${id}`,
         method: "DELETE",
@@ -95,7 +97,7 @@ const saleApi = api.injectEndpoints({
     }),
     // «Կատարել վճարում» - omit the amount to settle the whole remainder.
     paySale: builder.mutation({
-      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash"],
+      invalidatesTags: (_result, error) => error ? [] : ["ManagerCash", "CompanyCash", "ClientBalance"],
       query: (arg: {
         saleId: string | number;
         amount?: string;
@@ -115,6 +117,7 @@ const saleApi = api.injectEndpoints({
     }),
     // «Կատարել մարում» - settles debt on the account, never adds to it.
     settleClient: builder.mutation({
+      invalidatesTags: (_result, error) => error ? [] : ["ClientBalance"],
       query: (arg: { clientId: number; amount: string; note?: string }) => ({
         url: "sale/settle",
         method: "POST",
@@ -125,6 +128,7 @@ const saleApi = api.injectEndpoints({
       ClientSnapshot,
       { clientId: string | number }
     >({
+      providesTags: ["ClientBalance"],
       query: (arg: { clientId: string | number }) => ({
         url: `sale/client/${arg.clientId}/snapshot`,
         method: "GET",
@@ -134,6 +138,7 @@ const saleApi = api.injectEndpoints({
       BalanceEntry[],
       { clientId: string | number }
     >({
+      providesTags: ["ClientBalance"],
       query: (arg: { clientId: string | number }) => ({
         url: `sale/client/${arg.clientId}/balance`,
         method: "GET",

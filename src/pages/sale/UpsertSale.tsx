@@ -71,9 +71,15 @@ const money = (value?: string | number | null) =>
         maximumFractionDigits: 2,
       });
 
+const normalizeDecimal = (value: string) => value.trim().replace(",", ".");
+
 // Mirrors the server: quantity carries three decimals, money two.
 const lineAmount = (line: Line) =>
-  Math.round(Number(line.quantity || 0) * Number(line.price || 0) * 100) / 100;
+  Math.round(
+    Number(normalizeDecimal(line.quantity)) *
+      Number(normalizeDecimal(line.price)) *
+      100,
+  ) / 100;
 
 const UpsertSale = () => {
   const { t } = useTranslation();
@@ -274,8 +280,11 @@ const UpsertSale = () => {
           (value ?? "").toLowerCase().includes(searchTerm),
         ),
       );
-  const saleLines = tableLines.filter((line) => Number(line.quantity) > 0);
+  const saleLines = tableLines.filter(
+    (line) => Number(normalizeDecimal(line.quantity)) > 0,
+  );
   const total = saleLines.reduce((sum, line) => sum + lineAmount(line), 0);
+  const promptPaidAmount = Number(normalizeDecimal(paidPrompt?.amount ?? ""));
   const productMessage = !activePriceListId && !lines.length
     ? t("common.sale.pickPriceListFirst")
     : productError
@@ -305,9 +314,10 @@ const UpsertSale = () => {
    */
   /** Save first asks what was paid; a return has nothing to ask. */
   const askPaid = (keepHeader: boolean) => {
-    if (tableLines.some(({ quantity }) =>
-      quantity.trim() !== "" && !/^\d+(\.\d{1,3})?$/.test(quantity.trim()),
-    )) {
+    if (tableLines.some(({ quantity }) => {
+      const normalized = normalizeDecimal(quantity);
+      return normalized !== "" && !/^\d+(\.\d{1,3})?$/.test(normalized);
+    })) {
       setError(t("common.sale.invalidProductQuantity"));
       return;
     }
@@ -342,12 +352,12 @@ const UpsertSale = () => {
       isReturn,
       items: saleLines.map((line) => ({
         productId: line.productId,
-        quantity: line.quantity.trim(),
-        price: String(line.price),
+        quantity: normalizeDecimal(line.quantity),
+        price: normalizeDecimal(line.price),
       })),
     };
     if (paidAmount !== undefined && paidAmount !== "") {
-      body.paidAmount = String(paidAmount);
+      body.paidAmount = paidAmount;
     }
 
     const res: any = await createSale(body);
@@ -724,6 +734,7 @@ const UpsertSale = () => {
               </Text>
               <Input
                 autoFocus
+                inputMode="decimal"
                 value={paidPrompt.amount}
                 onChange={(e) =>
                   setPaidPrompt({ ...paidPrompt, amount: e.target.value })
@@ -731,9 +742,9 @@ const UpsertSale = () => {
               />
               <Text fontSize="sm" color="gray.500" mt="8px">
                 {t("common.sale.outstanding")}:{" "}
-                {money(total - Number(paidPrompt.amount || 0))}
+                {money(total - promptPaidAmount)}
               </Text>
-              {paymentType !== "TRANSFER" && Number(paidPrompt.amount) > 0 ? (
+              {paymentType !== "TRANSFER" && promptPaidAmount > 0 ? (
                 <Checkbox
                   mt={3}
                   isChecked={paidPrompt.collected}
@@ -754,7 +765,7 @@ const UpsertSale = () => {
                 onClick={() => {
                   const { keepHeader, amount, collected } = paidPrompt;
                   setPaidPrompt(null);
-                  submit(keepHeader, amount.trim() || "0", collected);
+                  submit(keepHeader, normalizeDecimal(amount) || "0", collected);
                 }}
               >
                 {t("common.save")}
