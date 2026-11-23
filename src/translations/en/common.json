@@ -234,6 +234,7 @@
     "deleteHeaderText": "Delete Product Group",
     "addProductGroup": "Add Product Group"
   },
+  "invalidKitQuantity": "Enter a positive quantity with up to three decimal places.",
   "set": "Set",
   "searchTerm": "Search",
   "clientGroup": {

@@ -234,6 +234,7 @@
     "deleteHeaderText": "Ջնջել ապրանքի խումբը",
     "addProductGroup": "Ավելացնեն ապրանքի խումբ"
   },
+  "invalidKitQuantity": "Մուտքագրեք դրական քանակ՝ առավելագույնը երեք տասնորդական նիշով։",
   "set": "Կոմպլեկտ",
   "searchTerm": "Որոնում",
   "clientGroup": {

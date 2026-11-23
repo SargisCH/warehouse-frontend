@@ -5,8 +5,6 @@ import {
   FormLabel,
   Input,
   Spinner,
-  NumberInput,
-  NumberInputField,
   useBreakpointValue,
   Text,
   FormErrorMessage,
@@ -36,6 +34,9 @@ import { UnitSelect } from "components/documents/UnitSelect";
 import { useGetProductGroupQuery } from "api/productGroup";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 
+const parseIngredientQuantity = (value: string) =>
+  Number(value.trim().replace(",", "."));
+
 const ValidationSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
   officialName: z.string().min(1, { message: "Official is required." }),
@@ -50,7 +51,14 @@ const ValidationSchema = z.object({
     .array(
       z.object({
         unitId: z.string().min(1, { message: "unit is required" }),
-        quantity: z.string().min(1, { message: "quantitiy is required" }),
+        quantity: z
+          .string()
+          .refine(
+            (value) =>
+              /^(?:\d{1,10}(?:[.,]\d{0,3})?|[.,]\d{1,3})$/.test(value.trim()) &&
+              parseIngredientQuantity(value) > 0,
+            { message: "common.invalidKitQuantity" },
+          ),
         productId: z.string().min(1, { message: "Product is required" }),
       }),
     )
@@ -202,7 +210,7 @@ const UpsertProduct = (props: { create: boolean }) => {
         ? []
         : values.ingredients.map((ing) => ({
             ...ing,
-            quantity: Number(ing.quantity),
+            quantity: parseIngredientQuantity(ing.quantity),
             unitId: Number(ing.unitId),
             productId: Number(ing.productId),
           })),
@@ -451,17 +459,9 @@ const UpsertProduct = (props: { create: boolean }) => {
                     render={({ field }) => (
                       <FormControl isInvalid={!!quantityError}>
                         <FormLabel>{t("common.amount")}</FormLabel>
-                        <NumberInput value={field.value}>
-                          <NumberInputField
-                            placeholder={"amount"}
-                            onChange={(e) => {
-                              field.onChange(e.target.value);
-                            }}
-                          />
-                        </NumberInput>
-
+                        <Input {...field} inputMode="decimal" />
                         <FormErrorMessage>
-                          {quantityError?.message}
+                          {quantityError?.message && t(quantityError.message)}
                         </FormErrorMessage>
                       </FormControl>
                     )}
