@@ -22,6 +22,7 @@ import {
   Thead,
   Tr,
   useColorModeValue,
+  useToast,
 } from "@chakra-ui/react";
 import { useEffect, useMemo, useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
@@ -77,6 +78,7 @@ const lineAmount = (line: Line) =>
 const UpsertSale = () => {
   const { t } = useTranslation();
   const history = useHistory();
+  const toast = useToast();
   const params = useParams() as any;
   const textColor = useColorModeValue("secondaryGray.900", "white");
 
@@ -87,11 +89,7 @@ const UpsertSale = () => {
 
   const [error, setError] = useState("");
   const [isDeleteDialogOpened, setIsDeleteDialogOpened] = useState(false);
-  const [savedNotice, setSavedNotice] = useState<{
-    code: string;
-    total: string;
-    paid: string;
-  } | null>(null);
+  const [savedNotice, setSavedNotice] = useState<string | null>(null);
 
   const [managerId, setManagerId] = useState("");
   // «Առաքիչ»: another manager; empty means the agent delivers himself.
@@ -358,26 +356,29 @@ const UpsertSale = () => {
       return;
     }
 
-    // «Սեյվ տալուց բերել պատուհան որ վճարվածա արդեն».
-    setSavedNotice({
-      code: res.data.code,
-      total: res.data.totalAmount,
-      paid: res.data.paidAmount,
+    const { code, totalAmount, paidAmount: paid } = res.data;
+    const notice = t("common.sale.savedNotice", {
+      code,
+      total: money(totalAmount),
+      paid: money(paid),
+      outstanding: money(Number(totalAmount) - Number(paid)),
     });
-
-    if (keepHeader) {
-      setClientId("");
-      setSnapshot(null);
-      setLines([]);
-      setNote("");
-    } else {
-      setManagerId("");
-      setClientId("");
-      setSnapshot(null);
-      setLines([]);
-      setNote("");
-      setPriceListId("");
+    if (!keepHeader) {
+      toast({
+        title: t("common.sale.saved"),
+        description: notice,
+        status: "success",
+        isClosable: true,
+      });
+      history.replace(isReturn ? links.saleReturns : links.sales);
+      return;
     }
+
+    setSavedNotice(notice);
+    setClientId("");
+    setSnapshot(null);
+    setLines([]);
+    setNote("");
     setProductSearch("");
     setPaymentTypeTouched(false);
   };
@@ -769,14 +770,7 @@ const UpsertSale = () => {
           oneButton
           isOpen={Boolean(savedNotice)}
           onClose={() => setSavedNotice(null)}
-          bodyText={t("common.sale.savedNotice", {
-            code: savedNotice.code,
-            total: money(savedNotice.total),
-            paid: money(savedNotice.paid),
-            outstanding: money(
-              Number(savedNotice.total) - Number(savedNotice.paid),
-            ),
-          })}
+          bodyText={savedNotice}
           headerText={t("common.sale.saved")}
           confirmText="OK"
         />

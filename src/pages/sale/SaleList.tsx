@@ -72,7 +72,10 @@ function SaleList({ isReturn = false }: Props) {
   const { data: salesZones = [] } = useGetSalesZonesQuery();
   const { data: deliverers = [] } = useGetDeliverersQuery();
 
-  const { data, refetch } = useGetSalesQuery({ ...filters, isReturn });
+  const { data, refetch } = useGetSalesQuery(
+    { ...filters, isReturn },
+    { refetchOnMountOrArgChange: true },
+  );
   const rows = data?.rows ?? [];
   const totals = data?.totals;
 
