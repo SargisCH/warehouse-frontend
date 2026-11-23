@@ -23,12 +23,14 @@ export type CreateStockTransferInput = {
   priceListId?: number;
   note?: string;
   allowNegativeStock?: boolean;
+  requireAvailableStock?: boolean;
   items: Array<{ productId: number; quantity: string; price?: string }>;
 };
 
 const stockTransferApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getStockTransfers: builder.query<StockTransfer[], StockTransferFilters>({
+      providesTags: ["StockTransfers"],
       query: (filters) => ({
         url: `stock-transfer?${toQueryString(filters)}`,
         method: "GET",
@@ -44,6 +46,8 @@ const stockTransferApi = api.injectEndpoints({
       }),
     }),
     createStockTransfer: builder.mutation({
+      invalidatesTags: (_result, error) =>
+        error ? [] : ["StockTransfers", "ManagerStock", "WarehouseStock"],
       query: (body: CreateStockTransferInput) => ({
         url: "stock-transfer",
         method: "POST",
@@ -51,6 +55,8 @@ const stockTransferApi = api.injectEndpoints({
       }),
     }),
     deleteStockTransfer: builder.mutation({
+      invalidatesTags: (_result, error) =>
+        error ? [] : ["StockTransfers", "ManagerStock", "WarehouseStock"],
       query: (id: number | string) => ({
         url: `stock-transfer/${id}`,
         method: "DELETE",

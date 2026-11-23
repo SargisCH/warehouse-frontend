@@ -14,6 +14,17 @@ type ManagerBalanceRow = {
   balance: string;
 };
 
+export type ManagerStockReportRow = {
+  managerId: number;
+  managerCode: string;
+  managerName: string;
+  productId: number;
+  productCode: string | null;
+  productName: string | null;
+  unitName: string | null;
+  quantity: string;
+};
+
 const reportApi = api.injectEndpoints({
   endpoints: (builder) => ({
     // «Վաճառքների վերլուծություն»
@@ -57,6 +68,7 @@ const reportApi = api.injectEndpoints({
       },
       { clientId: string; dateFrom: string; dateTo: string }
     >({
+      providesTags: ["ClientBalance"],
       query: (filters) => ({
         url: `report/client-statement?${toQueryString(filters)}`,
         method: "GET",
@@ -72,6 +84,7 @@ const reportApi = api.injectEndpoints({
         salesZoneId?: string;
       }
     >({
+      providesTags: ["ClientBalance"],
       query: (filters) => ({
         url: `report/client-balances?${toQueryString(filters)}`,
         method: "GET",
@@ -90,9 +103,10 @@ const reportApi = api.injectEndpoints({
     }),
     // «Ըստ մենեջերի ապրանքի մնացորդ»
     getManagerStockReport: builder.query<
-      ReportResponse,
+      ReportResponse<ManagerStockReportRow>,
       { managerId?: string; productGroupId?: string }
     >({
+      providesTags: ["ManagerStock"],
       query: (filters) => ({
         url: `report/manager-stock?${toQueryString(filters)}`,
         method: "GET",

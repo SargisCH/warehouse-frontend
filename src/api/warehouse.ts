@@ -62,6 +62,7 @@ const warehouseApi = api.injectEndpoints({
       }),
     }),
     getWarehouseStock: builder.query<WarehouseStock, string>({
+      providesTags: ["WarehouseStock"],
       query: (id) => ({ url: `warehouses/${id}/stock` }),
     }),
   }),

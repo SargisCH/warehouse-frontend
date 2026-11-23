@@ -19,7 +19,6 @@ import {
 import { useGetClientGroupsQuery } from "api/clientGroup";
 import { useGetManagersQuery } from "api/manager";
 import { useGetSalesZonesQuery } from "api/salesZone";
-import { useGetPriceListsQuery } from "api/priceList";
 import { PAYMENT_TYPES } from "types";
 import AlertDialog from "components/alertDialog/AlertDialog";
 import { useEffect, useState } from "react";
@@ -58,7 +57,6 @@ const ValidationSchema = z.object({
   managerId: z.string().optional(),
   delivererId: z.string().optional(),
   // «Գնացուցակ», «Վճարման տեսակ» and the credit terms.
-  priceListId: z.string().optional(),
   paymentType: z.string().optional(),
   paymentTermDays: z
     .string()
@@ -114,11 +112,6 @@ const UpsertClient = () => {
     value: String(zone.id),
   }));
 
-  const { data: priceLists = [] } = useGetPriceListsQuery();
-  const priceListOptions = priceLists.map((priceList) => ({
-    label: `${priceList.code} — ${priceList.name}`,
-    value: String(priceList.id),
-  }));
   const paymentTypeOptions = PAYMENT_TYPES.map((type) => ({
     label: t(`common.sale.paymentTypes.${type}`),
     value: type,
@@ -149,7 +142,6 @@ const UpsertClient = () => {
       salesZoneId: "",
       managerId: "",
       delivererId: "",
-      priceListId: "",
       paymentType: "",
       paymentTermDays: "0",
       debtLimit: "0",
@@ -182,9 +174,6 @@ const UpsertClient = () => {
             delivererId: res.data.delivererId
               ? String(res.data.delivererId)
               : "",
-            priceListId: res.data.priceListId
-              ? String(res.data.priceListId)
-              : "",
             paymentType: res.data.paymentType ?? "",
             paymentTermDays: String(res.data.paymentTermDays ?? 0),
             debtLimit: res.data.debtLimit ?? "0",
@@ -209,7 +198,6 @@ const UpsertClient = () => {
       salesZoneId: values.salesZoneId ? Number(values.salesZoneId) : null,
       managerId: values.managerId ? Number(values.managerId) : null,
       delivererId: values.delivererId ? Number(values.delivererId) : null,
-      priceListId: values.priceListId ? Number(values.priceListId) : null,
       paymentType: values.paymentType || null,
       paymentTermDays: Number(values.paymentTermDays || 0),
       debtLimit: values.debtLimit || "0",
@@ -264,7 +252,6 @@ const UpsertClient = () => {
       | "salesZoneId"
       | "managerId"
       | "delivererId"
-      | "priceListId"
       | "paymentType",
     labelKey: string,
     placeholderKey: string,
@@ -357,12 +344,6 @@ const UpsertClient = () => {
           )}
         </Flex>
         <Flex gap="20px">
-          {selectField(
-            "priceListId",
-            "common.sale.priceList",
-            "common.sale.selectPriceList",
-            priceListOptions,
-          )}
           {selectField(
             "paymentType",
             "common.sale.paymentType",

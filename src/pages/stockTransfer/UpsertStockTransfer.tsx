@@ -43,6 +43,7 @@ function UpsertStockTransfer({ kind }: { kind: TransferKind }) {
   const { transferId } = useParams<{ transferId?: string }>();
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const setup = TRANSFER_SETUP[kind];
+  const showPriceList = setup.showPrice && kind !== "ISSUE";
 
   const [documentDate, setDocumentDate] = useState(today());
   const [from, setFrom] = useState("");
@@ -65,7 +66,9 @@ function UpsertStockTransfer({ kind }: { kind: TransferKind }) {
   const [getEntries] = useLazyGetPriceListEntriesQuery();
   const { data: managers = [] } = useGetManagersQuery();
   const { data: warehouses = [] } = useGetWarehouseQuery();
-  const { data: priceLists = [] } = useGetPriceListsQuery();
+  const { data: priceLists = [] } = useGetPriceListsQuery(undefined, {
+    skip: !showPriceList || Boolean(transferId),
+  });
 
   useEffect(() => {
     (async () => {
@@ -78,7 +81,7 @@ function UpsertStockTransfer({ kind }: { kind: TransferKind }) {
   // A price list fills the price of every line that has none yet.
   useEffect(() => {
     (async () => {
-      if (!priceListId) {
+      if (!showPriceList || !priceListId) {
         setPrices({});
         return;
       }
@@ -95,7 +98,7 @@ function UpsertStockTransfer({ kind }: { kind: TransferKind }) {
         ),
       );
     })();
-  }, [priceListId, getEntries]);
+  }, [showPriceList, priceListId, getEntries]);
 
   const optionsFor = (side: "warehouse" | "manager") =>
     side === "warehouse"
@@ -156,7 +159,7 @@ function UpsertStockTransfer({ kind }: { kind: TransferKind }) {
       ...endpoint(setup.to, "to", to),
       sender: sender || undefined,
       receiver: receiver || undefined,
-      priceListId: priceListId ? Number(priceListId) : undefined,
+      priceListId: showPriceList && priceListId ? Number(priceListId) : undefined,
       note: note || undefined,
       items: items.map((line) => ({
         productId: Number(line.productId),
@@ -293,7 +296,7 @@ function UpsertStockTransfer({ kind }: { kind: TransferKind }) {
             onChange={setTo}
             width="240px"
           />
-          {setup.showPrice ? (
+          {showPriceList ? (
             <OptionSelect
               label={t("common.sale.priceList")}
               options={priceLists.map((p) => ({
